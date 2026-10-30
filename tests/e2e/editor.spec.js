@@ -124,7 +124,22 @@ test('fluxo visual completo: desenhar, transformar, configurar e importar/export
       editorLayout: measure('.editor-layout'),
       workspace: measure('#workspace'),
       settings: measure('.settings-panel'),
-      footer: measure('.app-footer')
+      footer: measure('.app-footer'),
+      overflowingElements: [...document.querySelectorAll('body *')].map(element => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return {
+          tag: element.tagName,
+          id: element.id,
+          className: typeof element.className === 'string' ? element.className : '',
+          top: Math.round(rect.top),
+          bottom: Math.round(rect.bottom),
+          height: Math.round(rect.height),
+          position: style.position,
+          overflowY: style.overflowY
+        };
+      }).filter(item => item.bottom > window.innerHeight + 2 && item.height > 0)
+        .sort((a, b) => b.bottom - a.bottom).slice(0, 20)
     };
   });
   expect(
