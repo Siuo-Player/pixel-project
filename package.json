@@ -1,0 +1,13 @@
+{
+  "name": "pixel-project",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Contextual black-and-white to limited-palette pixel-art editor",
+  "scripts": {
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "start": "node scripts/serve.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
