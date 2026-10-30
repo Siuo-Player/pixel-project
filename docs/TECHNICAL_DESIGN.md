@@ -107,7 +107,7 @@ O modelo do projeto contém uma coleção de saídas, cada uma com:
 - paleta;
 - resultado derivado/cache.
 
-O primeiro MVP apresenta uma saída. Uma expansão posterior poderá apresentar até três saídas adicionais, sujeita a testes de usabilidade e desempenho.
+O primeiro MVP apresenta uma saída. A primeira expansão visual terá como limite provisório três painéis no total (fonte + até duas saídas). O modelo de dados deverá suportar mais interpretações sem exigir uma alteração estrutural.
 
 As saídas partilham a mesma imagem-fonte, mas não partilham obrigatoriamente regras ou paletas. Alterar uma saída não pode alterar as outras.
 

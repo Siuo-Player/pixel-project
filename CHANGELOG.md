@@ -9,6 +9,7 @@
 - Definidas transformações reais da matriz: espelhamento horizontal/vertical e rotações de 90°, 180° e 270°.
 - Clarificado que as transformações alteram a imagem-fonte e obrigam a recalcular as interpretações.
 - Definido layout automático recursivo para duas, três e quatro telas, mais opções lado a lado e em grelha.
+- Clarificado o limite inicial provisório de três painéis no total (fonte + até duas interpretações), com arquitetura preparada para mais.
 - Atualizados requisitos do MVP, visão e desenho técnico.
 
 ## 2026-10-30 — Requisitos refinados e pesquisa de paletas

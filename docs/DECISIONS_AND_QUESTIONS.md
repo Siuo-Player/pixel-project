@@ -22,7 +22,7 @@ Este documento distingue o que já foi acordado do que ainda precisa de ser expe
 | D-014 | Transformações | Espelhamento horizontal/vertical e rotação de 90°, 180° e 270° alteram os dados da imagem. | Acordado |
 | D-015 | Várias saídas | O mesmo desenho poderá ter várias interpretações independentes, cada uma com regra e paleta próprias. | Acordado como direção |
 | D-016 | Primeiro MVP | Começar com uma saída visível, mas modelar os dados para várias saídas. | Acordado |
-| D-017 | Limite futuro | Até três saídas convertidas como primeiro limite a experimentar. | Provisório |
+| D-017 | Limite inicial | Até três painéis no total (fonte + até duas interpretações); o modelo deve suportar mais no futuro. | Provisório |
 | D-018 | Disposição | Auto layout adaptável, mais opções lado a lado e em grelha. | Acordado |
 | D-019 | Auto layout | Com 2 painéis dividir pelo eixo maior; com 3 reservar metade para a fonte e subdividir a outra metade; com 4 subdividir ambas as metades. | Acordado como comportamento inicial |
 | D-020 | Stack | TypeScript + Vite + Canvas + testes. | Proposta por confirmar |
@@ -53,7 +53,7 @@ Se for experimentado, cada regra grande deverá poder declarar explicitamente qu
 ### Q-005 — Várias saídas
 
 - O utilizador pode adicionar/remover saídas no editor?
-- O limite de três saídas é suficiente depois de testado o desempenho?
+- O limite inicial de três painéis totais é suficiente depois de testado o desempenho?
 - Todas as saídas partilham sempre a mesma navegação? A proposta atual é sim.
 
 ### Q-006 — Tamanhos e desempenho
@@ -74,7 +74,7 @@ No nível 2, que parâmetros podem ser alterados sem escrever código? Exemplos:
 2. Criar exemplos em que regras grandes e pequenas se sobrepõem.
 3. Testar paletas de 4 e 8 cores com diferentes relações de luminosidade e tonalidade.
 4. Verificar as paletas em escala de cinzentos e sob simulação de deficiências de visão cromática.
-5. Comparar uma interpretação com três interpretações simultâneas.
+5. Comparar uma interpretação com duas interpretações simultâneas.
 6. Medir o tempo de conversão em grelhas de diferentes dimensões.
 7. Testar o layout automático em janelas largas, altas e quase quadradas.
 8. Testar espelhamento e rotação em grelhas não quadradas.

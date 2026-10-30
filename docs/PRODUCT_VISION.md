@@ -55,7 +55,7 @@ A área de trabalho começa com:
 - operações de espelhamento horizontal/vertical e rotação de 90°, 180° e 270° que alteram os pixels da arte;
 - um separador para alterar as regras e paletas do projeto.
 
-A arquitetura representa as saídas como uma coleção de configurações independentes. O MVP apresenta uma saída; uma expansão posterior poderá apresentar até três.
+A arquitetura representa as interpretações como uma coleção de configurações independentes. O MVP apresenta uma interpretação. A primeira expansão visual terá como limite provisório três painéis no total: a imagem-fonte e até duas interpretações. O modelo de dados não deve impor esse limite e deverá poder suportar mais painéis no futuro.
 
 ## 5. Conversão por pixels e por áreas
 
