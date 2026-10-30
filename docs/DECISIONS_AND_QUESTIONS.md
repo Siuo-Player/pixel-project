@@ -6,80 +6,47 @@ Este documento distingue o que já foi acordado do que ainda precisa de ser expe
 
 | ID | Tema | Decisão | Estado |
 |---|---|---|---|
-| D-001 | Estrutura | Imagem-fonte e uma ou mais interpretações coloridas. | Acordado |
-| D-002 | Entrada | Cada célula pode ser transparente, preta ou branca. | Acordado |
-| D-003 | Semântica | O significado de preto/branco pode depender da regra; ambas as cores podem ser reinterpretadas. | Acordado |
-| D-004 | Transparência | Células transparentes permanecem transparentes na conversão. | Acordado |
-| D-005 | Conversão | Regras por pixel, vizinhança e áreas de tamanhos diferentes. | Acordado |
-| D-006 | Resultado de área | Uma regra de área pode gerar um padrão interno (preferido) ou uma cor uniforme. | Acordado |
-| D-007 | Sobreposição padrão | A regra que cobre a maior área vence e bloqueia regras menores nas células ocupadas. | Acordado |
-| D-008 | Camadas | Modo experimental futuro em que regras grandes podem autorizar zonas específicas para refinamento por regras menores. | Ideia opcional; fora do MVP |
-| D-009 | Paletas | O utilizador escolhe a quantidade de cores, incluindo 4 e 8, e seleciona ou cria a paleta. | Acordado |
-| D-010 | Paletas padrão | Presets orientados por teoria da cor, perceção e testes visuais. | Acordado |
-| D-011 | Regras | Personalização de parâmetros como objetivo próximo; criação livre de regras como objetivo futuro. | Acordado |
-| D-012 | Persistência | Sem contas/backend por enquanto; exportação e importação de projetos. | Acordado |
-| D-013 | Navegação | Zoom e deslocação sincronizados entre as telas. | Acordado |
-| D-014 | Transformações | Espelhamento horizontal/vertical e rotação de 90°, 180° e 270° alteram os dados da imagem. | Acordado |
-| D-015 | Várias saídas | O mesmo desenho poderá ter várias interpretações independentes, cada uma com regra e paleta próprias. | Acordado como direção |
-| D-016 | Primeiro MVP | Começar com uma saída visível, mas modelar os dados para várias saídas. | Acordado |
-| D-017 | Limite inicial | Até três painéis no total (fonte + até duas interpretações); o modelo deve suportar mais no futuro. | Provisório |
-| D-018 | Disposição | Auto layout adaptável, mais opções lado a lado e em grelha. | Acordado |
-| D-019 | Auto layout | Com 2 painéis dividir pelo eixo maior; com 3 reservar metade para a fonte e subdividir a outra metade; com 4 subdividir ambas as metades. | Acordado como comportamento inicial |
-| D-020 | Stack | TypeScript + Vite + Canvas + testes. | Proposta por confirmar |
+| D-001 | Imagem-fonte | Células transparentes, pretas ou brancas. | Acordado |
+| D-002 | Transparência | Preservada; nunca se converte em cor. | Acordado |
+| D-003 | Paletas | Quantidade escolhida pelo utilizador; paletas padrão e personalizadas. | Acordado |
+| D-004 | Regra por área | Pode produzir padrão interno ou cor uniforme. | Acordado |
+| D-005 | Reconhecimento | O motor deve analisar estruturas para além dos vizinhos diretos. | Acordado |
+| D-006 | Famílias de técnicas | Linhas, curvas, topologia, textura, informação e análise multiescala são candidatas. | Acordado como direção |
+| D-007 | Conflitos | Área não dá prioridade automática; propostas entram num resolvedor modular. | Acordado |
+| D-008 | Resolução inicial | Consenso ponderado por pixel a experimentar primeiro. | Proposta técnica |
+| D-009 | Simetria | Trocar preto/branco não pode criar uma assimetria na regra. | Obrigatório |
+| D-010 | Saídas | Cada interpretação tem regras e paleta próprias; dados preparados para várias saídas. | Acordado |
+| D-011 | Transformações | Espelhar e rodar alteram a matriz da fonte. | Acordado |
+| D-012 | Layout | Layout adaptável, automático, lado a lado e em grelha. | Acordado |
+| D-013 | Investigação | Python/scikit-image/OpenCV podem ser usados para protótipos; a app final não precisa de depender deles. | Proposta técnica |
 
-## 2. Questões de produto por resolver
+## 2. Simetria formal
 
-### Q-001 — Semântica por regra
+A imagem-fonte tem três estados: transparente, preto e branco. Definimos uma operação que troca preto e branco e deixa transparência fixa.
 
-Cada regra deverá declarar se distingue preto e branco, trata ambos como pixels preenchidos ou interpreta um deles como espaço negativo. A aplicação não deve assumir uma semântica universal.
+Para regras equivariante, inverter a imagem deve trocar os papéis emparelhados da paleta, sem alterar a geometria da saída. Para regras invariantes, a saída deve permanecer exatamente igual. Ambas as formas são simétricas.
 
-### Q-002 — Paletas
+A regra e a paleta devem declarar a correspondência de papéis necessária. Os testes automáticos devem verificar a propriedade em cada regra e estratégia de resolução.
 
-- A seleção deve permitir qualquer número razoável de cores ou apenas quantidades predefinidas?
-- Deve haver nomes e papéis semânticos opcionais para as cores (sombra, base, luz, acento)?
-- Deve ser possível reorganizar a ordem das cores?
+## 3. Questões que só precisam de ser decididas quando forem implementadas
 
-### Q-003 — Regras de área
+- Que famílias de detetores dão resultados visuais mais interessantes em pixel art?
+- Quais as escalas de análise que fazem sentido para os tamanhos de arte escolhidos?
+- Como calibrar confiança e prioridade sem favorecer padrões grandes ou uma polaridade?
+- Quando o consenso por pixel produzir fragmentação, que estratégia de coerência global oferece melhor equilíbrio entre qualidade e desempenho?
+- Como expor parâmetros avançados sem tornar a interface incompreensível?
 
-- As dimensões das áreas são fixas por regra ou ajustáveis?
-- Uma regra pode reconhecer regiões de qualquer forma ou apenas padrões retangulares?
-- As regras aplicam-se uma vez ou podem ser encadeadas em várias etapas?
-- Que critérios secundários desempatarão regras que reconhecem áreas do mesmo tamanho?
+## 4. Experiências prioritárias
 
-### Q-004 — Modo em camadas
+1. Reta longa, diagonal, cruzamento e sequência interrompida.
+2. Curva suave, canto, loop e ramificação.
+3. Formas ocas, componentes separados e traços de espessura variável.
+4. Texturas uniformes, periódicas, alternadas e irregulares.
+5. Padrões raros em contextos uniformes e em ruído.
+6. Casos em que duas ou mais regras propõem cores diferentes para o mesmo pixel.
+7. Todos os casos anteriores com preto e branco trocados.
 
-Se for experimentado, cada regra grande deverá poder declarar explicitamente quais as células/regiões onde regras menores podem atuar. A forma de expressar esta máscara ainda não está definida.
-
-### Q-005 — Várias saídas
-
-- O utilizador pode adicionar/remover saídas no editor?
-- O limite inicial de três painéis totais é suficiente depois de testado o desempenho?
-- Todas as saídas partilham sempre a mesma navegação? A proposta atual é sim.
-
-### Q-006 — Tamanhos e desempenho
-
-Que dimensões predefinidas e que limite máximo fazem sentido? Regras de área e várias saídas podem aumentar o custo de conversão.
-
-### Q-007 — Ficheiro de projeto
-
-Deve existir um formato próprio e exportação adicional de PNG para cada saída? A exportação de PNG não preserva regras editáveis, pelo que o formato de projeto continua importante.
-
-### Q-008 — Editor de regras
-
-No nível 2, que parâmetros podem ser alterados sem escrever código? Exemplos: vizinhança, tamanho de padrão, prioridade e cores atribuídas. O nível 3 seria um construtor de regras ou uma linguagem de regras mais avançada.
-
-## 3. Experiências técnicas a realizar
-
-1. Comparar regras por pixel com padrões 2×2, 3×3 e áreas maiores.
-2. Criar exemplos em que regras grandes e pequenas se sobrepõem.
-3. Testar paletas de 4 e 8 cores com diferentes relações de luminosidade e tonalidade.
-4. Verificar as paletas em escala de cinzentos e sob simulação de deficiências de visão cromática.
-5. Comparar uma interpretação com duas interpretações simultâneas.
-6. Medir o tempo de conversão em grelhas de diferentes dimensões.
-7. Testar o layout automático em janelas largas, altas e quase quadradas.
-8. Testar espelhamento e rotação em grelhas não quadradas.
-
-## 4. Quando fechar uma questão
+## 5. Critério para fechar uma decisão
 
 Uma questão deve ser considerada decidida quando existir:
 - uma escolha concreta;

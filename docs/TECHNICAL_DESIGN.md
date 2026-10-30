@@ -1,13 +1,13 @@
 # Desenho técnico inicial
 
-Este documento descreve uma arquitetura proposta para o primeiro protótipo. As decisões assinaladas como propostas podem mudar durante a experimentação.
+Este documento descreve a arquitetura proposta para o primeiro protótipo. A investigação de algoritmos pode usar linguagens e bibliotecas diferentes da aplicação final.
 
 ## 1. Separação fundamental
 
 A aplicação deve separar:
 
 1. **Imagem-fonte:** dados que o utilizador desenhou.
-2. **Configuração de conversão:** regra, parâmetros e paleta de cada interpretação.
+2. **Configuração de conversão:** regras, parâmetros, pesos e paleta de cada interpretação.
 3. **Resultado convertido:** dados derivados da fonte e da configuração.
 4. **Estado da vista:** zoom, deslocação, disposição e ajuste das telas.
 
@@ -25,7 +25,7 @@ Cada célula tem um de três estados lógicos:
 
 A transparência é ausência de pixel, não uma cor. O conversor deve preservar células transparentes como transparentes.
 
-A semântica de preto e branco pertence à regra. Uma regra pode tratá-los como dois tipos de região, como foreground/background, ou como cores de entrada independentes.
+A semântica de preto e branco pertence à regra. Uma regra pode distingui-los, tratá-los como dois tipos de região ou interpretar ambos como pixels opacos equivalentes.
 
 No primeiro protótipo, um array tipado de bytes é uma representação simples e suficiente. Compactação para 2 bits por célula não é prioritária.
 
@@ -33,165 +33,153 @@ No primeiro protótipo, um array tipado de bytes é uma representação simples 
 
 Uma paleta é uma lista ordenada de cores, por exemplo em formato hexadecimal/RGBA. A quantidade de cores é independente da representação em bits.
 
-A interface permite escolher uma quantidade e selecionar/criar uma paleta com esse número de entradas. Importa distinguir:
-- **quantidade de cores:** número de cores realmente disponíveis na paleta;
-- **transparência:** estado separado, não uma entrada normal da paleta.
+A interface permite escolher uma quantidade e selecionar/criar uma paleta com esse número de entradas. Transparência é um estado separado, não uma entrada normal da paleta.
 
-O modelo poderá guardar metadados opcionais para cada cor, como papel visual (sombra, base, luz, destaque), sem obrigar todas as regras a usar essa semântica.
+As paletas destinadas a regras simétricas devem definir a correspondência entre papéis de cor (uma involução de saída). Os fundamentos e heurísticas estão em [COLOR_THEORY_AND_RULES.md](COLOR_THEORY_AND_RULES.md).
 
-Os fundamentos e heurísticas de geração/validação de paletas estão em [COLOR_THEORY_AND_RULES.md](COLOR_THEORY_AND_RULES.md).
+## 4. Motor de reconhecimento e regras
 
-## 4. Motor de regras
+O motor deve ser independente da interface. Não deve ser implementado como uma sequência fixa de condições sobre os oito vizinhos.
 
-A conversão deve ser um módulo independente da interface. Recebe:
-- dados da imagem-fonte;
-- largura e altura;
-- definição da regra;
-- parâmetros da regra;
-- paleta.
+A descrição das famílias de algoritmos, propostas, conflitos e simetria está em [ADVANCED_RULES_AND_ENGINE.md](ADVANCED_RULES_AND_ENGINE.md).
 
-Devolve uma grelha de saída ou uma representação intermédia equivalente.
+### 4.1 Famílias de detetores
 
-### 4.1 Regras de pixel
+A arquitetura deve permitir módulos independentes para:
+- continuidade direcional e linhas;
+- curvas, esqueletos, caminhos e junções;
+- componentes, contornos, topologia e espessura;
+- padrões binários locais e estatísticas de textura;
+- entropia, informação mútua e surpresa;
+- orientação, periodicidade e análise multiescala.
 
-Analisam o estado de uma célula e, opcionalmente, dos seus vizinhos (4 ou 8 vizinhos, por exemplo). Podem classificar isolados, contornos, cantos, interiores e fronteiras entre estados.
+Nem todos são necessários no MVP. Começamos pelos que são simples de validar em pixel art, mas o modelo não deve limitar o motor a uma janela 3×3.
 
-### 4.2 Regras de área e múltiplas escalas
+### 4.2 Pipeline por propostas
 
-Uma regra pode reconhecer um padrão com uma dimensão concreta (por exemplo, 2×2, 3×3 ou 5×3) e atribuir:
-- um padrão interno com cores diferentes por posição; ou
-- uma única cor uniforme à área.
+O pipeline conceptual é:
 
-O motor deve suportar regras com dimensões diferentes. O objetivo é comparar análise por pixel com reconhecimento de regiões e padrões maiores.
+1. receber a imagem e a configuração;
+2. calcular características reutilizáveis (por exemplo, componentes, orientações e mapas de entropia);
+3. executar os detetores;
+4. produzir propostas que declaram pixels abrangidos e papel de saída sugerido;
+5. calcular evidência/confiança e prioridade;
+6. resolver conflitos;
+7. criar a imagem de saída e preservar transparência;
+8. validar as propriedades de simetria.
 
-### 4.3 Sobreposição e prioridade padrão
+Uma proposta não altera diretamente a saída. Isto permite comparar diferentes estratégias de resolução usando exatamente as mesmas deteções.
 
-Duas regras podem reconhecer regiões sobrepostas. O comportamento acordado para o primeiro motor é:
+### 4.3 Contrato de uma proposta
 
-1. detetar os candidatos a regra/área;
-2. ordenar pela área reconhecida, da maior para a menor;
-3. quando a área for igual, usar prioridade explícita da regra;
-4. em novo empate, usar um desempate determinístico;
-5. quando uma regra é aplicada, marcar as células abrangidas como ocupadas/reservadas;
-6. regras posteriores não podem substituir células reservadas.
+Uma proposta deverá conter, pelo menos:
+- identificador da regra;
+- conjunto de posições abrangidas;
+- papel de saída proposto por posição;
+- confiança da correspondência;
+- prioridade da regra;
+- especificidade e evidências usadas;
+- modo de simetria.
 
-Assim, uma regra 5×5 vence sobre uma regra 2×2 que se sobreponha à mesma região. Isto é uma prioridade absoluta por cobertura, não uma composição de regras.
+A área abrangida é registada, mas não dá prioridade automática.
 
-### 4.4 Modo experimental em camadas
+### 4.4 Resolução de conflitos
 
-Uma possível extensão, fora do MVP, evita que regras grandes e pequenas tenham de competir diretamente:
-- a regra de área maior estabelece a interpretação/base da região;
-- a própria regra maior pode declarar uma máscara ou sub-regiões que ficam disponíveis para refinamento;
-- regras menores só podem modificar essas zonas explicitamente autorizadas;
-- fora dessas zonas, a regra maior continua protegida.
+A estratégia experimental inicial é consenso ponderado por pixel:
+- propostas que recomendam o mesmo papel acumulam suporte;
+- limita-se a contribuição repetida de uma mesma família de detetores;
+- o papel com maior suporte vence;
+- empate é resolvido por prioridade, confiança, especificidade e identificador estável.
 
-Este modo só existe se for explicitamente selecionado/configurado. Não altera a regra padrão de prioridade absoluta.
+O motor deve permitir comparar esta abordagem com a proposta individual de maior confiança, regiões exclusivas e, no futuro, otimização global baseada em energia/graph cuts.
 
-### 4.5 Etapas de conversão
+A estratégia anterior de prioridade absoluta da maior área deixa de ser a regra geral. Pode continuar a existir como modo opcional, mas não como pressuposto do motor.
 
-Uma implementação experimental pode:
-1. localizar os padrões candidatos em várias escalas;
-2. avaliar as condições das regras;
-3. ordenar e resolver sobreposições;
-4. atribuir as cores/padrões às células ocupadas;
-5. preservar transparência.
+## 5. Simetria preto/branco
 
-O formato interno das regras deve ser configurável e versionável, de modo a suportar presets e futuras ferramentas de personalização.
+Define-se a operação S que troca preto e branco na origem e deixa transparência inalterada. Para regras equivariante, a saída deve satisfazer:
 
-## 5. Várias interpretações
+F(S(I)) = T(F(I))
+
+T troca os papéis de saída emparelhados e mantém transparência fixa; aplicar T duas vezes devolve a saída inicial.
+
+Uma regra invariante pode, em alternativa, produzir a mesma saída quando os estados preto/branco são trocados. Ambas são simétricas; o modo fica declarado na regra.
+
+Requisitos:
+- detetores geométricos e estatísticos não podem favorecer preto ou branco;
+- regras específicas de uma polaridade precisam de uma regra correspondente para a polaridade oposta;
+- a prioridade e os desempates não podem depender da identidade literal da cor;
+- as paletas equivariante têm de declarar os pares de cores correspondentes;
+- testes automáticos verificam a relação de simetria para cada regra e resolvedor.
+
+## 6. Várias interpretações
 
 O modelo do projeto contém uma coleção de saídas, cada uma com:
-- identificador;
-- nome;
-- referência à regra e respetivos parâmetros;
-- paleta;
+- identificador e nome;
+- regras e respetivos parâmetros;
+- paleta e correspondência de papéis;
+- estratégia de resolução;
 - resultado derivado/cache.
 
-O primeiro MVP apresenta uma saída. A primeira expansão visual terá como limite provisório três painéis no total (fonte + até duas saídas). O modelo de dados deverá suportar mais interpretações sem exigir uma alteração estrutural.
+O MVP apresenta uma saída. A primeira expansão visual terá como limite provisório três painéis totais (fonte + até duas saídas). O modelo de dados não deve impor esse limite.
 
-As saídas partilham a mesma imagem-fonte, mas não partilham obrigatoriamente regras ou paletas. Alterar uma saída não pode alterar as outras.
-
-## 6. Estado da vista e disposição automática
+## 7. Estado da vista e disposição automática
 
 A vista é independente dos dados da arte. Guarda zoom, deslocação e o modo de disposição.
 
 A disposição automática usa a dimensão da área disponível:
-- **2 painéis:** dividir pelo eixo maior (esquerda/direita quando a largura é maior; cima/baixo quando a altura é maior);
-- **3 painéis:** reservar metade para a fonte e subdividir a outra metade em duas regiões para as interpretações;
-- **4 painéis:** subdividir recursivamente as duas metades para obter quatro regiões equilibradas.
+- **2 painéis:** dividir pelo eixo maior;
+- **3 painéis:** reservar metade para a fonte e subdividir a outra metade;
+- **4 painéis:** subdividir recursivamente as duas metades.
 
-Ao subdividir uma região, usar o seu próprio eixo maior. Cada imagem deve ser apresentada com ajuste proporcional (*contain*), sem esticar ou cortar os pixels.
+Ao subdividir uma região, usar o seu próprio eixo maior. Cada imagem usa ajuste proporcional (contain), sem esticar nem cortar pixels.
 
-A interface também deverá oferecer escolha manual entre lado a lado e grelha. As regras de layout não alteram as coordenadas ou os dados das imagens.
+A interface também oferece disposição manual lado a lado e em grelha. As regras de layout não alteram os dados das imagens.
 
-## 7. Transformações da arte
+## 8. Transformações da arte
 
 Espelhamento horizontal, espelhamento vertical e rotação são transformações reais sobre a matriz da imagem-fonte.
 
-A operação deve:
-1. produzir uma nova matriz com os pixels reorganizados;
-2. atualizar largura/altura quando a rotação trocar os eixos;
-3. substituir os dados-fonte pela matriz transformada;
-4. recalcular todas as saídas derivadas.
+A operação produz uma nova matriz, atualiza dimensões quando necessário, substitui os dados-fonte e recalcula todas as saídas. Rotações de 90° e 270° trocam largura e altura.
 
-As rotações de 90° e 270° trocam largura e altura; 180° mantém as dimensões. Não se deve transformar apenas a imagem renderizada, deixando os dados antigos escondidos.
-
-A transformação pode ser descrita por matrizes/permutação de coordenadas. Uma operação de undo pode ser adicionada para permitir recuperar transformações, mas não é requisito inicial já acordado.
-
-## 8. Interação com o ponteiro
+## 9. Interação com o ponteiro
 
 É preferível usar Pointer Events, em vez de eventos exclusivos do rato, para preparar suporte futuro para toque e caneta.
 
-Comportamento:
-1. ao pressionar na tela-fonte, converter a posição para coordenadas de grelha;
-2. capturar o ponteiro durante o traço;
-3. aplicar a ferramenta ativa ao mover;
-4. interpolar entre células quando necessário (por exemplo, com uma linha de Bresenham);
-5. terminar o traço ao libertar/cancelar o ponteiro;
-6. recalcular a saída afetada.
+1. Ao pressionar na tela-fonte, converter a posição para coordenadas de grelha.
+2. Capturar o ponteiro durante o traço.
+3. Aplicar a ferramenta ativa ao mover.
+4. Interpolar entre células quando necessário (por exemplo, com Bresenham).
+5. Terminar o traço ao libertar/cancelar o ponteiro.
+6. Recalcular as saídas.
 
-A transformação de coordenadas deve considerar escala e deslocação da vista. As dimensões lógicas da grelha não mudam com o zoom.
+## 10. Renderização
 
-## 9. Renderização
+HTML Canvas é uma opção inicial adequada para renderizar grelhas com arestas nítidas. A transparência pode ser indicada com um padrão de xadrez, apenas visual. A renderização deve desativar suavização.
 
-HTML Canvas é uma opção inicial adequada para renderizar grelhas com arestas nítidas sem criar um elemento HTML por pixel.
+## 11. Investigação e bibliotecas
 
-A transparência pode ser indicada com um padrão de xadrez, que é apenas visual. A renderização deve desativar suavização para manter o estilo pixel art.
+Para prototipagem de algoritmos:
+- Python;
+- NumPy e SciPy;
+- scikit-image;
+- OpenCV.
 
-## 10. Configuração e ficheiro de projeto
+Para a aplicação web:
+- TypeScript + Vite;
+- Canvas;
+- módulos independentes para detetores, regras, paletas e resolvedores.
 
-O projeto deverá poder ser exportado e importado como ficheiro próprio, contendo pelo menos:
+Algoritmos validados em Python podem ser reimplementados em TypeScript ou compilados para WebAssembly se o desempenho o justificar. O utilizador final não deverá precisar de um serviço remoto para as conversões locais.
+
+## 12. Projeto e exportação
+
+O ficheiro do projeto deverá incluir:
 - versão do formato;
 - dimensões;
 - dados da imagem-fonte;
-- paletas;
+- paletas e pares de saída;
 - regras e parâmetros;
-- configurações das saídas.
+- configurações de todas as interpretações.
 
-A conversão pode ser recalculada no momento da importação; não é obrigatório guardar a imagem derivada se puder ser reproduzida.
-
-Não existe conta ou backend nesta fase. O ficheiro de projeto é o mecanismo inicial de portabilidade e persistência.
-
-## 11. Stack proposta
-
-Opção inicial:
-- TypeScript;
-- Vite;
-- HTML Canvas;
-- testes unitários para o motor de regras.
-
-Começar com processamento local e síncrono. Se conversões maiores bloquearem a interface, considerar Web Workers.
-
-## 12. Testes essenciais
-
-- Grelha vazia gera saída transparente.
-- Preto e branco podem ser distinguidos pela regra.
-- Transparência nunca é convertida em cor.
-- Alterar a paleta ou regra não altera a fonte.
-- Regras de área podem emitir padrões e preenchimentos uniformes.
-- Regras maiores bloqueiam regras menores sobrepostas no modo padrão.
-- O modo em camadas, quando for criado, só permite refinamento nas zonas autorizadas.
-- Resultados determinísticos permanecem iguais com a mesma entrada e configuração.
-- Transformações da matriz mantêm os pixels esperados e trocam dimensões quando necessário.
-- Layouts adaptáveis preservam proporção e não cortam a arte.
-- Exportar/importar preserva dados e configurações.
+A conversão pode ser recalculada na importação. Não é obrigatório guardar os resultados derivados se puderem ser reproduzidos.

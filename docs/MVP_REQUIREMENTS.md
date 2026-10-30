@@ -2,7 +2,7 @@
 
 ## 1. Objetivo
 
-Construir a versão mínima que permita criar uma grelha, desenhar a preto/branco/apagar na imagem-fonte e observar uma interpretação colorida atualizar-se automaticamente.
+Construir a versão mínima que permita criar uma grelha, desenhar a preto/branco/apagar na imagem-fonte e observar uma interpretação colorida atualizar-se automaticamente. O motor deve nascer modular, preparado para reconhecimento estrutural mais avançado.
 
 ## 2. Fluxo do utilizador
 
@@ -13,85 +13,79 @@ Construir a versão mínima que permita criar uma grelha, desenhar a preto/branc
 5. Ver a tela-fonte e uma tela convertida, ambas vazias.
 6. Desenhar a preto ou branco, ou apagar.
 7. Observar a conversão atualizar-se em tempo real.
-8. Alterar a regra, os parâmetros ou a paleta no separador de conversão.
+8. Alterar regra, parâmetros ou paleta.
 9. Espelhar ou rodar a arte quando necessário.
-10. Exportar o projeto para um ficheiro e importá-lo posteriormente.
+10. Exportar/importar o projeto.
 
 ## 3. Requisitos funcionais
 
-### Configuração inicial
+### Configuração e desenho
 
-- **MVP-F01:** permitir definir largura e altura antes de entrar no editor.
-- **MVP-F02:** permitir escolher a quantidade de cores da paleta.
-- **MVP-F03:** oferecer algumas paletas predefinidas.
-- **MVP-F04:** permitir criar uma paleta personalizada com cores escolhidas pelo utilizador.
-- **MVP-F05:** permitir selecionar uma regra/preset de conversão.
-- **MVP-F06:** criar uma imagem-fonte e uma tela de interpretação com as mesmas dimensões lógicas.
+- **MVP-F01:** definir largura e altura antes de entrar no editor.
+- **MVP-F02:** escolher a quantidade de cores da paleta.
+- **MVP-F03:** oferecer paletas predefinidas e criação de paletas personalizadas.
+- **MVP-F04:** escolher uma regra/preset de conversão.
+- **MVP-F05:** criar uma imagem-fonte e uma tela de interpretação com as mesmas dimensões lógicas.
+- **MVP-F06:** disponibilizar preto, branco e apagar.
+- **MVP-F07:** começar com pixels transparentes.
+- **MVP-F08:** permitir pintar com clique e arrastamento, sem falhas em movimentos rápidos.
+- **MVP-F09:** terminar corretamente o traço quando o ponteiro é libertado ou cancelado.
+- **MVP-F10:** impedir desenho direto na tela convertida.
 
-### Desenho da imagem-fonte
+### Motor de conversão
 
-- **MVP-F07:** disponibilizar preto, branco e apagar.
-- **MVP-F08:** começar com todos os pixels transparentes.
-- **MVP-F09:** permitir pintar com clique e arrastamento.
-- **MVP-F10:** não deixar falhas no traço quando o ponteiro se move rapidamente.
-- **MVP-F11:** terminar o traço corretamente quando o ponteiro é libertado ou cancelado, mesmo fora da tela.
-- **MVP-F12:** impedir desenho direto na tela convertida.
+- **MVP-F11:** recalcular quando a fonte ou configuração mudar.
+- **MVP-F12:** preservar todas as células transparentes como transparentes.
+- **MVP-F13:** permitir reinterpretar pixels pretos e brancos.
+- **MVP-F14:** separar detetores, regras, propostas, paletas e resolvedor de conflitos da interface.
+- **MVP-F15:** suportar pelo menos deteção direcional de linhas ou sequências longas da mesma cor.
+- **MVP-F16:** estruturar o motor para suportar deteção de curvas, topologia e características estatísticas em fases seguintes.
+- **MVP-F17:** não dar prioridade automática a uma proposta apenas por cobrir mais pixels.
+- **MVP-F18:** suportar resolução determinística de conflitos entre propostas que abrangem o mesmo pixel.
+- **MVP-F19:** assegurar simetria preto/branco em todas as regras disponibilizadas.
+- **MVP-F20:** permitir que as regras produzam padrões de cores diferentes dentro de uma área.
 
-### Conversão
-
-- **MVP-F13:** recalcular o resultado quando a imagem-fonte muda.
-- **MVP-F14:** recalcular o resultado quando a regra, parâmetros ou paleta mudam.
-- **MVP-F15:** preservar todas as células transparentes como transparentes.
-- **MVP-F16:** permitir que pixels-fonte pretos e brancos sejam mapeados para qualquer cor da paleta.
-- **MVP-F17:** separar a lógica de conversão dos componentes da interface.
-- **MVP-F18:** suportar pelo menos uma regra que analise pixels e vizinhos; a arquitetura permite regras de área com dimensões variáveis.
-- **MVP-F19:** permitir que uma regra de área atribua um padrão de cores diferentes ou uma cor uniforme à área reconhecida.
-- **MVP-F20:** aplicar prioridade absoluta à regra que reconhece a maior área; regras menores não substituem pixels já ocupados por essa regra.
-
-### Navegação e apresentação
+### Navegação e transformações
 
 - **MVP-F21:** apresentar pixels sem blur ou interpolação indesejada.
-- **MVP-F22:** suportar zoom e deslocação sincronizados nas telas.
-- **MVP-F23:** manter o alinhamento espacial entre fonte e resultado quando a vista é ampliada ou deslocada.
-- **MVP-F24:** adaptar automaticamente a disposição das telas à área de trabalho, preservando a proporção de cada imagem.
-- **MVP-F25:** oferecer, além do modo automático, pelo menos uma disposição lado a lado e uma disposição em grelha.
-- **MVP-F26:** suportar espelhamento horizontal, espelhamento vertical e rotação de 90°, 180° e 270° sobre os dados da imagem-fonte.
-- **MVP-F27:** recalcular as interpretações depois de uma transformação dos dados; rotações de 90°/270° trocam largura e altura.
+- **MVP-F22:** suportar zoom e deslocação sincronizados.
+- **MVP-F23:** ajustar automaticamente as telas à área disponível sem distorcer as imagens.
+- **MVP-F24:** oferecer layout automático, lado a lado e em grelha.
+- **MVP-F25:** suportar espelhamento horizontal/vertical e rotação 90°, 180° e 270° sobre os dados da fonte.
+- **MVP-F26:** recalcular as interpretações depois das transformações; rotações de 90°/270° trocam largura e altura.
 
-### Projetos e configurações
+### Projetos
 
-- **MVP-F28:** exportar e importar um ficheiro de projeto que contenha imagem-fonte, paletas e configuração de conversão.
-- **MVP-F29:** guardar alterações de paleta e regra apenas no projeto atual.
-- **MVP-F30:** estruturar os dados para várias saídas independentes, embora o MVP apresente apenas uma.
+- **MVP-F27:** exportar/importar um ficheiro de projeto com fonte, paletas, simetria, regras e parâmetros.
+- **MVP-F28:** alterações de regra e paleta pertencem ao projeto atual.
+- **MVP-F29:** estruturar dados para várias saídas independentes, embora o MVP apresente apenas uma.
 
 ## 4. Critérios de aceitação
 
-1. O utilizador cria uma grelha com dimensões escolhidas.
-2. A imagem-fonte e a tela convertida começam transparentes.
-3. Clique e arrastamento alteram os pixels corretos na fonte.
-4. Preto, branco e apagar são estados distintos.
-5. Os pixels transparentes continuam transparentes na saída.
-6. A saída atualiza-se após alterações na fonte ou configuração.
-7. Alterar a configuração não altera a imagem-fonte.
-8. Regras por área podem gerar padrões internos de várias cores ou preenchimento uniforme.
-9. A regra de maior área bloqueia regras menores quando há sobreposição.
-10. Zoom e deslocação mantêm fonte e resultado alinhados.
-11. O layout adapta-se ao tamanho disponível sem distorcer as imagens.
-12. Espelhamento e rotação alteram a matriz da fonte e atualizam o resultado.
-13. Um projeto exportado pode ser importado e recupera imagem e configuração.
+1. Fonte e saída começam transparentes.
+2. Clique e arrastamento alteram os pixels corretos.
+3. Preto, branco e apagar são estados distintos.
+4. A transparência mantém-se na saída.
+5. A saída atualiza-se após alterações da fonte e da configuração.
+6. Linhas/sequências do mesmo estado podem ser reconhecidas para além dos oito vizinhos diretos.
+7. Conflitos entre propostas são resolvidos de forma determinística.
+8. Trocar preto e branco na fonte produz o resultado simétrico esperado pela regra e pelos pares da paleta.
+9. Zoom e deslocação mantêm alinhamento.
+10. O layout adapta-se à janela sem distorção.
+11. Espelhamento e rotação alteram a matriz da fonte e atualizam o resultado.
+12. Um projeto exportado pode ser importado.
 
 ## 5. Fora do âmbito do primeiro MVP
 
-- Várias telas convertidas visíveis simultaneamente (a arquitetura fica preparada).
-- Contas, autenticação e sincronização remota.
-- Colaboração ou publicação de galerias.
-- Edição direta do resultado convertido.
-- Editor visual para criar algoritmos arbitrários.
-- Modo de regras em camadas, em que regras maiores permitem refinamentos de regras menores.
-- Simulação contínua de autómatos celulares.
-- Camadas, animação e ferramentas avançadas de pixel art.
-- Importação de imagens externas.
+- Várias interpretações visíveis simultaneamente (a estrutura fica preparada).
+- Todas as famílias avançadas de detetores.
+- Otimização global por graph cuts/CRF.
+- Criação livre de regras por programação visual.
+- Modo em camadas de regras.
+- Aprendizagem automática e redes neuronais.
+- Contas, autenticação, sincronização e colaboração.
+- Animação, camadas e ferramentas avançadas de pixel art.
 
-## 6. Nota de implementação
+## 6. Desenvolvimento por etapas
 
-Os limites de tamanho de grelha, o conjunto inicial de paletas e o conjunto inicial de regras ainda precisam de ser escolhidos através de testes de desempenho e avaliação visual.
+A primeira implementação deve validar o editor, os dados e o contrato modular do motor. Depois adicionam-se detetores um a um, mantendo testes de simetria e de conflitos para cada nova regra.
