@@ -98,6 +98,8 @@ test('fluxo visual completo: desenhar, transformar, configurar e importar/export
   await page.locator('#add-technique').click();
   await expect(page.locator('#technique-count')).toHaveText('4');
   await capture(page, '08-tecnicas-e-resolvedor.png');
+  // A growing settings list must not force a wide desktop workspace into vertical flow.
+  await expect(page.locator('#workspace')).toHaveAttribute('data-flow', 'horizontal');
 
   await page.locator('#editor-palette').selectOption('forest-4');
   await expect(page.locator('#editor-color-count')).toHaveText('4 cores');
