@@ -30,9 +30,9 @@ A imagem-fonte tem três estados por célula:
 | Preto | Pixel desenhado com a cor preta. |
 | Branco | Pixel desenhado com a cor branca. |
 
-A transparência é distinta do branco. A conversão pode reinterpretar pixels pretos e brancos, mas não deve colorir células transparentes por defeito.
+A transparência é distinta do branco. A conversão pode reinterpretar pixels pretos e brancos, mas nunca deve colorir células transparentes.
 
-O significado de preto e branco depende da regra. A interpretação principal a explorar é que preto e branco podem representar estados diferentes de preenchimento/ausência ou regiões com papéis diferentes. Outras regras poderão tratá-los como cores independentes. Esta flexibilidade deve pertencer à regra, não estar rigidamente codificada na interface.
+O significado de preto e branco depende da regra. A interpretação principal a explorar é que preto e branco podem representar estados diferentes de preenchimento/ausência ou regiões com papéis diferentes. Outras regras poderão tratá-los como cores independentes. Esta flexibilidade pertence à regra, não fica rigidamente codificada na interface.
 
 ## 4. Experiência principal
 
@@ -49,12 +49,13 @@ O utilizador:
 
 A área de trabalho começa com:
 - uma tela-fonte editável;
-- uma tela de interpretação convertida;
+- uma tela de interpretação convertida no primeiro MVP;
 - ferramentas preto, branco e apagar;
 - controlos de zoom e deslocação sincronizados;
+- operações de espelhamento horizontal/vertical e rotação de 90°, 180° e 270° que alteram os pixels da arte;
 - um separador para alterar as regras e paletas do projeto.
 
-O primeiro protótipo terá uma tela de interpretação. A arquitetura deverá, desde o início, representar as saídas como uma coleção de configurações independentes, permitindo adicionar outras interpretações mais tarde (com um limite inicial proposto de três quando essa funcionalidade for ativada).
+A arquitetura representa as saídas como uma coleção de configurações independentes. O MVP apresenta uma saída; uma expansão posterior poderá apresentar até três.
 
 ## 5. Conversão por pixels e por áreas
 
@@ -64,9 +65,11 @@ Uma regra pode atuar sobre:
 - um padrão retangular ou outra área de vários pixels;
 - áreas de diferentes dimensões.
 
-A intenção é permitir que a mesma imagem seja interpretada em várias escalas. Por exemplo, uma regra pode reconhecer uma área 2×2 e outra reconhecer uma área 5×3.
+Uma regra que reconhece uma área pode gerar um padrão de cores diferentes dentro dessa área (comportamento preferido) ou preenchê-la com uma única cor. Assim, reconhecer uma área não obriga a pintar todos os pixels da mesma maneira.
 
-Quando várias regras se sobrepõem, o motor precisa de uma política explícita de prioridade. A preferência inicial é dar oportunidade às regras que reconhecem áreas maiores, mas o resultado deve também poder considerar a prioridade configurada e a especificidade do padrão. A política final será validada com exemplos.
+Quando várias regras se sobrepõem, o comportamento padrão será **prioridade absoluta da regra que reconhece a maior área**: a área fica ocupada/reservada por essa regra e regras menores não a podem substituir. Regras do mesmo tamanho serão desempatas por prioridade explícita e, depois, por uma ordem estável.
+
+Fica como experiência futura um modo em camadas: uma regra grande pode definir uma base e declarar explicitamente zonas onde regras menores podem acrescentar detalhes. Isto não é uma exceção implícita à prioridade; é uma permissão configurada pela própria regra maior.
 
 ## 6. Paletas
 
@@ -75,43 +78,48 @@ O utilizador escolhe a quantidade de cores e pode:
 - criar uma paleta escolhendo as cores individualmente;
 - alterar uma paleta no projeto atual.
 
-As paletas predefinidas devem ter identidades visuais intencionais e não ser geradas apenas distribuindo cores igualmente pela roda cromática. Devem considerar luminosidade, tonalidade, saturação, contraste figura/fundo e diferenças perceptíveis entre cores.
+As paletas predefinidas devem ter identidades visuais intencionais e considerar luminosidade, tonalidade, saturação, contraste figura/fundo, diferenças percetíveis entre cores e acessibilidade. Não devem ser geradas apenas distribuindo cores igualmente pela roda cromática.
 
-As paletas poderão representar diferentes tipos de relação:
-- harmonias de tonalidades próximas;
-- paletas tonais com vários níveis de luminosidade;
-- paletas com uma cor de destaque;
-- paletas de contraste mais forte;
-- paletas de categorias visualmente distintas;
-- paletas retro inspiradas em limitações históricas de hardware.
-
-A pesquisa inicial e os critérios propostos estão em [COLOR_PALETTE_RESEARCH.md](COLOR_PALETTE_RESEARCH.md).
+As regras práticas estão em [COLOR_THEORY_AND_RULES.md](COLOR_THEORY_AND_RULES.md), e a pesquisa de fontes em [COLOR_PALETTE_RESEARCH.md](COLOR_PALETTE_RESEARCH.md).
 
 ## 7. Várias interpretações
 
-Uma imagem-fonte poderá vir a alimentar várias telas convertidas. Cada saída terá:
+Uma imagem-fonte poderá alimentar várias telas convertidas. Cada saída terá:
+- identificador e nome;
 - a sua própria regra e parâmetros;
 - a sua própria paleta;
 - o seu próprio resultado derivado.
 
-Alterar uma saída não deve afetar as outras nem a imagem-fonte. A primeira versão terá apenas uma saída visível, mas a estrutura de dados não deve assumir que existe sempre exatamente uma.
+Alterar uma saída não afeta as outras nem a imagem-fonte.
 
-## 8. Transformações e navegação
+## 8. Disposição adaptável das telas
 
-As telas devem manter uma relação espacial coerente. Zoom e deslocação devem ser sincronizados entre a imagem-fonte e as interpretações. Virar/inverter a vista deve igualmente manter o alinhamento.
+O editor deve aproveitar a área disponível e ajustar automaticamente o tamanho e a disposição das telas. Cada imagem mantém a sua proporção e é ajustada à área atribuída sem ser esticada nem cortada.
 
-É necessário distinguir transformação da vista (navegação e apresentação) de transformação real dos pixels (alterar a arte). O MVP deve começar por sincronizar a vista; operações destrutivas sobre os dados poderão ser decididas separadamente.
+O modo automático usa divisões recursivas:
+- com duas telas (fonte + uma saída), divide a área ao meio pelo eixo maior;
+- com três telas, reserva uma metade para a fonte e subdivide a outra metade para as duas saídas;
+- com quatro telas, subdivide as duas metades, formando uma composição equilibrada de quatro áreas.
 
-## 9. Princípios do produto
+O utilizador também poderá escolher manualmente uma disposição lado a lado ou em grelha. A disposição não altera os pixels da arte.
+
+## 9. Transformações e navegação
+
+Zoom e deslocação são operações de navegação e devem manter-se sincronizados entre as telas.
+
+Espelhar horizontalmente, espelhar verticalmente e rodar a arte são operações sobre os dados: alteram a matriz da imagem-fonte. Depois da transformação, todas as interpretações são recalculadas a partir da fonte transformada. Rotações de 90° e 270° trocam a largura e a altura da grelha.
+
+## 10. Princípios do produto
 
 1. A imagem-fonte é a verdade original e nunca é modificada pelo conversor.
-2. Transparência não é branco e não é convertida em cor.
+2. Transparência não é branco e nunca é convertida em cor.
 3. A conversão é reproduzível quando a regra é determinística.
 4. Trocar regra ou paleta não exige redesenhar.
 5. Cada interpretação é independente.
 6. O motor de conversão é separado da interface.
 7. O projeto começa local-first, sem contas ou backend.
+8. As telas adaptam-se ao espaço disponível sem distorcer a proporção da arte.
 
-## 10. O que não é objetivo inicial
+## 11. O que não é objetivo inicial
 
-Contas de utilizador, sincronização na cloud, colaboração, galerias públicas, camadas, animação, importação de imagens, editor visual de regras completas e edição manual do resultado ficam fora do primeiro protótipo.
+Contas de utilizador, sincronização na cloud, colaboração, galerias públicas, camadas, animação, importação de imagens e editor visual de regras arbitrárias ficam fora do primeiro protótipo.

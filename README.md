@@ -8,24 +8,26 @@ A ideia central é permitir desenhar com uma paleta de entrada mínima e observa
 
 - **Imagem-fonte:** o utilizador desenha a preto, branco ou apaga (transparência).
 - **Conversão:** regras analisam pixels, vizinhanças e padrões/áreas de vários tamanhos.
-- **Saídas:** cada interpretação tem a sua própria regra e paleta. A arquitetura deve permitir várias saídas independentes; o primeiro protótipo começa com uma.
+- **Saídas:** cada interpretação tem a sua própria regra e paleta. A arquitetura permite várias saídas independentes.
 - **Paletas:** o utilizador escolhe a quantidade de cores (por exemplo, 4 ou 8), seleciona paletas predefinidas ou cria uma paleta própria.
 - **Configuração:** regras e paletas podem ser escolhidas antes de entrar no editor e alteradas dentro do projeto atual.
+- **Visualização:** as telas adaptam-se ao espaço disponível, com opções de disposição automática, lado a lado ou em grelha.
 
-A transparência é um estado distinto e deve permanecer transparente na conversão. Os pixels de entrada pretos e brancos podem ser reinterpretados para outras cores conforme a regra escolhida.
+A transparência é um estado distinto e permanece transparente na conversão. Os pixels de entrada pretos e brancos podem ser reinterpretados para outras cores conforme a regra escolhida.
 
 ## Documentação
 
 - [Visão do produto](docs/PRODUCT_VISION.md)
 - [Requisitos do MVP](docs/MVP_REQUIREMENTS.md)
 - [Desenho técnico](docs/TECHNICAL_DESIGN.md)
-- [Pesquisa sobre paletas e teoria das cores](docs/COLOR_PALETTE_RESEARCH.md)
+- [Pesquisa inicial sobre paletas](docs/COLOR_PALETTE_RESEARCH.md)
+- [Teoria das cores e regras derivadas para o projeto](docs/COLOR_THEORY_AND_RULES.md)
 - [Decisões e questões em aberto](docs/DECISIONS_AND_QUESTIONS.md)
 - [Histórico de alterações](CHANGELOG.md)
 
 ## Estado atual
 
-**Fase: documentação e definição do protótipo.** Ainda não existe aplicação implementada. As decisões identificadas como propostas ou questões em aberto devem ser validadas através de experiências.
+**Fase: documentação e definição do protótipo.** Ainda não existe aplicação implementada. As decisões identificadas como propostas ou experimentais serão validadas através de testes.
 
 ## Terminologia
 

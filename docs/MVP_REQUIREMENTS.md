@@ -10,11 +10,12 @@ Construir a versão mínima que permita criar uma grelha, desenhar a preto/branc
 2. Escolher largura e altura da arte.
 3. Escolher quantidade de cores, paleta e regra de conversão.
 4. Criar o projeto.
-5. Ver a imagem-fonte e uma tela convertida, ambas vazias.
+5. Ver a tela-fonte e uma tela convertida, ambas vazias.
 6. Desenhar a preto ou branco, ou apagar.
 7. Observar a conversão atualizar-se em tempo real.
 8. Alterar a regra, os parâmetros ou a paleta no separador de conversão.
-9. Exportar o projeto para um ficheiro e importá-lo posteriormente.
+9. Espelhar ou rodar a arte quando necessário.
+10. Exportar o projeto para um ficheiro e importá-lo posteriormente.
 
 ## 3. Requisitos funcionais
 
@@ -43,20 +44,25 @@ Construir a versão mínima que permita criar uma grelha, desenhar a preto/branc
 - **MVP-F15:** preservar todas as células transparentes como transparentes.
 - **MVP-F16:** permitir que pixels-fonte pretos e brancos sejam mapeados para qualquer cor da paleta.
 - **MVP-F17:** separar a lógica de conversão dos componentes da interface.
-- **MVP-F18:** suportar pelo menos uma regra que analise pixels e vizinhos; a arquitetura deve permitir regras que analisem áreas de dimensões variáveis.
+- **MVP-F18:** suportar pelo menos uma regra que analise pixels e vizinhos; a arquitetura permite regras de área com dimensões variáveis.
+- **MVP-F19:** permitir que uma regra de área atribua um padrão de cores diferentes ou uma cor uniforme à área reconhecida.
+- **MVP-F20:** aplicar prioridade absoluta à regra que reconhece a maior área; regras menores não substituem pixels já ocupados por essa regra.
 
 ### Navegação e apresentação
 
-- **MVP-F19:** apresentar pixels sem blur ou interpolação indesejada.
-- **MVP-F20:** suportar zoom e deslocação sincronizados nas duas telas.
-- **MVP-F21:** manter o alinhamento espacial entre fonte e resultado quando a vista é ampliada ou deslocada.
-- **MVP-F22:** suportar inversão/viragem sincronizada da vista, depois de clarificado se a primeira versão precisa de espelhamento horizontal, vertical ou ambos.
+- **MVP-F21:** apresentar pixels sem blur ou interpolação indesejada.
+- **MVP-F22:** suportar zoom e deslocação sincronizados nas telas.
+- **MVP-F23:** manter o alinhamento espacial entre fonte e resultado quando a vista é ampliada ou deslocada.
+- **MVP-F24:** adaptar automaticamente a disposição das telas à área de trabalho, preservando a proporção de cada imagem.
+- **MVP-F25:** oferecer, além do modo automático, pelo menos uma disposição lado a lado e uma disposição em grelha.
+- **MVP-F26:** suportar espelhamento horizontal, espelhamento vertical e rotação de 90°, 180° e 270° sobre os dados da imagem-fonte.
+- **MVP-F27:** recalcular as interpretações depois de uma transformação dos dados; rotações de 90°/270° trocam largura e altura.
 
 ### Projetos e configurações
 
-- **MVP-F23:** exportar e importar um ficheiro de projeto que contenha a imagem-fonte, paletas e configuração de conversão.
-- **MVP-F24:** guardar as alterações de paleta e regra apenas no projeto atual.
-- **MVP-F25:** estruturar os dados para permitir várias saídas independentes no futuro, embora o MVP apresente apenas uma.
+- **MVP-F28:** exportar e importar um ficheiro de projeto que contenha imagem-fonte, paletas e configuração de conversão.
+- **MVP-F29:** guardar alterações de paleta e regra apenas no projeto atual.
+- **MVP-F30:** estruturar os dados para várias saídas independentes, embora o MVP apresente apenas uma.
 
 ## 4. Critérios de aceitação
 
@@ -67,8 +73,12 @@ Construir a versão mínima que permita criar uma grelha, desenhar a preto/branc
 5. Os pixels transparentes continuam transparentes na saída.
 6. A saída atualiza-se após alterações na fonte ou configuração.
 7. Alterar a configuração não altera a imagem-fonte.
-8. Zoom e deslocação mantêm fonte e resultado alinhados.
-9. Um projeto exportado pode ser importado e recupera imagem e configuração.
+8. Regras por área podem gerar padrões internos de várias cores ou preenchimento uniforme.
+9. A regra de maior área bloqueia regras menores quando há sobreposição.
+10. Zoom e deslocação mantêm fonte e resultado alinhados.
+11. O layout adapta-se ao tamanho disponível sem distorcer as imagens.
+12. Espelhamento e rotação alteram a matriz da fonte e atualizam o resultado.
+13. Um projeto exportado pode ser importado e recupera imagem e configuração.
 
 ## 5. Fora do âmbito do primeiro MVP
 
@@ -77,6 +87,7 @@ Construir a versão mínima que permita criar uma grelha, desenhar a preto/branc
 - Colaboração ou publicação de galerias.
 - Edição direta do resultado convertido.
 - Editor visual para criar algoritmos arbitrários.
+- Modo de regras em camadas, em que regras maiores permitem refinamentos de regras menores.
 - Simulação contínua de autómatos celulares.
 - Camadas, animação e ferramentas avançadas de pixel art.
 - Importação de imagens externas.
