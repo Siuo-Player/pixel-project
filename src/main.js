@@ -255,7 +255,15 @@ function updateLayout() {
   if ($('#editor-view').hidden) return;
   const mode = $('#layout-mode').value;
   workspace.dataset.layout = mode;
-  const horizontal = mode === 'side-by-side' || (mode === 'auto' && workspace.clientWidth >= workspace.clientHeight);
+
+  // Base auto layout on the usable viewport, not the settings panel's content height.
+  // The settings column can grow as techniques are added, but that must not rotate
+  // the canvas workspace into a vertical arrangement on a wide desktop.
+  const bounds = workspace.getBoundingClientRect();
+  const availableHeight = Math.max(1, window.innerHeight - bounds.top - 24);
+  const effectiveHeight = Math.min(workspace.clientHeight || availableHeight, availableHeight);
+  const horizontal = mode === 'side-by-side'
+    || (mode === 'auto' && bounds.width >= effectiveHeight);
   workspace.dataset.flow = horizontal ? 'horizontal' : 'vertical';
 }
 
