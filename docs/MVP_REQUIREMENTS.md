@@ -1,58 +1,44 @@
-# Requisitos do primeiro protótipo (MVP)
+# Requisitos do MVP — estado de implementação
 
-## Objetivo
+## Implementado no primeiro protótipo
 
-Construir o editor inicial e um motor modular que demonstre como uma imagem transparente/preto/branco pode gerar uma interpretação de paleta discreta, atualizada automaticamente.
+- Criar grelhas com largura/altura escolhidas (limites atuais: 4–256 por eixo e 65 536 pixels no total).
+- Escolher paleta predefinida de 4 ou 8 cores.
+- Personalizar as cores de uma paleta.
+- Duas telas com a mesma grelha lógica: original editável e interpretação gerada.
+- Ferramentas preto, branco e apagar.
+- Pintura por clique e arrastamento, com interpolação Bresenham.
+- Transparência preservada na conversão.
+- Zoom e pan sincronizados.
+- Espelhamento horizontal/vertical e rotação real da matriz.
+- Três técnicas configuráveis: média contextual, linhas direcionais e entropia local.
+- Instâncias repetidas da mesma técnica com parâmetros independentes.
+- Propostas por pixel com distribuições completas pelas cores.
+- Resolvedores média ponderada e maior confiança individual.
+- Paleta discreta: a saída contém apenas cores da paleta.
+- Importação/exportação do ficheiro .pixelproj.
+- Testes unitários e de integração executados por GitHub Actions.
 
-## Configuração e desenho
+## Preparado na arquitetura, mas ainda não visível/implementado
 
-- **MVP-F01:** definir dimensões da grelha antes de entrar no editor.
-- **MVP-F02:** escolher uma quantidade de cores e uma paleta predefinida ou personalizada.
-- **MVP-F03:** escolher uma configuração inicial do motor.
-- **MVP-F04:** apresentar uma tela-fonte e uma saída convertida.
-- **MVP-F05:** disponibilizar preto, branco e apagar.
-- **MVP-F06:** permitir clique e arrastamento sem falhas.
-- **MVP-F07:** preservar transparência como ausência de pixel.
-- **MVP-F08:** impedir edição direta da saída convertida.
+- Várias telas convertidas no editor (modelo suporta várias saídas independentes).
+- Técnicas Hough/Radon, esqueletização, topologia, GLCM/LBP, autocorrelação e Fourier.
+- Modo de regras em camadas.
+- Otimização global de coerência.
+- Criador visual de regras avançadas.
 
-## Motor modular
+## Critérios de aceitação verificados
 
-- **MVP-F09:** separar técnica/detetor, instância, regra de transformação e resolvedor.
-- **MVP-F10:** permitir instâncias configuráveis independentemente; a arquitetura permite várias instâncias da mesma técnica.
-- **MVP-F11:** permitir que uma instância emita características, deteções e propostas para pixels.
-- **MVP-F12:** as propostas incluem distribuições completas sobre todas as cores da paleta, somando 1 por pixel.
-- **MVP-F13:** permitir abstenção quando uma técnica não tem evidência para um pixel.
-- **MVP-F14:** implementar pelo menos uma técnica contextual matricial (ex.: média ponderada por kernel), seguida de quantização para uma paleta discreta.
-- **MVP-F15:** implementar pelo menos um detetor estrutural (ex.: continuidade direcional/linha).
-- **MVP-F16:** combinar propostas por média ponderada de distribuições.
-- **MVP-F17:** escolher sempre uma entrada da paleta; não misturar RGB para criar cores intermédias.
-- **MVP-F18:** preservar transparência na saída.
-- **MVP-F19:** suportar a inversão complementar preto/branco, com correspondência de cores definida pela paleta.
-
-## Navegação e projeto
-
-- **MVP-F20:** zoom/deslocação sincronizados e layout adaptável.
-- **MVP-F21:** espelhamento horizontal/vertical e rotação real da matriz da fonte.
-- **MVP-F22:** exportar/importar o projeto com fonte, paletas, instâncias, regras e pesos.
-- **MVP-F23:** estruturar os dados para múltiplas saídas independentes, embora o primeiro editor apresente apenas uma.
-
-## Critérios de aceitação
-
-1. A fonte e a saída começam transparentes.
-2. Pintar, arrastar e apagar funcionam corretamente.
-3. A conversão usa o contexto e não apenas o valor isolado do pixel.
-4. Uma média contextual consegue produzir níveis diferentes com uma paleta de 4 ou 8 cores.
-5. Técnicas diferentes podem propor cores distintas para o mesmo pixel.
-6. O resolvedor combina distribuições completas e escolhe uma cor da paleta.
-7. Duas instâncias da mesma técnica com configurações diferentes podem produzir propostas distintas.
-8. Inverter preto/branco reflete o resultado através da correspondência de paleta.
-9. Nenhum pixel transparente recebe cor.
-10. O projeto pode ser exportado e importado.
-
-## Fora do âmbito inicial
-
-- Todas as famílias de detetores avançados.
-- Otimização global por graph cuts/CRF.
-- Editor visual livre de regras.
-- Contas, backend e colaboração.
-- Múltiplas saídas visíveis simultaneamente (dados preparados).
+1. As telas começam transparentes.
+2. Preto, branco e apagar são estados distintos.
+3. A pintura por arrastamento preenche as células entre eventos do ponteiro.
+4. Transparência não é convertida em cor.
+5. A conversão é contextual e pode usar mais do que um vizinho direto.
+6. Diferentes técnicas podem concorrer pela cor do mesmo pixel.
+7. Cada proposta válida distribui 100% da sua probabilidade pela paleta.
+8. A fusão ponderada normaliza novamente as probabilidades.
+9. A cor final é uma entrada discreta da paleta.
+10. Inverter preto/branco reflete a interpretação pela ordem inversa da paleta.
+11. Transformações da matriz preservam pixels e atualizam dimensões.
+12. Exportação/importação preserva a fonte e as configurações.
+13. Os testes locais e o CI devem passar.

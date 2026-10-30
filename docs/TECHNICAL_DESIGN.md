@@ -1,48 +1,86 @@
-# Desenho técnico inicial
+# Desenho técnico da primeira implementação
 
-A arquitetura deve manter a aplicação web separada do motor modular de conversão. A especificação detalhada dos módulos, propostas, probabilidades, inversão complementar e fusão está em [MODULAR_TRANSFORMATION_ENGINE.md](MODULAR_TRANSFORMATION_ENGINE.md).
+## 1. Arquitetura
 
-## 1. Camadas da aplicação
+A aplicação está separada em quatro partes:
 
-1. **Imagem-fonte:** matriz com transparente, preto e branco.
-2. **Catálogo de técnicas:** definições reutilizáveis de detetores/caracterizadores.
-3. **Instâncias de técnicas:** cópias configuradas independentemente de uma técnica.
-4. **Regras de transformação:** mapeiam características para distribuições sobre a paleta.
-5. **Resolvedor:** combina as distribuições pixel a pixel e escolhe uma cor discreta.
-6. **Renderizador:** apresenta a imagem convertida sem alterar os dados.
-7. **Interface:** permite desenhar, configurar, escolher paletas e visualizar saídas.
+1. **Core:** representação da fonte, operações matriciais e formato de projeto.
+2. **Engine:** técnicas, instâncias, regras de transformação, propostas e resolução de conflitos.
+3. **UI:** edição e apresentação em Canvas, sem conter lógica de conversão.
+4. **Tests:** testes unitários, de integração e de contrato da interface.
 
-## 2. Contrato modular
+## 2. Dados da imagem original
 
-Cada instância recebe a fonte, dimensões, máscara de transparência, parâmetros e configuração da regra de transformação. Devolve mapas de características e propostas por pixel. Não altera diretamente a fonte nem a imagem final.
+Cada célula usa um valor:
+- 0: transparente;
+- 1: preto;
+- 2: branco.
 
-O mesmo módulo pode ser instanciado várias vezes com parâmetros, máscaras, pesos e regras de transformação diferentes.
+A transparência não é uma cor e nunca recebe uma cor de saída. A matriz é guardada num Uint8Array.
 
-## 3. Fusão e cores
+## 3. Técnicas e instâncias
 
-Cada instância que avalia um pixel deve devolver uma distribuição completa pelas cores da paleta, com soma igual a 1. Uma instância sem evidência pode abster-se nesse pixel.
+Uma definição de técnica é reutilizável. Uma instância contém identificador, parâmetros, peso, estado ativo e configuração própria. O utilizador pode adicionar várias instâncias da mesma técnica.
 
-O resolvedor inicial será uma média ponderada das distribuições; o pixel final recebe a cor com maior probabilidade. As probabilidades não são misturas RGB e não introduzem cores intermédias.
+Técnicas atualmente implementadas:
+- **Weighted neighbourhood:** calcula a proporção ponderada de branco numa janela e mapeia o resultado para uma rampa discreta de paleta.
+- **Directional lines:** mede sequências contínuas da mesma cor em quatro eixos e usa esse sinal para modificar a distribuição contextual.
+- **Local entropy:** calcula entropia binária local e ajusta o contraste contextual.
 
-## 4. Inversão complementar
+Cada técnica devolve uma proposta com uma distribuição completa pelas cores, uma máscara de pixels válidos e o peso da instância.
 
-Trocar preto e branco deve refletir a interpretação contextual na paleta. O mapeamento não é uma correspondência fixa entre cada estado de entrada e uma cor de saída.
+## 4. Fusão de propostas
 
-Para uma média contextual normalizada m, a inversão de todas as cores opacas produz 1-m. A paleta define quais as cores correspondentes sob essa reflexão. As técnicas devem declarar como as suas características se transformam sob inversão.
+O resolvedor tem dois modos:
 
-## 5. Resolução global
+- **Média ponderada:** calcula a média das distribuições de todas as instâncias que avaliam o pixel.
+- **Maior confiança individual:** escolhe a distribuição individual com a maior probabilidade máxima, ajustada pelo peso da instância.
 
-Depois da fusão por pixel, uma fase opcional poderá otimizar conjuntamente os rótulos de toda a imagem para reduzir fragmentação e preservar estruturas. Graph cuts e métodos de energia são candidatos, conforme a função de custo usada.
+A saída escolhe sempre o índice de maior probabilidade. Não mistura canais RGB nem cria cores fora da paleta. Em caso de empate, o desempate depende da polaridade da fonte para preservar a inversão complementar.
 
-## 6. Matrizes e bibliotecas
+## 5. Inversão complementar
 
-Os dados são matrizes/arrays. Convoluções, filtros direcionais, histogramas, coocorrência, autocorrelação e transformadas operam naturalmente sobre matrizes. Esqueletização, topologia e otimização global também recebem matrizes, mas envolvem algoritmos iterativos ou grafos, não apenas multiplicação matricial.
+A conversão é contextual. Inverter preto/branco na fonte reflete a característica de proporção de branco (m passa a 1-m) e deve refletir a saída na ordem inversa da paleta.
 
-Investigação: Python, NumPy, SciPy, scikit-image e OpenCV.  
-Aplicação web: TypeScript, Vite e Canvas; WebAssembly/Workers se o desempenho justificar.
+Para a rampa ordenada usada na primeira versão:
+- a paleta define as cores em ordem de contexto preto → branco;
+- a correspondência de inversão é a ordem inversa;
+- a transparência permanece transparente.
 
-## 7. Estado e apresentação
+Isto não equivale a mapear preto sempre para uma cor e branco sempre para outra. O contexto dos restantes pixels continua a determinar a cor.
 
-Cada projeto contém a matriz-fonte e uma coleção de saídas independentes, cada uma com instâncias de técnicas, regras de transformação, paleta, correspondência de inversão e configuração do resolvedor.
+## 6. Projeto e persistência
 
-A interface suporta zoom e deslocação sincronizados, disposição adaptável e transformações reais da matriz (espelhamento e rotação).
+Um projeto contém a matriz original, paleta, modo de resolução e uma lista de saídas. Cada saída tem a própria paleta, modo de resolução e lista de instâncias de técnicas. O MVP mostra uma saída, mas a estrutura não assume uma única saída.
+
+Os ficheiros .pixelproj são JSON versionado e preservam a origem e a configuração. A imagem convertida é recalculada ao abrir o projeto.
+
+## 7. UI e Canvas
+
+A imagem original e a interpretação são desenhadas em Canvas, com pixels nítidos e fundo axadrezado para indicar transparência.
+
+A conversão da posição do ponteiro para coordenadas da grelha é uma função pura em src/ui/canvas-coordinates.js, testada com zoom e deslocação. O traço usa Bresenham para não deixar falhas durante movimentos rápidos.
+
+Zoom e pan usam uma câmara partilhada. O layout automático divide os dois painéis pelo eixo maior da área de trabalho; os modos lado a lado e grelha também estão disponíveis.
+
+## 8. Transformações da matriz
+
+Espelhamento horizontal, espelhamento vertical e rotações de 90°, 180° e 270° alteram efetivamente a matriz original. Rotações de 90°/270° trocam largura e altura. As saídas são recalculadas depois da operação.
+
+## 9. Executar e testar
+
+- Node.js 20+
+- npm start: servidor estático local na porta 4173.
+- npm test: testes com Node's built-in test runner.
+- GitHub Actions executa npm test em pushes e pull requests.
+
+## 10. Evolução
+
+As próximas técnicas podem ser adicionadas sem alterar a interface:
+- linhas Hough/Radon;
+- componentes, esqueletização, eixo medial e curvatura;
+- GLCM, LBP, run-length e entropia;
+- autocorrelação, Fourier e wavelets;
+- resolução global por otimização de energia.
+
+A especificação modular detalhada está em [MODULAR_TRANSFORMATION_ENGINE.md](MODULAR_TRANSFORMATION_ENGINE.md).
