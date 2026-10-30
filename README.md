@@ -1,6 +1,6 @@
 # Pixel Project
 
-Um editor experimental de pixel art que converte uma imagem-fonte transparente/preto/branco em uma interpretação colorida, através de técnicas configuráveis e paletas discretas.
+Um editor experimental de pixel art que converte uma imagem-fonte transparente/preto/branco numa interpretação colorida, através de técnicas configuráveis e paletas discretas.
 
 A ideia central é desenhar com duas cores de entrada e observar como diferentes regras estruturais e paletas reinterpretam o mesmo desenho. A cor de cada pixel depende do contexto, não de um mapeamento fixo entre preto/branco e duas cores.
 
@@ -17,31 +17,67 @@ A ideia central é desenhar com duas cores de entrada e observar como diferentes
 - instâncias configuráveis de técnicas, incluindo instâncias repetidas;
 - média contextual, deteção direcional de linhas e entropia local;
 - combinação de propostas por média ponderada ou maior confiança individual;
-- importação/exportação de ficheiros de projeto.
+- importação/exportação de ficheiros de projeto;
+- testes unitários e de integração com Node.js;
+- testes de browser com Chromium e capturas de ecrã automáticas.
 
 A primeira versão apresenta uma interpretação convertida. O modelo de projeto já guarda uma coleção de saídas para permitir várias interpretações no futuro.
 
+## Requisitos
+
+Os requisitos funcionais e técnicos estão documentados em [requisitos.txt](requisitos.txt).
+
 ## Executar localmente
 
-Requisito: Node.js 20 ou superior. Não é necessário instalar dependências.
+Requisitos: Node.js 20 ou superior e npm. A instalação inicial também instala Playwright, usado nos testes de browser.
 
-~~~bash
+~~~powershell
+npm install
+npx playwright install chromium
 npm start
 ~~~
 
 Abrir http://localhost:4173
 
-Executar a bateria de testes:
+## Testes
 
-~~~bash
+Testes unitários e de integração:
+
+~~~powershell
 npm test
 ~~~
 
-## Testes e qualidade
+Testes end-to-end com Chromium (o Playwright inicia automaticamente o servidor local):
 
-A estratégia de desenvolvimento está em [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md). O projeto usa o test runner integrado no Node.js e GitHub Actions para executar a suite em cada push e pull request.
+~~~powershell
+npm run test:e2e
+~~~
 
-Uma regressão deve ser transformada primeiro num teste que reproduza o comportamento errado; só depois se corrige a implementação. O teste permanece na suite para impedir que o problema volte.
+Abrir uma janela Chromium visível durante os testes:
+
+~~~powershell
+npm run test:e2e:headed
+~~~
+
+Executar tudo:
+
+~~~powershell
+npm run test:all
+~~~
+
+Abrir o relatório HTML da última execução:
+
+~~~powershell
+npm run test:e2e:report
+~~~
+
+Os testes de browser usam a interface real: criam um projeto, desenham no Canvas, trocam ferramentas, transformam a matriz, alteram as configurações e testam exportação/importação. As capturas são guardadas em `artifacts/screenshots/`. O Playwright guarda também relatório, trace e vídeo quando um teste falha, em `artifacts/`.
+
+Na GitHub Actions, o workflow executa os testes unitários e de browser e publica o conjunto de evidências como artefacto descarregável, mesmo quando algum teste falha.
+
+## Desenvolvimento orientado a testes
+
+A estratégia está em [docs/TESTING_STRATEGY.md](docs/TESTING_STRATEGY.md). Um bug deve ser reproduzido por um teste antes de se alterar a implementação (RED → GREEN), e o teste de regressão permanece na suite.
 
 ## Documentação
 
@@ -58,16 +94,18 @@ Uma regressão deve ser transformada primeiro num teste que reproduza o comporta
 
 ## Organização do código
 
-- src/core/: matriz da imagem original, transformações e formato do projeto.
-- src/engine/: paletas, técnicas, propostas, resolvedor e conversor.
-- src/ui/: matemática de coordenadas e navegação do Canvas.
-- tests/unit/: testes de unidades e propriedades.
-- tests/integration/: testes do pipeline, persistência e servidor local.
-- scripts/: ferramentas de desenvolvimento local.
+- `src/core/`: matriz da imagem original, transformações e formato do projeto.
+- `src/engine/`: paletas, técnicas, propostas, resolvedor e conversor.
+- `src/ui/`: matemática de coordenadas e navegação do Canvas.
+- `tests/unit/`: testes de unidades e propriedades.
+- `tests/integration/`: testes do pipeline, persistência e servidor local.
+- `tests/e2e/`: cenários reais de browser e interação.
+- `scripts/`: ferramentas de desenvolvimento local.
+- `artifacts/screenshots/`: capturas da execução dos testes (geradas localmente).
 
 ## Tecnologias
 
-A aplicação inicial usa JavaScript moderno, HTML Canvas e APIs nativas do navegador. Os testes usam Node.js sem dependências externas. A investigação de algoritmos mais avançados pode usar Python, NumPy, SciPy, scikit-image e OpenCV; não é necessário trazer essas bibliotecas para o navegador.
+A aplicação usa JavaScript moderno, HTML Canvas e APIs nativas do navegador. Os testes de lógica usam o test runner integrado no Node.js; os testes end-to-end usam Playwright/Chromium. A investigação de algoritmos mais avançados pode usar Python, NumPy, SciPy, scikit-image e OpenCV; não é necessário trazer essas bibliotecas para o navegador.
 
 ## Ainda não implementado
 
