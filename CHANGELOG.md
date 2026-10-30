@@ -23,3 +23,10 @@
 ## 2026-10-30 — Documentação inicial
 
 - Registadas visão, requisitos, desenho técnico e pesquisa de paletas.
+## 0.2.0 — Browser automation and visual evidence
+
+- Add Playwright end-to-end tests using Chromium to interact with the real editor.
+- Capture PNG screenshots at important workflow checkpoints and attach them to the HTML report.
+- Preserve trace, screenshot and video diagnostics when browser tests fail.
+- Extend GitHub Actions to run browser tests and upload the evidence artifact.
+- Add the Portuguese project requirements file.
