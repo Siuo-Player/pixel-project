@@ -43,6 +43,21 @@ Confirmam que controlos essenciais continuam presentes e com papéis acessíveis
 - importação/exportação;
 - escolha de layout e resolvedor.
 
+### Testes end-to-end no browser
+
+O Playwright executa a aplicação num Chromium real, iniciado automaticamente pelo `webServer` do `playwright.config.js`. Os testes simulam ações de utilizador através de cliques, seleção de controlos e eventos do rato.
+
+O cenário principal verifica:
+- abertura do ecrã inicial e criação de projeto;
+- desenho real no Canvas a preto, branco e transparência;
+- espelhamento e rotação da matriz, incluindo atualização das dimensões;
+- alteração de técnicas, paleta, resolvedor, zoom e layout;
+- limpeza da imagem;
+- exportação e importação de um ficheiro de projeto;
+- ausência de erros JavaScript na página.
+
+Existe também uma verificação de viewport móvel e do fluxo vertical do editor.
+
 ### Testes de propriedades/invariantes
 
 Verificam propriedades que devem ser sempre verdadeiras:
@@ -55,27 +70,75 @@ Verificam propriedades que devem ser sempre verdadeiras:
 
 ## 3. Suite local
 
-O projeto usa o test runner integrado no Node.js, sem dependências de teste externas.
+Instalar dependências JavaScript e o browser uma vez:
+
+~~~bash
+npm install
+npx playwright install chromium
+~~~
+
+Testes unitários e de integração (Node.js):
 
 ~~~bash
 npm test
 ~~~
 
-O modo de desenvolvimento dos testes é:
+Testes end-to-end (Chromium):
 
 ~~~bash
-npm run test:watch
+npm run test:e2e
 ~~~
 
-## 4. Integração contínua
+Abrir o browser durante os testes:
 
-O workflow .github/workflows/ci.yml executa npm test:
-- em cada push para main e para branches feat/**;
-- em pull requests destinados à main.
+~~~bash
+npm run test:e2e:headed
+~~~
 
-Um commit não deve ser considerado concluído enquanto a suite falhar.
+Depurar interativamente:
 
-## 5. Registo de bugs e decisões
+~~~bash
+npm run test:e2e:debug
+~~~
+
+Executar todas as suites:
+
+~~~bash
+npm run test:all
+~~~
+
+Abrir o relatório HTML:
+
+~~~bash
+npm run test:e2e:report
+~~~
+
+## 4. Evidência visual e diagnóstico
+
+Cada etapa relevante do cenário end-to-end guarda uma captura PNG em `artifacts/screenshots/`. As imagens também são anexadas ao relatório Playwright.
+
+Em caso de falha, o Playwright conserva screenshot, trace e vídeo em `artifacts/test-results/`. O trace pode ser aberto com:
+
+~~~bash
+npx playwright show-trace artifacts/test-results/<ficheiro-trace>.zip
+~~~
+
+Os artefactos gerados não devem ser adicionados ao Git: são evidência descartável de cada execução. A GitHub Actions carrega a pasta `artifacts/` como artefacto de workflow, incluindo as capturas e o relatório.
+
+## 5. Integração contínua
+
+O workflow `.github/workflows/ci.yml`:
+- instala Node.js e as dependências;
+- instala Chromium;
+- executa `npm test`;
+- executa `npm run test:e2e`;
+- publica as capturas, o relatório e os diagnósticos, mesmo quando os testes falham.
+
+O workflow é executado em pushes para `main` e branches `feat/**`, e em pull requests destinados à `main`.
+
+Um commit não deve ser considerado concluído enquanto qualquer suite falhar.
+
+## 6. Registo de bugs e decisões
 
 Cada bug deve originar:
 - um teste com nome que descreve o comportamento;
@@ -85,13 +148,14 @@ Cada bug deve originar:
 
 Cada requisito indicado pelo utilizador que possa ser verificado automaticamente deve ter um teste. Para requisitos visuais ou subjetivos, criar testes de contrato, exemplos de referência ou procedimentos de validação manual, sem fingir que um teste numérico mede gosto artístico.
 
-## 6. Evolução da qualidade
+## 7. Evolução da qualidade
 
 À medida que o motor crescer, acrescentar:
 - testes baseados em propriedades e entradas aleatórias;
 - testes de desempenho para várias dimensões;
-- testes de regressão visual com imagens de referência;
-- testes de acessibilidade e interação real no browser;
+- regressões visuais com imagens de referência e comparação de pixels, quando o resultado puder ser determinístico;
+- testes de acessibilidade;
+- testes nos browsers Firefox e WebKit;
 - fuzzing de ficheiros de projeto importados.
 
-A suite atual é uma primeira base, não substitui testes visuais completos em diferentes browsers e dispositivos.
+A suite automatizada melhora a cobertura, mas não substitui a avaliação artística e a verificação manual de diferentes dispositivos.
