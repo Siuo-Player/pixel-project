@@ -23,3 +23,16 @@
 ## 2026-10-30 — Documentação inicial
 
 - Registadas visão, requisitos, desenho técnico e pesquisa de paletas.
+## 0.2.0 — Browser automation and visual evidence
+
+- Add Playwright end-to-end tests using Chromium to interact with the real editor.
+- Capture PNG screenshots at important workflow checkpoints and attach them to the HTML report.
+- Preserve trace, screenshot and video diagnostics when browser tests fail.
+- Extend GitHub Actions to run browser tests and upload the evidence artifact.
+- Add the Portuguese project requirements file.
+## 0.2.1 — Desktop workspace layout regression
+
+- Keep the automatic side-by-side canvas layout stable when the settings list grows.
+- Constrain desktop editor panels to the viewport and allow the technique settings panel to scroll independently.
+- Add a browser regression assertion for desktop canvas orientation and viewport overflow.
+- Fix an off-screen accessibility label that extended the document height and created phantom desktop scrolling.

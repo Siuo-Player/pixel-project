@@ -7,7 +7,15 @@
   "scripts": {
     "test": "node --test",
     "test:watch": "node --test --watch",
-    "start": "node scripts/serve.mjs"
+    "start": "node scripts/serve.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report artifacts/playwright-report",
+    "test:all": "npm test && npm run test:e2e"
   },
-  "engines": { "node": ">=20" }
+  "engines": { "node": ">=20" },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
 }

@@ -1,0 +1,87 @@
+REQUISITOS DO PIXEL PROJECT
+===========================
+
+1. OBJETIVO
+
+O Pixel Project é um editor experimental de pixel art. O utilizador cria uma imagem-fonte numa grelha com preto, branco e transparência. O motor interpreta o desenho e produz uma imagem discreta, usando uma paleta de cores escolhida pelo utilizador.
+
+A conversão deve considerar contexto espacial e estrutura. Não deve existir um mapeamento fixo do tipo preto = cor A e branco = cor B.
+
+2. REQUISITOS FUNCIONAIS
+
+RF-01 — Criar projetos
+O utilizador pode criar uma grelha configurável. A interface limita cada dimensão a 4–256 pixels e o total a 65 536 pixels.
+
+RF-02 — Desenhar
+O utilizador pode pintar a preto, pintar a branco e apagar para transparência. O desenho deve funcionar ao clicar e ao arrastar, sem falhas entre posições consecutivas.
+
+RF-03 — Transparência
+A transparência representa ausência de pixel. Não deve ser interpretada como preto ou branco, nem receber uma cor de saída.
+
+RF-04 — Paletas
+O utilizador pode escolher paletas predefinidas de 4 ou 8 cores e personalizar as cores. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
+
+RF-05 — Complementaridade
+A inversão de preto e branco na fonte deve refletir a interpretação pela ordem inversa da paleta, mantendo a transparência. Formalmente, F(S(I)) = T(F(I)), com S e T involutivas.
+
+RF-06 — Técnicas modulares
+Cada técnica analisa a imagem e produz uma proposta independente. O utilizador pode ativar, desativar, repetir e configurar instâncias da mesma técnica.
+
+RF-07 — Distribuições
+Cada proposta válida apresenta uma distribuição de probabilidades sobre todas as cores da paleta. As probabilidades devem ser finitas, não negativas e somar 1. O peso da instância é independente da distribuição.
+
+RF-08 — Abstenção
+Uma técnica sem evidência suficiente pode abster-se. Abstenção significa não votar naquele pixel; não significa votar com confiança zero.
+
+RF-09 — Resolução
+O resolvedor combina as propostas e escolhe uma única cor discreta da paleta para cada pixel válido. Não pode produzir misturas RGB.
+
+RF-10 — Transformações
+O utilizador pode espelhar horizontalmente/verticalmente e rodar a imagem. Estas operações devem alterar os dados reais da matriz, não apenas a apresentação CSS.
+
+RF-11 — Navegação
+A vista original e a vista convertida partilham zoom e deslocamento. O layout adapta-se ao espaço disponível e permite escolher a disposição.
+
+RF-12 — Persistência
+O utilizador pode exportar e importar projetos num ficheiro .pixelproj, preservando a fonte e as configurações necessárias à conversão.
+
+3. REQUISITOS DE QUALIDADE
+
+RQ-01 — Correção
+As regras matemáticas do motor devem ser testadas por testes unitários e de integração.
+
+RQ-02 — Regressões
+Um bug deve originar primeiro um teste que reproduza a falha (RED). A correção deve fazê-lo passar (GREEN), e o teste fica permanentemente no projeto.
+
+RQ-03 — Interface real
+As principais tarefas do utilizador devem ser exercitadas num browser real através de testes end-to-end.
+
+RQ-04 — Evidência visual
+Os testes end-to-end devem guardar capturas PNG de etapas relevantes e disponibilizar relatório, trace e vídeo de diagnóstico quando há falhas.
+
+RQ-05 — Integração contínua
+Os testes unitários, de integração e de browser devem ser executados automaticamente na GitHub Actions. As evidências visuais devem ser publicadas como artefactos do workflow.
+
+RQ-06 — Execução local
+A aplicação requer Node.js 20 ou superior e npm. Não requer Python para executar o protótipo atual.
+
+4. REQUISITOS DE TESTE AUTOMÁTICO
+
+- Abrir o ecrã inicial e criar um projeto.
+- Desenhar pixels no Canvas e comprovar as cores apresentadas.
+- Comprovar que apagar restaura o estado transparente.
+- Espelhar e rodar a matriz e verificar posição/dimensões dos pixels.
+- Alterar técnica, paleta, resolvedor, zoom e disposição.
+- Limpar a imagem.
+- Exportar e voltar a importar o projeto.
+- Verificar a disposição vertical em viewport móvel.
+- Guardar capturas de ecrã durante o cenário.
+
+5. FUNCIONALIDADES FUTURAS
+
+- Mostrar várias interpretações convertidas em simultâneo.
+- Técnicas Hough/Radon, esqueletização, GLCM/LBP, autocorrelação, Fourier e wavelets.
+- Editor avançado de regras, camadas, undo/redo e otimização global.
+- Armazenamento automático local.
+
+As funcionalidades futuras são objetivos de evolução e não devem ser apresentadas como já implementadas.
