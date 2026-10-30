@@ -20,9 +20,10 @@ test('palette mirroring is an involution and returns valid palette indexes', () 
   }
 });
 
-test('custom palettes reject mismatched or non-involutive mirror mappings', () => {
+test('custom palettes reject mismatched or non-reversed mirror mappings', () => {
   assert.throws(() => createCustomPalette('bad', ['#000000', '#ffffff'], [1]), TypeError);
   assert.throws(() => createCustomPalette('bad', ['#000000', '#ffffff'], [1, 1]), TypeError);
+  assert.throws(() => createCustomPalette('bad', ['#000000', '#ffffff'], [0, 1]), TypeError);
 });
 
 test('weighted neighbourhood emits a full distribution for every opaque pixel', () => {
@@ -56,9 +57,10 @@ test('directional line technique reacts to long same-colour runs', () => {
   const lineProposal = runTechnique(line, palette, instance);
   const scatteredProposal = runTechnique(scattered, palette, instance);
   const at = 12;
-  const lineDistribution = Array.from(lineProposal.distributions.slice(at * 4, at * 4 + 4));
-  const scatteredDistribution = Array.from(scatteredProposal.distributions.slice(at * 4, at * 4 + 4));
-  assert.notDeepEqual(lineDistribution, scatteredDistribution);
+  assert.notDeepEqual(
+    Array.from(lineProposal.distributions.slice(at * 4, at * 4 + 4)),
+    Array.from(scatteredProposal.distributions.slice(at * 4, at * 4 + 4))
+  );
 });
 
 test('every proposal distribution sums to one and contains no negative or non-finite values', () => {
@@ -96,7 +98,10 @@ test('resolver ignores abstentions, preserves transparent pixels and rejects inv
   const proposal = { weight: 1, mask: Uint8Array.of(0, 0), distributions: new Float32Array(8) };
   const result = resolveProposals(source, [proposal], palette);
   assert.equal(result.data[1], -1);
-  assert.throws(() => resolveProposals(source, [{ weight: 1, mask: Uint8Array.of(1, 0), distributions: Float32Array.of(1, 1, 0, 0, 0, 0, 0, 0) }], palette), RangeError);
+  assert.throws(() => resolveProposals(source, [{
+    weight: 1, mask: Uint8Array.of(1, 0),
+    distributions: Float32Array.of(1, 1, 0, 0, 0, 0, 0, 0)
+  }], palette), RangeError);
 });
 
 test('contextual conversion reflects palette roles after black-white inversion', () => {
@@ -112,4 +117,50 @@ test('contextual conversion reflects palette roles after black-white inversion',
     if (source.data[i] === TRANSPARENT) assert.equal(inverted.data[i], -1);
     else assert.equal(inverted.data[i], mirrorPaletteIndex(palette, original.data[i]));
   }
+});
+
+test('three white and six black pixels map to one side of the ramp, and inversion maps to the opposite side', () => {
+  const palette = getPalette('blue-red-4');
+  const technique = [createTechniqueInstance('weighted-neighbourhood', { radius: 1, includeCenter: true })];
+  const first = convertSource(sampleRatioGrid(3), palette, technique);
+  const second = convertSource(sampleRatioGrid(6), palette, technique);
+  assert.equal(first.data[4], 1);
+  assert.equal(second.data[4], 2);
+  assert.equal(second.data[4], mirrorPaletteIndex(palette, first.data[4]));
+});
+
+test('same technique can be instantiated twice with different kernels and produce different evidence', () => {
+  const source = createSourceGrid(5, 5);
+  for (const [x, y] of [[2, 2], [2, 1], [2, 3], [1, 2], [3, 2], [0, 0], [4, 0], [0, 4], [4, 4]]) setPixel(source, x, y, WHITE);
+  for (const [x, y] of [[1, 1], [3, 1], [1, 3], [3, 3], [2, 0], [0, 2], [4, 2], [2, 4]]) setPixel(source, x, y, BLACK);
+  const palette = getPalette('blue-red-4');
+  const tight = runTechnique(source, palette, createTechniqueInstance('weighted-neighbourhood', { radius: 1 }));
+  const broad = runTechnique(source, palette, createTechniqueInstance('weighted-neighbourhood', { radius: 2 }));
+  assert.notDeepEqual(
+    Array.from(tight.distributions.slice(12 * 4, 12 * 4 + 4)),
+    Array.from(broad.distributions.slice(12 * 4, 12 * 4 + 4))
+  );
+});
+
+test('highest-confidence resolver selects the strongest individual proposal', () => {
+  const source = createSourceGrid(1, 1);
+  setPixel(source, 0, 0, BLACK);
+  const palette = getPalette('blue-red-4');
+  const proposals = [
+    { weight: 1, mask: Uint8Array.of(1), distributions: Float32Array.of(0, 0.6, 0.4, 0) },
+    { weight: 1, mask: Uint8Array.of(1), distributions: Float32Array.of(0, 0.1, 0.9, 0) }
+  ];
+  const result = resolveProposals(source, proposals, palette, { mode: 'highest-confidence' });
+  assert.equal(result.data[0], 2);
+  assert.ok(Math.abs(result.probabilities[2] - 0.9) < 1e-6);
+});
+
+test('tie-breaking is complementary when the source pixel polarity is inverted', () => {
+  const source = createSourceGrid(1, 1);
+  setPixel(source, 0, 0, BLACK);
+  const palette = getPalette('blue-red-4');
+  const proposal = { weight: 1, mask: Uint8Array.of(1), distributions: Float32Array.of(0, 0.5, 0.5, 0) };
+  const first = resolveProposals(source, [proposal], palette);
+  const second = resolveProposals(createSourceGrid(1, 1, [WHITE]), [proposal], palette);
+  assert.equal(second.data[0], mirrorPaletteIndex(palette, first.data[0]));
 });

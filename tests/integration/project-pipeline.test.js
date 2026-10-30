@@ -36,8 +36,7 @@ test('project pipeline converts source and remains complementary after polarity 
     }
   }
   const first = convertProject(project);
-  const invertedProject = { ...project, source: invertPolarity(project.source) };
-  const second = convertProject(invertedProject);
+  const second = convertProject({ ...project, source: invertPolarity(project.source) });
   assert.equal(first.width, 5);
   assert.equal(first.height, 5);
   for (let i = 0; i < first.data.length; i += 1) {
@@ -55,4 +54,20 @@ test('rotating the source matrix changes dimensions and project conversion follo
   assert.equal(converted.width, 2);
   assert.equal(converted.height, 3);
   assert.equal(converted.data.length, 6);
+});
+
+test('project export/import preserves the selected resolver strategy', () => {
+  const project = createProject(4, 4, getPalette('grayscale-4'));
+  project.outputs[0].resolverMode = 'highest-confidence';
+  const restored = parseProject(serializeProject(project));
+  assert.equal(restored.outputs[0].resolverMode, 'highest-confidence');
+});
+
+test('project import rejects unsupported versions and invalid source states', () => {
+  const project = createProject(4, 4, getPalette('grayscale-4'));
+  const parsed = JSON.parse(serializeProject(project));
+  assert.throws(() => parseProject({ ...parsed, version: 999 }), RangeError);
+  const invalidPixels = [...parsed.source.data];
+  invalidPixels[0] = 3;
+  assert.throws(() => parseProject({ ...parsed, source: { ...parsed.source, data: invalidPixels } }), TypeError);
 });

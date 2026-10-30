@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17191f" />
+    <meta name="description" content="Editor de pixel art com conversão contextual para paletas reduzidas." />
+    <title>Pixel Project — Contextual Pixel Art</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="#home" aria-label="Pixel Project — início">
+          <span class="brand-mark" aria-hidden="true">PX</span>
+          <span><strong>PIXEL PROJECT</strong><small>contextual palette lab</small></span>
+        </a>
+        <div class="header-actions">
+          <span id="project-name" class="project-name" hidden></span>
+          <button id="back-to-setup" class="button button-quiet" hidden>← Projeto</button>
+          <button id="export-project" class="button button-primary" hidden>Exportar projeto</button>
+          <button id="import-project-button" class="button button-quiet">Importar</button>
+          <input id="import-project-file" type="file" accept="application/json,.pixelproj" hidden />
+        </div>
+      </header>
+
+      <main>
+        <section id="setup-view" class="setup-view view">
+          <div class="hero-copy">
+            <p class="eyebrow">DESENHA EM DUAS CORES. EXPLORA OUTRAS.</p>
+            <h1>Uma imagem.<br /><span>Várias interpretações.</span></h1>
+            <p class="hero-description">Desenha a preto e branco. O motor analisa a estrutura, o contexto e os padrões para construir uma versão colorida usando apenas a paleta que escolheste.</p>
+          </div>
+          <div class="setup-card">
+            <div class="setup-card-heading">
+              <div><p class="eyebrow">NOVO PROJETO</p><h2>Configura a tua grelha</h2></div>
+              <span class="step-indicator">01 / 02</span>
+            </div>
+            <div class="form-grid">
+              <label class="field"><span>Largura</span><input id="grid-width" type="number" min="4" max="256" value="32" /></label>
+              <label class="field"><span>Altura</span><input id="grid-height" type="number" min="4" max="256" value="32" /></label>
+              <label class="field"><span>Número de cores</span><select id="color-count"><option value="4" selected>4 cores</option><option value="8">8 cores</option></select></label>
+              <label class="field"><span>Paleta inicial</span><select id="setup-palette"></select></label>
+            </div>
+            <div class="palette-editor-block">
+              <div class="inline-heading"><div><strong>Pré-visualização da paleta</strong><small>As cores são ordenadas de acordo com o contexto de preto → branco.</small></div><button id="toggle-custom-palette" class="text-button" type="button">Personalizar cores</button></div>
+              <div id="setup-palette-swatches" class="palette-swatches" aria-label="Cores da paleta selecionada"></div>
+              <div id="setup-custom-colors" class="custom-colors" hidden></div>
+              <p class="helper-note">A inversão preto ↔ branco reflete a interpretação através da paleta. A transparência nunca é convertida.</p>
+            </div>
+            <button id="create-project" class="button button-primary button-large">Criar projeto <span aria-hidden="true">→</span></button>
+            <p class="small-note">O projeto fica no teu dispositivo. Podes exportá-lo para continuar mais tarde.</p>
+          </div>
+          <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.1</span></div>
+        </section>
+
+        <section id="editor-view" class="editor-view view" hidden>
+          <div class="editor-toolbar">
+            <div class="tool-group" role="group" aria-label="Ferramentas de desenho">
+              <button class="tool-button is-active" data-tool="black" aria-pressed="true" title="Pintar a preto">● <span>Preto</span></button>
+              <button class="tool-button" data-tool="white" aria-pressed="false" title="Pintar a branco">○ <span>Branco</span></button>
+              <button class="tool-button" data-tool="erase" aria-pressed="false" title="Apagar">⌫ <span>Apagar</span></button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="tool-group transform-tools" role="group" aria-label="Transformar imagem original">
+              <button class="icon-button" id="flip-horizontal" title="Espelhar horizontalmente" aria-label="Espelhar horizontalmente">↔</button>
+              <button class="icon-button" id="flip-vertical" title="Espelhar verticalmente" aria-label="Espelhar verticalmente">↕</button>
+              <button class="icon-button" id="rotate-left" title="Rodar 90 graus à esquerda" aria-label="Rodar 90 graus à esquerda">↶</button>
+              <button class="icon-button" id="rotate-right" title="Rodar 90 graus à direita" aria-label="Rodar 90 graus à direita">↷</button>
+            </div>
+            <div class="toolbar-spacer"></div>
+            <div class="tool-group zoom-tools" role="group" aria-label="Zoom partilhado">
+              <button class="icon-button" id="zoom-out" title="Diminuir zoom" aria-label="Diminuir zoom">−</button>
+              <span id="zoom-label" class="zoom-label">100%</span>
+              <button class="icon-button" id="zoom-in" title="Aumentar zoom" aria-label="Aumentar zoom">+</button>
+              <button class="icon-button" id="zoom-reset" title="Repor zoom" aria-label="Repor zoom">⌂</button>
+            </div>
+            <label class="layout-field"><span class="sr-only">Disposição das telas</span><select id="layout-mode" aria-label="Disposição das telas"><option value="auto">Auto layout</option><option value="side-by-side">Lado a lado</option><option value="grid">Grelha</option></select></label>
+          </div>
+
+          <div class="editor-layout">
+            <div id="workspace" class="workspace" data-layout="auto" data-flow="horizontal">
+              <section class="canvas-panel" aria-labelledby="source-panel-title">
+                <div class="panel-heading"><div><span class="panel-dot source-dot"></span><h2 id="source-panel-title">Imagem original</h2><span class="panel-tag">EDITÁVEL</span></div><span id="source-dimensions" class="panel-dimensions">32 × 32</span></div>
+                <div class="canvas-wrap"><canvas id="source-canvas" aria-label="Tela original, desenha aqui" tabindex="0"></canvas><span class="canvas-hint">Pinta ou arrasta · Espaço + arrastar para mover</span></div>
+              </section>
+              <section class="canvas-panel" aria-labelledby="output-panel-title">
+                <div class="panel-heading"><div><span class="panel-dot output-dot"></span><h2 id="output-panel-title">Interpretação 1</h2><span class="panel-tag panel-tag-output">GERADA</span></div><span id="output-dimensions" class="panel-dimensions">32 × 32</span></div>
+                <div class="canvas-wrap"><canvas id="output-canvas" aria-label="Pré-visualização da conversão" tabindex="0"></canvas><span class="canvas-hint">Resultado automático · não editável</span></div>
+              </section>
+            </div>
+
+            <aside class="settings-panel">
+              <div class="settings-heading"><div><p class="eyebrow">CONFIGURAÇÃO</p><h2>Motor de cor</h2></div><span class="live-indicator"><i></i> LIVE</span></div>
+              <section class="settings-section">
+                <div class="section-title-row"><h3>Paleta</h3><span id="editor-color-count" class="count-pill">4 cores</span></div>
+                <label class="field compact-field"><span>Preset</span><select id="editor-palette"></select></label>
+                <div id="editor-palette-swatches" class="palette-swatches compact-swatches"></div>
+                <button id="editor-custom-toggle" class="text-button" type="button">Editar cores desta paleta</button>
+                <div id="editor-custom-colors" class="custom-colors" hidden></div>
+              </section>
+              <section class="settings-section techniques-section">
+                <div class="section-title-row"><h3>Técnicas ativas</h3><span id="technique-count" class="count-pill">3</span></div>
+                <p class="section-description">Cada instância analisa o desenho de forma independente. Podes repetir a mesma técnica com parâmetros diferentes.</p>
+                <div id="technique-list" class="technique-list"></div>
+                <div class="add-technique-row"><label class="sr-only" for="new-technique">Técnica a adicionar</label><select id="new-technique"></select><button id="add-technique" class="button button-secondary">+ Adicionar</button></div>
+              </section>
+              <section class="settings-section resolver-section">
+                <div class="section-title-row"><h3>Combinação</h3><span class="count-pill">por pixel</span></div>
+                <label class="field compact-field"><span>Resolvedor</span><select id="resolver-mode"><option value="weighted-average">Média ponderada</option><option value="highest-confidence">Maior probabilidade individual</option></select></label>
+                <p class="helper-note">Cada técnica devolve uma distribuição completa pelas cores. O resolvedor combina as distribuições e escolhe uma cor da paleta — sem misturar RGB.</p>
+              </section>
+              <div class="settings-bottom"><button id="clear-canvas" class="button button-quiet button-block">Limpar imagem original</button><span id="engine-status" class="engine-status">Pronto para desenhar.</span></div>
+            </aside>
+          </div>
+        </section>
+      </main>
+      <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.1</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

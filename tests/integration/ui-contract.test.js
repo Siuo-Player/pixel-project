@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+test('editor exposes the original and generated canvases with distinct roles', async () => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  assert.match(html, /id="source-canvas"[^>]*aria-label="Tela original, desenha aqui"/);
+  assert.match(html, /id="output-canvas"[^>]*aria-label="Pré-visualização da conversão"/);
+  assert.match(html, /data-tool="black"/);
+  assert.match(html, /data-tool="white"/);
+  assert.match(html, /data-tool="erase"/);
+});
+
+test('editor includes import/export and independently configurable technique controls', async () => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  assert.match(html, /id="export-project"/);
+  assert.match(html, /id="import-project-file"/);
+  assert.match(html, /id="new-technique"/);
+  assert.match(html, /id="resolver-mode"/);
+  assert.match(html, /id="layout-mode"/);
+});

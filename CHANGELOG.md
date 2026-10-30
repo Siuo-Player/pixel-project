@@ -1,14 +1,25 @@
 # Histórico de alterações
 
+## 2026-10-30 — Primeiro protótipo executável
+
+- Criada a aplicação web local com ecrã de configuração e editor de duas telas.
+- Implementadas ferramentas de desenho a preto, branco e apagar.
+- Implementados Pointer Events, desenho por arrastamento e interpolação Bresenham.
+- Implementados zoom e pan partilhados, auto layout, lado a lado e grelha.
+- Implementados espelhamento horizontal/vertical e rotações reais da matriz.
+- Implementadas paletas iniciais de 4 e 8 cores, incluindo personalização.
+- Implementadas técnicas de média contextual, deteção direcional de linhas e entropia local.
+- Implementadas instâncias independentes de técnicas e duas estratégias de resolução de propostas.
+- Implementada exportação/importação local de projetos.
+- Criados testes unitários, de integração e de contrato da UI.
+- Adicionada GitHub Actions para executar a suite.
+- Testes locais: 34 testes aprovados.
+
 ## 2026-10-30 — Motor modular e inversão contextual
 
-- Corrigida a interpretação da inversão preto/branco: não é um mapeamento fixo por cor de origem; é uma reflexão contextual do resultado na paleta.
-- Formalizada a média contextual normalizada, que passa de m para 1-m ao inverter preto/branco.
-- Criado MODULAR_TRANSFORMATION_ENGINE.md.
+- Formalizada a inversão complementar da paleta contextual.
 - Separados detetores, instâncias, regras de transformação, propostas e resolvedor.
-- Definido que a mesma técnica pode ser instanciada várias vezes com parâmetros e máscaras diferentes.
-- Definidas distribuições completas de probabilidade por pixel, com soma 1, e pesos separados por instância.
-- Clarificado o exemplo de fusão probabilística e a diferença entre contar preferências e combinar probabilidades.
-- Garantido que a saída final escolhe uma cor discreta da paleta, sem misturas RGB intermédias.
-- Explicada a otimização global como rotulagem conjunta para coerência espacial/estrutural.
-- Atualizados README, desenho técnico, requisitos e decisões.
+
+## 2026-10-30 — Documentação inicial
+
+- Registadas visão, requisitos, desenho técnico e pesquisa de paletas.
