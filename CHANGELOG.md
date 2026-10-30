@@ -30,3 +30,8 @@
 - Preserve trace, screenshot and video diagnostics when browser tests fail.
 - Extend GitHub Actions to run browser tests and upload the evidence artifact.
 - Add the Portuguese project requirements file.
+## 0.2.1 — Desktop workspace layout regression
+
+- Keep the automatic side-by-side canvas layout stable when the settings list grows.
+- Constrain desktop editor panels to the viewport and allow the technique settings panel to scroll independently.
+- Add a browser regression assertion for desktop canvas orientation and viewport overflow.
