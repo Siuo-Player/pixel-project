@@ -1,34 +1,37 @@
 # Pixel Project
 
-Um editor de pixel art com duas vistas sincronizadas: uma imagem-fonte limitada a preto e branco e uma interpretação colorida gerada automaticamente a partir dela.
+Um editor experimental de pixel art com uma imagem-fonte a preto e branco e uma ou mais interpretações coloridas geradas automaticamente.
 
-A ideia central é explorar como uma imagem criada com uma paleta muito reduzida pode ganhar uma aparência mais rica através de regras locais, vizinhanças, auto-tiling e, experimentalmente, autómatos celulares.
+A ideia central é permitir desenhar com uma paleta de entrada mínima e observar como diferentes regras e paletas conseguem reinterpretar a mesma imagem, preservando a sua estrutura.
 
-## Como funciona a ideia
+## Conceito
 
-- **Imagem-fonte (esquerda):** o utilizador desenha apenas a preto, branco ou apaga, deixando o pixel transparente.
-- **Interpretação (direita):** a aplicação converte a imagem-fonte em tempo real, usando uma regra e uma paleta de cores selecionadas.
-- **Configuração:** antes de criar a arte, o utilizador escolhe as dimensões, a regra de conversão e a paleta inicial. Durante a edição pode abrir um separador para alterar essas definições, apenas no projeto atual.
+- **Imagem-fonte:** o utilizador desenha a preto, branco ou apaga (transparência).
+- **Conversão:** regras analisam pixels, vizinhanças e padrões/áreas de vários tamanhos.
+- **Saídas:** cada interpretação tem a sua própria regra e paleta. A arquitetura deve permitir várias saídas independentes; o primeiro protótipo começa com uma.
+- **Paletas:** o utilizador escolhe a quantidade de cores (por exemplo, 4 ou 8), seleciona paletas predefinidas ou cria uma paleta própria.
+- **Configuração:** regras e paletas podem ser escolhidas antes de entrar no editor e alteradas dentro do projeto atual.
 
-A transparência é um estado distinto do preto e do branco. Por isso, a imagem-fonte tem três estados lógicos por pixel, embora só existam duas cores de desenho.
+A transparência é um estado distinto e deve permanecer transparente na conversão. Os pixels de entrada pretos e brancos podem ser reinterpretados para outras cores conforme a regra escolhida.
 
 ## Documentação
 
-- [Visão do produto](docs/PRODUCT_VISION.md) — objetivo, motivação e experiência pretendida.
-- [Requisitos do MVP](docs/MVP_REQUIREMENTS.md) — o que a primeira versão deve permitir fazer.
-- [Desenho técnico](docs/TECHNICAL_DESIGN.md) — modelo de dados, interação e arquitetura de conversão proposta.
-- [Decisões e questões em aberto](docs/DECISIONS_AND_QUESTIONS.md) — pressupostos atuais e assuntos a experimentar.
+- [Visão do produto](docs/PRODUCT_VISION.md)
+- [Requisitos do MVP](docs/MVP_REQUIREMENTS.md)
+- [Desenho técnico](docs/TECHNICAL_DESIGN.md)
+- [Pesquisa sobre paletas e teoria das cores](docs/COLOR_PALETTE_RESEARCH.md)
+- [Decisões e questões em aberto](docs/DECISIONS_AND_QUESTIONS.md)
+- [Histórico de alterações](CHANGELOG.md)
 
-## Estado do projeto
+## Estado atual
 
-**Fase atual: documentação e definição do primeiro protótipo.** Ainda não existe uma aplicação implementada. As decisões técnicas indicadas como propostas podem mudar depois dos primeiros testes.
+**Fase: documentação e definição do protótipo.** Ainda não existe aplicação implementada. As decisões identificadas como propostas ou questões em aberto devem ser validadas através de experiências.
 
-## Terminologia importante
+## Terminologia
 
-- **Pixel-fonte:** célula editável na imagem da esquerda.
-- **Pixel convertido:** célula correspondente na imagem gerada da direita.
-- **Paleta de entrada:** preto e branco; a transparência é um estado separado.
-- **Paleta de saída:** conjunto de cores usado pela conversão. Por exemplo, 4 bits de índice permitem representar até 16 entradas de paleta e 8 bits até 256.
-- **Regra de conversão:** algoritmo que interpreta o pixel e a sua vizinhança para escolher a cor de saída.
-
-O termo “bits” refere-se aqui à profundidade do índice de cor, não à quantidade de cores: 4 bits correspondem a até 16 entradas, e 8 bits a até 256. A representação final da transparência será definida quando forem escolhidos os formatos de exportação.
+- **Pixel-fonte:** célula editável na imagem original.
+- **Pixel convertido:** célula pertencente a uma interpretação gerada.
+- **Transparência:** ausência de pixel; não é uma terceira cor de desenho.
+- **Paleta:** lista de cores disponíveis para uma conversão. A quantidade de cores é uma escolha do utilizador, não uma profundidade de bits.
+- **Regra:** instrução que reconhece um pixel, uma vizinhança ou uma área e determina a cor ou o padrão de saída.
+- **Saída / interpretação:** uma tela convertida, com configuração própria.

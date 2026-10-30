@@ -1,12 +1,21 @@
 # Histórico de alterações
 
-As alterações relevantes ao projeto são registadas aqui, da mais recente para a mais antiga.
+## 2026-10-30 — Requisitos refinados e pesquisa de paletas
+
+- Clarificado que a seleção diz respeito à quantidade de cores (por exemplo, 4 ou 8), não a bits.
+- Clarificada a transparência como estado que se mantém transparente na conversão.
+- Registado suporte conceptual para regras por pixel e por áreas de diferentes dimensões.
+- Registada a preferência experimental por regras que cobrem áreas maiores, com resolução explícita de sobreposições ainda por validar.
+- Definida a seleção e criação de paletas pelo utilizador, acompanhada por presets fundamentados em teoria da cor e testes.
+- Registada a personalização de regras como objetivo próximo e a criação livre como objetivo futuro.
+- Definida a exportação/importação de projetos como persistência inicial, sem contas.
+- Registado zoom/deslocação sincronizados e orientação da vista por especificar.
+- Preparada a arquitetura para várias interpretações independentes, começando com uma saída no MVP.
+- Adicionada pesquisa inicial de paletas, estudos de harmonia, diferenças percetivas e acessibilidade.
+- Ainda não foi implementada funcionalidade executável.
 
 ## 2026-10-30 — Arranque da documentação
 
 - Registada a visão do editor de pixel art com duas telas sincronizadas.
-- Definido o âmbito funcional do primeiro protótipo: criar a grelha, desenhar a preto/branco/apagar e converter em tempo real.
-- Separados os requisitos do MVP das funcionalidades futuras.
-- Documentado um desenho técnico inicial para os dados da imagem, interação com o ponteiro e conversor.
-- Registados pressupostos e questões ainda por decidir.
-- Ainda não foi implementada funcionalidade executável.
+- Definido o âmbito funcional inicial.
+- Criada a documentação base do produto, MVP e desenho técnico.

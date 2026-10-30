@@ -2,87 +2,85 @@
 
 ## 1. Objetivo
 
-Construir a versão mínima que permita criar uma grelha, desenhar a preto e branco na tela esquerda e observar a conversão automática na tela direita, em tempo real.
-
-O sucesso do MVP mede-se pela qualidade e fluidez desta experiência central — não pela quantidade de ferramentas de edição disponíveis.
+Construir a versão mínima que permita criar uma grelha, desenhar a preto/branco/apagar na imagem-fonte e observar uma interpretação colorida atualizar-se automaticamente.
 
 ## 2. Fluxo do utilizador
 
-1. O utilizador abre a aplicação.
-2. No ecrã inicial, escolhe a largura e a altura da arte.
-3. Escolhe uma regra de conversão e uma paleta de saída, inicialmente através de presets.
-4. Cria o projeto.
-5. O editor apresenta duas telas vazias e transparentes.
-6. O utilizador seleciona preto, branco ou borracha.
-7. Ao pressionar o rato sobre um pixel da tela esquerda, esse pixel muda para o estado selecionado.
-8. Enquanto mantém o botão pressionado e arrasta, os pixels atravessados são pintados.
-9. Ao alterar a imagem-fonte, a tela direita é recalculada e atualizada automaticamente.
-10. No separador de conversão, o utilizador pode trocar a regra, a paleta ou os parâmetros do projeto; a tela direita atualiza-se sem alterar a imagem-fonte.
+1. Abrir a aplicação.
+2. Escolher largura e altura da arte.
+3. Escolher quantidade de cores, paleta e regra de conversão.
+4. Criar o projeto.
+5. Ver a imagem-fonte e uma tela convertida, ambas vazias.
+6. Desenhar a preto ou branco, ou apagar.
+7. Observar a conversão atualizar-se em tempo real.
+8. Alterar a regra, os parâmetros ou a paleta no separador de conversão.
+9. Exportar o projeto para um ficheiro e importá-lo posteriormente.
 
 ## 3. Requisitos funcionais
 
-### Configuração e criação
+### Configuração inicial
 
-- **MVP-F01:** permitir definir a largura e a altura da grelha antes de entrar no editor.
-- **MVP-F02:** permitir escolher uma regra de conversão inicial.
-- **MVP-F03:** permitir escolher uma paleta de saída inicial.
-- **MVP-F04:** criar duas telas com as mesmas dimensões lógicas.
-- **MVP-F05:** iniciar ambas as telas vazias; a transparência deve ser visível através de um padrão de xadrez ou representação equivalente.
+- **MVP-F01:** permitir definir largura e altura antes de entrar no editor.
+- **MVP-F02:** permitir escolher a quantidade de cores da paleta.
+- **MVP-F03:** oferecer algumas paletas predefinidas.
+- **MVP-F04:** permitir criar uma paleta personalizada com cores escolhidas pelo utilizador.
+- **MVP-F05:** permitir selecionar uma regra/preset de conversão.
+- **MVP-F06:** criar uma imagem-fonte e uma tela de interpretação com as mesmas dimensões lógicas.
 
 ### Desenho da imagem-fonte
 
-- **MVP-F06:** disponibilizar as ferramentas preto, branco e apagar.
-- **MVP-F07:** permitir pintar um pixel com um clique/pressão.
-- **MVP-F08:** permitir pintar continuamente ao arrastar com o botão pressionado.
-- **MVP-F09:** terminar corretamente o traço quando o botão é libertado, mesmo que o ponteiro saia da área da tela.
-- **MVP-F10:** impedir a edição direta da tela convertida.
-- **MVP-F11:** converter a posição do ponteiro para a célula correta da grelha, independentemente do zoom visual ou da escala de apresentação.
+- **MVP-F07:** disponibilizar preto, branco e apagar.
+- **MVP-F08:** começar com todos os pixels transparentes.
+- **MVP-F09:** permitir pintar com clique e arrastamento.
+- **MVP-F10:** não deixar falhas no traço quando o ponteiro se move rapidamente.
+- **MVP-F11:** terminar o traço corretamente quando o ponteiro é libertado ou cancelado, mesmo fora da tela.
+- **MVP-F12:** impedir desenho direto na tela convertida.
 
-### Conversão e apresentação
+### Conversão
 
-- **MVP-F12:** atualizar automaticamente o resultado quando a imagem-fonte muda.
-- **MVP-F13:** usar a regra e a paleta atualmente selecionadas.
-- **MVP-F14:** manter os pixels-fonte transparentes transparentes no resultado inicial, salvo se uma regra futura declarar explicitamente outro comportamento.
-- **MVP-F15:** mostrar o resultado com pixels nítidos, sem interpolação que introduza cores intermédias.
-- **MVP-F16:** permitir trocar a regra e a paleta dentro do editor.
-- **MVP-F17:** aplicar as alterações de configuração apenas ao projeto atual.
+- **MVP-F13:** recalcular o resultado quando a imagem-fonte muda.
+- **MVP-F14:** recalcular o resultado quando a regra, parâmetros ou paleta mudam.
+- **MVP-F15:** preservar todas as células transparentes como transparentes.
+- **MVP-F16:** permitir que pixels-fonte pretos e brancos sejam mapeados para qualquer cor da paleta.
+- **MVP-F17:** separar a lógica de conversão dos componentes da interface.
+- **MVP-F18:** suportar pelo menos uma regra que analise pixels e vizinhos; a arquitetura deve permitir regras que analisem áreas de dimensões variáveis.
 
-## 4. Requisitos de interação
+### Navegação e apresentação
 
-- A interface deve deixar claro qual a tela editável.
-- A ferramenta ativa deve estar visualmente identificada.
-- O cursor deve indicar a célula que será alterada, quando possível.
-- Um traço contínuo não deve deixar buracos entre células quando o ponteiro se move rapidamente.
-- O editor deve funcionar com rato e, por usar eventos de ponteiro, ficar preparado para suporte futuro de toque e caneta.
-- A tela direita deve atualizar sem obrigar o utilizador a carregar num botão de conversão.
+- **MVP-F19:** apresentar pixels sem blur ou interpolação indesejada.
+- **MVP-F20:** suportar zoom e deslocação sincronizados nas duas telas.
+- **MVP-F21:** manter o alinhamento espacial entre fonte e resultado quando a vista é ampliada ou deslocada.
+- **MVP-F22:** suportar inversão/viragem sincronizada da vista, depois de clarificado se a primeira versão precisa de espelhamento horizontal, vertical ou ambos.
 
-## 5. Critérios de aceitação
+### Projetos e configurações
 
-O MVP pode ser considerado funcional quando:
+- **MVP-F23:** exportar e importar um ficheiro de projeto que contenha a imagem-fonte, paletas e configuração de conversão.
+- **MVP-F24:** guardar as alterações de paleta e regra apenas no projeto atual.
+- **MVP-F25:** estruturar os dados para permitir várias saídas independentes no futuro, embora o MVP apresente apenas uma.
 
-1. É possível criar uma grelha com dimensões escolhidas antes de entrar no editor.
-2. As duas telas começam transparentes e apresentam a mesma grelha lógica.
-3. Um clique na tela esquerda altera apenas o pixel correspondente.
-4. Um arrastamento pinta todos os pixels atravessados pelo traço, sem depender de o botão voltar a ser pressionado.
-5. Preto, branco e apagar produzem os três estados de entrada esperados.
-6. A tela direita reage a cada alteração da tela esquerda.
-7. Trocar de paleta ou regra altera a imagem convertida, mas não altera os dados da imagem-fonte.
-8. A tela direita não aceita pintura direta.
-9. Os pixels são apresentados sem blur ou mistura indesejada de cores.
+## 4. Critérios de aceitação
 
-## 6. Fora do âmbito do MVP
+1. O utilizador cria uma grelha com dimensões escolhidas.
+2. A imagem-fonte e a tela convertida começam transparentes.
+3. Clique e arrastamento alteram os pixels corretos na fonte.
+4. Preto, branco e apagar são estados distintos.
+5. Os pixels transparentes continuam transparentes na saída.
+6. A saída atualiza-se após alterações na fonte ou configuração.
+7. Alterar a configuração não altera a imagem-fonte.
+8. Zoom e deslocação mantêm fonte e resultado alinhados.
+9. Um projeto exportado pode ser importado e recupera imagem e configuração.
 
-Ficam adiados:
-- contas de utilizador, servidor e partilha online;
-- galerias públicas e colaboração;
-- camadas, seleção, preenchimento, texto e ferramentas avançadas;
-- animação e simulação temporal contínua;
-- edição manual da imagem convertida;
-- importação de imagens externas;
-- exportação para múltiplos formatos;
-- histórico completo, undo/redo e autosave persistente (a decidir após validar o protótipo);
-- editor visual para criar regras totalmente novas.
+## 5. Fora do âmbito do primeiro MVP
 
-## 7. Nota sobre dimensões
+- Várias telas convertidas visíveis simultaneamente (a arquitetura fica preparada).
+- Contas, autenticação e sincronização remota.
+- Colaboração ou publicação de galerias.
+- Edição direta do resultado convertido.
+- Editor visual para criar algoritmos arbitrários.
+- Simulação contínua de autómatos celulares.
+- Camadas, animação e ferramentas avançadas de pixel art.
+- Importação de imagens externas.
 
-As dimensões são definidas em pixels lógicos, não em pixels físicos do monitor. Os limites máximos e os tamanhos predefinidos ainda não estão fixados. Devem ser escolhidos depois de testar o custo de conversão e apresentação em grelhas de vários tamanhos.
+## 6. Nota de implementação
+
+Os limites de tamanho de grelha, o conjunto inicial de paletas e o conjunto inicial de regras ainda precisam de ser escolhidos através de testes de desempenho e avaliação visual.

@@ -1,138 +1,162 @@
 # Desenho técnico inicial
 
-Este documento regista uma arquitetura proposta para o primeiro protótipo. Não é ainda uma decisão irreversível sobre framework ou biblioteca.
+Este documento descreve uma arquitetura proposta para o primeiro protótipo. As decisões assinaladas como propostas podem mudar durante a experimentação.
 
-## 1. Modelo mental
+## 1. Separação fundamental
 
-A aplicação deve separar três coisas:
+A aplicação deve separar:
 
-1. **Dados da imagem-fonte:** aquilo que o utilizador desenhou.
-2. **Configuração de conversão:** a regra, a paleta e os parâmetros do projeto.
-3. **Imagem convertida:** um resultado derivado, que pode ser recalculado sempre que os dados ou a configuração mudam.
+1. **Imagem-fonte:** dados que o utilizador desenhou.
+2. **Configuração de conversão:** regra, parâmetros e paleta de cada interpretação.
+3. **Resultado convertido:** dados derivados da fonte e da configuração.
+4. **Estado da vista:** zoom, deslocação e orientação da apresentação.
 
-A imagem convertida não deve ser usada como fonte para reconstruir o desenho original.
+O resultado convertido nunca deve substituir nem modificar a imagem-fonte.
 
-## 2. Estados da imagem-fonte
+## 2. Modelo da imagem-fonte
 
-Cada célula da imagem-fonte tem um de três estados lógicos:
+Cada célula tem um de três estados lógicos:
 
-| Valor lógico | Significado |
+| Valor | Estado |
 |---|---|
-| 0 | Transparente / vazio |
+| 0 | Transparente |
 | 1 | Preto |
 | 2 | Branco |
 
-Há apenas duas cores de desenho, mas três estados porque apagar não é o mesmo que pintar de branco.
+A transparência é ausência de pixel, não uma cor. O conversor deve ignorar células transparentes ou preservá-las como transparentes. Não pode criar cor numa célula transparente no comportamento normal acordado.
 
-Do ponto de vista da informação, três estados precisam de pelo menos 2 bits por célula se forem compactados. Na implementação inicial é perfeitamente aceitável guardar um valor por célula num array de bytes; otimizar a memória só fará sentido se for necessário.
+A semântica de preto e branco pertence à regra. Uma regra pode tratá-los como dois tipos de região, como foreground/background, ou como cores de entrada independentes.
 
-## 3. Paleta de saída e profundidade de cor
+No primeiro protótipo, um array tipado de bytes é uma representação simples e suficiente. Compactação para 2 bits por célula não é prioritária.
 
-A paleta de saída é uma lista ordenada de cores. A regra de conversão escolhe um índice dessa lista para cada pixel convertido.
+## 3. Modelo de paleta
 
-- 4 bits de índice permitem até 16 entradas de paleta.
-- 8 bits de índice permitem até 256 entradas.
-- Uma paleta pode ter menos entradas do que o limite máximo.
+Uma paleta é uma lista ordenada de cores, por exemplo em formato hexadecimal/RGBA. A quantidade de cores é independente da representação em bits.
 
-A transparência deve ser tratada como estado/canal próprio, não assumida automaticamente como uma cor visível da paleta. O formato exato de armazenamento e exportação será decidido mais tarde.
+A interface deverá permitir escolher uma quantidade e selecionar/criar uma paleta com esse número de entradas. Importa distinguir:
+- **quantidade de cores:** número de cores realmente disponíveis na paleta;
+- **transparência:** estado separado, não uma entrada normal da paleta.
 
-## 4. Conversor como função independente
+O modelo poderá guardar também metadados opcionais para cada cor, como papel visual (sombra, base, luz, destaque), mas esses papéis não devem limitar o algoritmo a uma única estratégia.
 
-A conversão deve ser implementada como uma função isolada da interface. Em termos conceptuais:
+## 4. Motor de regras
 
-- recebe os dados da imagem-fonte;
-- recebe a largura e a altura;
-- recebe a configuração da regra;
-- recebe a paleta;
-- devolve uma grelha/imagem de saída.
+A conversão deve ser uma função ou módulo independente da interface. Recebe:
+- dados da imagem-fonte;
+- largura e altura;
+- definição da regra;
+- parâmetros da regra;
+- paleta.
 
-A mesma entrada e a mesma configuração devem produzir o mesmo resultado para regras determinísticas.
+Devolve uma grelha de saída ou uma representação intermédia equivalente.
 
-Esta separação permite testar o algoritmo sem abrir o editor e trocar regras sem reescrever a lógica de desenho.
+### 4.1 Regras de pixel
 
-## 5. Estratégias de conversão a experimentar
+Analisam o estado de uma célula e, opcionalmente, dos seus vizinhos (4 ou 8 vizinhos, por exemplo). Podem classificar isolados, contornos, cantos, interiores e fronteiras entre estados.
 
-### 5.1 Vizinhança inspirada em auto-tiling
+### 4.2 Regras de área e múltiplas escalas
 
-Para cada célula, observar o estado da própria célula e dos vizinhos (por exemplo, os oito vizinhos de uma vizinhança 3×3).
+Uma regra pode reconhecer um padrão com uma dimensão concreta (por exemplo, 2×2, 3×3 ou 5×3) e atribuir uma cor ou padrão de saída à área correspondente.
 
-A combinação local pode indicar se o pixel está:
-- isolado;
-- no interior de uma região;
-- numa aresta;
-- num canto;
-- numa linha ou numa curva;
-- junto de uma região de outra cor.
+A arquitetura deve permitir regras de diferentes tamanhos. O objetivo experimental é comparar análise por pixel com reconhecimento de regiões e padrões maiores.
 
-A regra pode usar essa classificação para escolher cores diferentes da paleta. Isto é semelhante à ideia de auto-tiling, mas não exige necessariamente sprites ou blocos gráficos pré-desenhados.
+### 4.3 Sobreposição e prioridade
 
-É uma boa primeira experiência porque é local, determinística e atualiza-se diretamente quando o utilizador pinta.
+Duas regras podem reconhecer regiões que se sobrepõem. O motor precisa de uma política explícita para resolver conflitos.
 
-### 5.2 Regras inspiradas em autómatos celulares
+Proposta inicial para experimentar:
+1. respeitar a prioridade explícita configurada para a regra;
+2. em caso de empate, dar preferência ao padrão que cobre mais pixels;
+3. em novo empate, preferir a condição mais específica;
+4. definir um desempate estável para garantir resultados reproduzíveis.
 
-Um autómato celular atualiza células com base nos estados dos vizinhos. O Jogo da Vida é um exemplo conhecido, mas as suas regras foram concebidas para simular vida, não para colorir uma imagem.
+A preferência do utilizador por regras que cobrem áreas maiores deve ser testada com exemplos. A maior área não deve vencer automaticamente uma regra mais específica se isso destruir um detalhe importante. A política final pode permitir que o utilizador ajuste prioridade e escala.
 
-Neste projeto, estas ideias devem ser tratadas como experiências separadas: podem criar padrões, expandir ou suavizar regiões, mas também podem alterar a silhueta original. A imagem-fonte deve permanecer intacta e a experiência deve ser aplicada apenas ao resultado derivado.
+### 4.4 Etapas de conversão
 
-Antes de implementar esta opção, será necessário decidir o significado de “célula viva” quando a entrada tem preto, branco e transparência, e se a simulação terá iterações ou será apenas uma regra local estática.
+Uma implementação experimental pode:
+1. localizar os padrões candidatos em várias escalas;
+2. avaliar as condições das regras;
+3. resolver sobreposições e prioridades;
+4. atribuir cores da paleta aos pixels abrangidos;
+5. preservar transparência.
 
-### 5.3 Mapeamento por padrões
+O formato interno das regras deve ser configurável e versionável, de modo a suportar presets e futuras ferramentas de personalização.
 
-Outra hipótese é identificar padrões locais da imagem-fonte e associá-los a cores ou combinações de cores. Uma tabela de regras pode ser editável posteriormente, permitindo que o utilizador crie estilos diferentes.
+## 5. Várias interpretações
 
-## 6. Arquitetura da interface proposta
+O modelo do projeto não deve conter apenas um objeto de conversão fixo. Deve conter uma coleção de saídas, cada uma com:
+- identificador;
+- nome;
+- referência à regra e respetivos parâmetros;
+- paleta;
+- resultado derivado/cache.
 
-- **Ecrã de criação:** dimensões, preset/regra de conversão e paleta.
-- **Área de trabalho:** tela-fonte à esquerda, resultado à direita e ferramentas de desenho.
-- **Separador de conversão:** seleção de regra, paleta e parâmetros do projeto atual.
+O primeiro MVP apresenta uma saída. Mais tarde, a interface poderá permitir até três saídas no primeiro passo de expansão, e eventualmente mais se o desempenho e a experiência justificarem.
 
-A interface não deve guardar a lógica da conversão dentro dos componentes visuais. A tela apresenta os dados; o conversor calcula o resultado.
+As saídas partilham a mesma imagem-fonte, mas não partilham obrigatoriamente regras ou paletas. Alterar uma saída não pode alterar as outras.
 
-## 7. Desenho da interação com o ponteiro
+## 6. Estado da vista e transformações
 
-É preferível usar a API de Pointer Events do navegador em vez de depender apenas de eventos de rato. Assim, a mesma lógica poderá futuramente suportar rato, toque e caneta.
+A vista deve ser separada dos dados da arte. Um estado de câmara comum às telas pode guardar zoom, deslocação e orientação/espelhamento.
 
-Comportamento esperado:
+As transformações de navegação devem ser sincronizadas para que o mesmo pixel-fonte corresponda ao mesmo ponto visual em todas as telas. O MVP deve começar por zoom e deslocação; orientação/viragem precisa de ser especificada (horizontal, vertical, rotação ou combinação).
 
-1. Ao pressionar na tela-fonte, identificar a célula e aplicar a ferramenta ativa.
-2. Capturar o ponteiro durante o traço, para continuar a receber eventos mesmo se sair da tela.
-3. Ao mover enquanto a pressão está ativa, calcular as células atravessadas.
-4. Ao libertar ou cancelar o ponteiro, terminar o traço.
-5. Atualizar a imagem convertida quando os dados-fonte mudarem.
+Não confundir:
+- **transformar a vista:** mudar a forma como a arte é apresentada;
+- **transformar os dados:** alterar as coordenadas ou os valores dos pixels da arte.
 
-Para não deixar buracos em movimentos rápidos, deve ser considerado um algoritmo de interpolação entre a célula anterior e a nova célula (por exemplo, uma linha de Bresenham).
+## 7. Interação com o ponteiro
 
-A posição do ponteiro deve ser convertida usando as dimensões visuais da tela e as dimensões lógicas da grelha. A escala de apresentação não pode alterar as coordenadas dos dados.
+É preferível usar Pointer Events, em vez de eventos exclusivos do rato, para preparar suporte futuro para toque e caneta.
 
-## 8. Apresentação gráfica
+Comportamento:
+1. ao pressionar na tela-fonte, converter a posição para coordenadas de grelha;
+2. capturar o ponteiro durante o traço;
+3. aplicar a ferramenta ativa ao mover;
+4. interpolar entre células quando necessário (por exemplo, com uma linha de Bresenham);
+5. terminar o traço ao libertar/cancelar o ponteiro;
+6. recalcular a saída afetada.
 
-Uma opção inicial é usar HTML Canvas para desenhar ambas as telas. É adequado para apresentar grelhas de pixels sem criar um elemento HTML separado para cada célula.
+A transformação de coordenadas deve considerar escala, deslocação e orientação da vista. As dimensões lógicas da grelha não mudam com o zoom.
 
-A transparência pode ser indicada com um padrão de xadrez no fundo de apresentação; esse padrão é apenas visual e não faz parte dos dados da imagem.
+## 8. Renderização
 
-A renderização deve preservar arestas nítidas e evitar suavização. A aplicação pode redesenhar o resultado quando há alterações, em vez de recalcular continuamente sem necessidade.
+HTML Canvas é uma opção inicial adequada para renderizar grelhas com arestas nítidas sem criar um elemento HTML por pixel.
 
-## 9. Stack sugerida
+A transparência pode ser indicada com um padrão de xadrez, que é apenas visual. A renderização deve desativar suavização para manter o estilo pixel art.
 
-Uma opção simples para uma aplicação web local-first é:
-- TypeScript para os dados e a lógica;
-- Vite para iniciar o projeto e o servidor de desenvolvimento;
-- HTML Canvas para as duas telas;
-- testes unitários para o conversor.
+## 9. Configuração e ficheiro de projeto
 
-Esta é uma recomendação inicial, não uma decisão final. A escolha deve ser confirmada quando começarmos a implementação.
+O projeto deverá poder ser exportado e importado como ficheiro próprio, contendo pelo menos:
+- versão do formato;
+- dimensões;
+- dados da imagem-fonte;
+- paletas;
+- regras e parâmetros;
+- configurações das saídas.
 
-## 10. Desempenho e evolução
+A conversão pode ser recalculada no momento da importação; não é obrigatório guardar a imagem derivada se puder ser reproduzida.
 
-No MVP, começar com conversão local e síncrona para manter a arquitetura simples. Se grelhas grandes ou regras mais pesadas causarem bloqueios na interface, o conversor poderá passar para um Web Worker.
+Não existe conta ou backend nesta fase. O ficheiro de projeto é o mecanismo inicial de portabilidade e persistência.
 
-A configuração deve pertencer ao projeto atual. Não é necessário criar backend ou contas para validar a experiência central.
+## 10. Stack proposta
+
+Opção inicial:
+- TypeScript;
+- Vite;
+- HTML Canvas;
+- testes unitários para o motor de regras.
+
+Começar com processamento local e síncrono. Se conversões maiores bloquearem a interface, considerar Web Workers.
 
 ## 11. Testes essenciais
 
-- Uma grelha vazia deve gerar uma saída transparente.
-- Um pixel preto ou branco deve produzir um resultado definido pela regra ativa.
-- Pixels transparentes não devem ser confundidos com pixels brancos.
-- Alterar a configuração deve recalcular a saída sem modificar a fonte.
-- A mesma entrada e configuração determinística devem produzir a mesma saída.
-- Coordenadas junto às margens devem mapear para células válidas, sem índices fora da grelha.
+- Grelha vazia gera saída transparente.
+- Preto e branco podem ser distinguidos pela regra.
+- Transparência nunca é convertida em cor no modo normal.
+- Alterar a paleta ou regra não altera a fonte.
+- Regras de área tratam corretamente margens e sobreposições.
+- Resultados determinísticos permanecem iguais com a mesma entrada e configuração.
+- Transformações da vista mantêm o alinhamento entre telas.
+- Exportar/importar preserva dados e configurações.

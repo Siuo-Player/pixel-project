@@ -1,108 +1,88 @@
 # Decisões, pressupostos e questões em aberto
 
-Este documento evita que ideias provisórias sejam confundidas com requisitos já decididos. As decisões podem ser revistas depois de experimentar o protótipo.
+Este documento distingue o que já foi acordado do que ainda precisa de ser experimentado.
 
-## 1. Decisões/pressupostos iniciais
+## 1. Decisões acordadas
 
-| ID | Tema | Pressuposto atual | Estado |
+| ID | Tema | Decisão | Estado |
 |---|---|---|---|
-| D-001 | Estrutura do editor | Duas telas lado a lado, com a fonte à esquerda e o resultado à direita. | Aceite para o MVP |
-| D-002 | Entrada | A fonte tem três estados: transparente, preto e branco. | Aceite para o MVP |
-| D-003 | Edição | Só a tela esquerda é editável. | Aceite para o MVP |
-| D-004 | Atualização | A conversão é recalculada automaticamente após alterações na fonte ou configuração. | Aceite para o MVP |
-| D-005 | Dimensões | A grelha é criada antes de entrar no editor. | Aceite para o MVP |
-| D-006 | Configuração | Regra e paleta podem ser escolhidas antes de criar o projeto e alteradas dentro dele. | Aceite para o MVP |
-| D-007 | Âmbito das opções | As alterações de regra e paleta aplicam-se apenas ao projeto atual. | Aceite para o MVP |
-| D-008 | Dados | O resultado convertido é derivado; a fonte nunca é modificada pela conversão. | Aceite para o MVP |
-| D-009 | Algoritmo inicial | Começar por experimentar regras baseadas na vizinhança, inspiradas em auto-tiling. | Proposta |
-| D-010 | Stack | TypeScript + Vite + Canvas é a opção inicial sugerida. | Por confirmar |
+| D-001 | Estrutura | Imagem-fonte à esquerda e interpretação colorida à direita. | Acordado |
+| D-002 | Entrada | Cada célula pode ser transparente, preta ou branca. | Acordado |
+| D-003 | Semântica | O significado de preto/branco pode depender da regra; a interpretação principal será explorada como estados diferentes de preenchimento. | Acordado, semântica flexível |
+| D-004 | Transparência | Células transparentes permanecem transparentes na conversão normal. | Acordado |
+| D-005 | Conversão | Podem existir regras por pixel, vizinhança e áreas de tamanhos diferentes. | Acordado |
+| D-006 | Sobreposição | Há preferência experimental por regras que cubram áreas maiores. | Acordado como objetivo; desempate a testar |
+| D-007 | Paletas | O utilizador escolhe a quantidade de cores, incluindo 4 e 8, e seleciona ou cria a paleta. | Acordado |
+| D-008 | Paletas padrão | A aplicação terá opções predefinidas orientadas por teoria da cor e testes visuais. | Acordado |
+| D-009 | Regras | Pelo menos personalização de parâmetros; criação livre de regras fica como objetivo futuro. | Acordado |
+| D-010 | Persistência | Sem contas/backend por enquanto; suportar exportação e importação de ficheiros de projeto. | Acordado |
+| D-011 | Navegação | Zoom e deslocação sincronizados entre as telas. | Acordado |
+| D-012 | Virar/inverter | Deve ser sincronizado entre as telas; a operação exata ainda precisa de clarificação. | Parcial |
+| D-013 | Várias saídas | O mesmo desenho poderá ter várias interpretações independentes, cada uma com a sua regra e paleta. | Acordado como direção |
+| D-014 | Primeiro MVP | Começar com uma saída visível, mas modelar os dados para várias saídas. | Acordado como proposta |
+| D-015 | Limite futuro | Até três saídas como primeiro limite a experimentar. | Provisório |
+| D-016 | Stack | TypeScript + Vite + Canvas + testes. | Proposta por confirmar |
 
-## 2. Questões de produto
+## 2. Questões de produto por resolver
 
-### Q-001 — O significado de preto e branco
+### Q-001 — Significado operacional de preto e branco
 
-As duas cores são estados com significado independente, ou representam apenas “pixel ligado” e “pixel desligado”?
+O desenho atual considera que os dois estados podem ser reinterpretados, mas não fixa uma única semântica. A regra deverá declarar se:
+- distingue preto de branco;
+- considera ambos como pixels ocupados;
+- usa um como preenchimento e outro como espaço negativo;
+- aplica uma interpretação diferente.
 
-**Impacto:** uma regra de vizinhança pode tratar preto e branco como materiais diferentes, ou pode considerar ambos como ocupação e usar a cor apenas como uma propriedade adicional.
+### Q-002 — Paletas
 
-### Q-002 — Quantidade de cores de saída
+- A seleção deve permitir qualquer número razoável de cores ou apenas quantidades pré-definidas?
+- As paletas personalizadas podem ter transparência/alfa em alguma cor, ou a transparência continua sempre a ser um estado independente?
+- Deve haver nomes e papéis semânticos para as cores (sombra, base, luz, acento)?
+- Deve ser possível reorganizar a ordem das cores?
 
-A interface deve apresentar a escolha como profundidade de cor (por exemplo, 4 bits/16 cores e 8 bits/256 cores), como quantidade exata de cores, ou ambas?
+### Q-003 — Regras de área
 
-**Proposta:** mostrar presets de paleta com a respetiva quantidade de cores e, em detalhes, a profundidade máxima suportada.
+- As dimensões das áreas são fixas por regra ou ajustáveis?
+- Uma regra pode reconhecer regiões de qualquer forma ou apenas padrões retangulares?
+- As regras aplicam-se uma vez ou podem ser encadeadas em várias etapas?
+- Como deve ser resolvida a sobreposição entre uma regra grande e outra pequena, mas mais específica?
 
-### Q-003 — Comportamento dos pixels transparentes
+### Q-004 — Transformações
 
-A transparência deve permanecer sempre transparente no resultado, ou algumas regras poderão criar cores em células vazias junto aos contornos?
+“Virar” significa espelhar horizontalmente, espelhar verticalmente, rodar 90/180 graus, ou tudo isso? As operações serão apenas transformações da vista ou também poderão alterar os dados da arte?
 
-**Proposta para o MVP:** preservar a transparência. Efeitos que expandam a imagem devem ser opções explícitas futuras.
+### Q-005 — Várias saídas
 
-### Q-004 — Dimensões e limites
+- As telas serão apresentadas lado a lado, em separadores, ou numa grelha?
+- O utilizador pode adicionar/remover saídas no editor?
+- O limite de três será fixo ou apenas um limite inicial para desempenho/usabilidade?
+- Todas as saídas partilham a mesma navegação ou podem ter vistas independentes?
 
-Que tamanhos predefinidos devem existir? Qual o máximo de largura, altura e número total de células?
+### Q-006 — Tamanhos e desempenho
 
-**Impacto:** memória, velocidade de conversão e capacidade de manter a pré-visualização em tempo real.
+Que dimensões predefinidas e que limite máximo fazem sentido? Regras de área e várias saídas podem aumentar o custo de conversão.
 
-### Q-005 — Escala e navegação
+### Q-007 — Ficheiro de projeto
 
-As duas telas devem fazer zoom e pan em simultâneo? O MVP precisa de zoom ou basta ajustar as telas ao espaço disponível?
+Deve existir um formato de ficheiro próprio (por exemplo, JSON com dados compactados) e exportação adicional de PNG para cada saída? A exportação de PNG não preserva regras editáveis, pelo que o formato de projeto continua importante.
 
-### Q-006 — Guardar e exportar
+### Q-008 — Editor de regras
 
-O primeiro protótipo deve apenas manter o desenho enquanto a página está aberta, ou deve guardar projetos localmente? Que formatos devem ser exportados (PNG, formato próprio com regras e paleta, outros)?
+No nível 2, que parâmetros podem ser alterados sem escrever código? Exemplos: vizinhança, tamanho de padrão, prioridade, cores atribuídas, número de iterações e condições. O nível 3 seria um construtor de regras ou uma linguagem de regras mais avançada.
 
-### Q-007 — Histórico
+## 3. Experiências técnicas a realizar
 
-Undo/redo é necessário já na primeira versão ou pode ficar para depois de validar o desenho e a conversão?
+1. Comparar regras por pixel com padrões 2×2, 3×3 e áreas maiores.
+2. Criar exemplos em que regras grandes e pequenas se sobrepõem.
+3. Testar paletas de 4 e 8 cores com diferentes relações de luminosidade e tonalidade.
+4. Verificar as paletas em escala de cinzentos e sob simulação de deficiências de visão cromática.
+5. Comparar uma interpretação com três interpretações simultâneas.
+6. Medir o tempo de conversão em grelhas de diferentes dimensões.
 
-## 3. Questões técnicas e experimentais
+## 4. Quando fechar uma questão
 
-### Q-008 — Vizinhança
-
-A regra inicial considera os quatro vizinhos cardinais ou os oito vizinhos de uma grelha 3×3? A célula central deve influenciar sempre a cor escolhida?
-
-### Q-009 — Estratégia de conversão
-
-Qual produz resultados mais interessantes?
-- classificar contornos, cantos e interiores e associar cada caso a cores;
-- usar padrões de vizinhança como índices de uma tabela;
-- usar regiões conectadas ou distância a contornos;
-- combinar várias etapas.
-
-### Q-010 — Autómatos celulares
-
-Os autómatos celulares serão:
-- uma transformação estática aplicada uma vez;
-- uma simulação com um número definido de iterações;
-- uma simulação contínua/animada?
-
-Também é necessário definir como preto, branco e transparência correspondem aos estados do autómato.
-
-### Q-011 — Definição de paleta
-
-As paletas serão conjuntos fixos fornecidos pela aplicação, conjuntos criados pelo utilizador, ou ambos? O utilizador poderá alterar a cor de cada entrada individualmente?
-
-### Q-012 — Editor de regras
-
-No futuro, “editar regras” poderá significar ajustar parâmetros de presets ou construir regras novas através de uma interface visual. A segunda opção é significativamente mais complexa e não faz parte do MVP.
-
-### Q-013 — Escala temporal
-
-Uma regra que depende apenas dos vizinhos pode ser recalculada sempre que um pixel muda. Uma simulação temporal tem estado próprio e exige controlos como iniciar, parar e número de iterações. Estas duas experiências não devem ser misturadas sem uma decisão explícita.
-
-## 4. Experiências que devem orientar as decisões
-
-1. Desenhar formas simples: um pixel isolado, uma linha, um quadrado, um círculo e formas com buracos.
-2. Comparar a mesma forma com várias paletas.
-3. Comparar vizinhança de 4 e de 8 células.
-4. Verificar se as regras preservam a silhueta original.
-5. Testar imagens pequenas e maiores para avaliar a atualização em tempo real.
-6. Comparar regras estáticas com experiências baseadas em autómatos celulares.
-
-## 5. Critério para fechar uma questão
-
-Uma questão deve ser marcada como decidida quando houver:
+Uma questão deve ser considerada decidida quando existir:
 - uma escolha concreta;
 - uma razão para a escolha;
-- evidência de teste ou uma justificação de produto;
-- indicação do que muda nos requisitos ou na implementação.
+- um teste ou justificação;
+- registo do impacto nos requisitos e na implementação.
