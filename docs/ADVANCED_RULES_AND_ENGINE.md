@@ -273,6 +273,7 @@ O motor deve manter a resolução de conflitos modular:
 
 - **Highest confidence:** vence a proposta individual mais forte para cada pixel.
 - **Weighted consensus:** várias deteções independentes podem reforçar o mesmo resultado.
+- **Largest region first (modo opcional):** reproduz a decisão inicial de deixar a maior área reconhecida vencer; fica disponível para comparação, mas não é o comportamento padrão.
 - **Exclusive region:** uma proposta é aplicada como unidade e reserva toda a sua região, desde que passe os critérios de seleção.
 - **Layered rules:** uma regra pode autorizar explicitamente regras menores em sub-regiões.
 - **Global/coherent optimization:** escolher os rótulos de todos os pixels em conjunto, equilibrando evidência local, coerência das formas e continuidade de padrões.
