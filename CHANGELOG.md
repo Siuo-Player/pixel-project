@@ -35,3 +35,4 @@
 - Keep the automatic side-by-side canvas layout stable when the settings list grows.
 - Constrain desktop editor panels to the viewport and allow the technique settings panel to scroll independently.
 - Add a browser regression assertion for desktop canvas orientation and viewport overflow.
+- Fix an off-screen accessibility label that extended the document height and created phantom desktop scrolling.
