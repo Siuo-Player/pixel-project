@@ -169,6 +169,7 @@ h1 span { color: var(--accent); }
   .app-header { padding-inline: 20px; }
 }
 @media (max-width: 780px) {
+  .app-header { height:auto; min-height:62px; padding-block:8px; flex-wrap:wrap; }
   .menu-bar { order:3; width:100%; justify-content:flex-start; }
   .header-actions { flex-wrap:wrap; justify-content:flex-end; gap:5px; }
   .document-tab-group { max-width:175px; }

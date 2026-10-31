@@ -739,7 +739,7 @@ async function importProject(file) {
     documentState.dirty = false;
     loadDocument(documentState);
     showEditor();
-    toast('Projeto importado como uma nova tela.', 'success');
+    toast('Projeto importado com sucesso como nova tela.', 'success');
   } catch (error) {
     toast(`Não foi possível importar: ${error.message}`, 'error');
   }
