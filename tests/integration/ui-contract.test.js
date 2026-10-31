@@ -19,3 +19,18 @@ test('editor includes import/export and independently configurable technique con
   assert.match(html, /id="resolver-mode"/);
   assert.match(html, /id="layout-mode"/);
 });
+
+test('setup exposes 4, 8 and 12 colour counts', async () => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<option value="4" selected>4 cores<\/option>/);
+  assert.match(html, /<option value="8">8 cores<\/option>/);
+  assert.match(html, /<option value="12">12 cores<\/option>/);
+});
+
+test('canvas uses an actual matrix-aligned transparency grid, not viewport-wide checkerboard noise', async () => {
+  const main = await readFile(new URL('../../src/main.js', import.meta.url), 'utf8');
+  assert.match(main, /TRANSPARENT_CELL_COLORS/);
+  assert.match(main, /geometry\.width/);
+  assert.match(main, /strokeRect\(geometry\.x, geometry\.y, geometry\.width, geometry\.height\)/);
+  assert.doesNotMatch(main, /const tile = 10/);
+});
