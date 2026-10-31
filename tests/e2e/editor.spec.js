@@ -389,17 +389,33 @@ test('undo and redo history stays isolated per document tab', async ({ page }) =
   await clickCell(page, '#source-canvas', 16, 16, 10, 10);
   await clickCell(page, '#source-canvas', 16, 16, 12, 12);
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 12, 12)).toEqual([15, 16, 19, 255]);
 
-  await page.locator('#document-tabs [data-document-tab]').first().click();
+  const tabs = page.locator('#document-tabs [data-document-tab]');
+  await tabs.first().click();
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
-  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).not.toEqual([15, 16, 19, 255]);
 
   await page.locator('#undo-action').click();
-  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).not.toEqual([15, 16, 19, 255]);
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).not.toEqual([15, 16, 19, 255]);
 
+  await tabs.nth(1).click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 12, 12)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('#undo-action').click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 12, 12)).not.toEqual([15, 16, 19, 255]);
+
+  await tabs.first().click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).not.toEqual([15, 16, 19, 255]);
   await page.locator('#redo-action').click();
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+
+  await tabs.nth(1).click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 12, 12)).not.toEqual([15, 16, 19, 255]);
+  await page.locator('#redo-action').click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 12, 12)).toEqual([15, 16, 19, 255]);
 });
 
 test('redo keeps the dimension inputs in sync after undoing a source resize', async ({ page }) => {
