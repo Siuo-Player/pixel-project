@@ -59,7 +59,7 @@ test('version 1 project files remain importable and receive output dimensions', 
 });
 
 
-test('source-following outputs resize with source transforms while custom outputs remain independent', () => {
+test('source-following outputs resize with source transforms while custom outputs remain independent', async () => {
   const project = createProject(8, 6, getPalette('retro-8'), []);
   const fixed = addOutput(project, { width: 12, height: 10, palette: getPalette('magma-12') });
   project.source = { ...project.source, width: 6, height: 8, data: new Uint8Array(48) };
