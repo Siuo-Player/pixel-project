@@ -1,0 +1,49 @@
+# Publica executáveis desktop opcionais no GitHub Releases.
+# A app em si já é instalável como PWA (GitHub Pages); este job existe para
+# quem prefere um executável autónomo. Corre manualmente: Actions > Desktop release > Run.
+# Atomizado por SO: win => portable .exe; linux => AppImage; mac => dmg.
+name: Desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (ex.: desktop-v0.6.0)
+        required: false
+        default: desktop-latest
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release-${{ github.event.inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            args: --win
+          - os: ubuntu-latest
+            args: --linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies and packaging tools
+        run: npm install --no-save --no-audit --no-fund electron electron-builder
+      - name: Build executables
+        run: npx electron-builder ${{ matrix.args }} --publish never
+      - name: Upload to GitHub Releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          gh release create "$TAG" --title "Pixel Project $TAG" --notes "Executáveis desktop gerados automaticamente. Também podes instalar a app como PWA: https://siuo-player.github.io/pixel-project/" || true
+          gh release upload "$TAG" dist/*.* --clobber

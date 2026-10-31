@@ -1,6 +1,6 @@
 # Memória do projeto (wiki versionada)
 
-Inspirado no projeto [ai-memory](https://github.com/akitaonrails/ai-memory): a **fonte de verdade é texto Markdown versionado em Git**, não uma base de dados opaca. Qualquer agente ou pessoa pode ler, pesquisar e editar estes ficheiros; se a indexação se perder, a memória reconstrói-se a partir dos ficheiros.
+Inspirado no projeto [ai-memory](https://github.com/akitaonrails/ai-memory) (licença MIT — apenas seguimos o padrão de trabalho; não usamos o seu código). A **fonte de verdade é texto Markdown versionado em Git**, não uma base de dados opaca. Qualquer agente ou pessoa pode ler, pesquisar e editar estes ficheiros; se a indexação se perder, a memória reconstrói-se a partir dos ficheiros.
 
 ## Estrutura
 

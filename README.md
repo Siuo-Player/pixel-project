@@ -80,6 +80,43 @@ npm start
 
 Abrir [http://localhost:4173](http://localhost:4173).
 
+## Publicar e instalar (tudo gratuito)
+
+### App online — GitHub Pages
+
+A app é publicada em **https://siuo-player.github.io/pixel-project/** pelo workflow `deploy.yml`, que corre automaticamente a cada push na `main` (só envia os ficheiros de que a app precisa — sem docs, testes nem artefactos).
+
+### Instalar como aplicação (PWA, sem loja e sem taxas)
+
+A app é uma PWA válida (manifest + service worker com suporte offline) e instala-se a partir do próprio browser:
+
+| Ambiente | Como instalar |
+|---|---|
+| Windows/macOS/Linux (Chrome ou Edge) | Abrir o site → ícone **Instalar** na barra de morada → fica como app nativa, funciona offline e aparece no menu de apps |
+| Android (Chrome) | Menu ⋮ → **Adicionar ao ecrã principal** |
+| iOS/iPadOS (Safari) | Partilhar → **Adicionar ao ecrã principal** |
+| macOS (Safari) | Ficheiro → **Adicionar à doca** |
+
+### Executável desktop autónomo — GitHub Releases
+
+Se precisares de um ficheiro executável para distribuir diretamente (sem loja e sem pagamento), o GitHub Releases hospeda-os de graça:
+
+1. GitHub → **Actions** → **Desktop release** → **Run workflow** (indicar a tag, ex.: `desktop-v0.6.0`).
+2. O job publica **.exe portátil para Windows** e **AppImage para Linux** no release indicado.
+3. Qualquer pessoa descarrega diretamente da página *Releases* do repositório — sem lojas nem contas.
+
+Alternativa local (opcional, no teu PC): `npm install --save-dev electron electron-builder && npx electron-builder --win`. O Chromium do Electron só é descarregado ao instalar — não faz parte do `npm install` normal do projeto.
+
+Nota: a ligação para a PWA aparece nas notas do release no workflow `desktop-release.yml`; se o nome de utilizador do GitHub mudar, ajusta-a nesse ficheiro.
+
+## Licenças
+
+- **Este projeto: MIT** (ver [`LICENSE`](LICENSE)) — uso, modificação, distribuição e comercialização permitidos, sem qualquer custo. A única obrigação é manter o aviso de copyright.
+- **Dependências em runtime (o que é distribuído): nenhuma.** O código da app não carrega bibliotecas externas nem CDNs.
+- **Ferramentas de desenvolvimento** (não distribuídas com a app): Playwright (Apache-2.0); Electron e electron-builder (MIT), opcionais e instaladas apenas quando construis executáveis.
+- **Ícones e assets**: gerados pelo próprio projeto (imagem desenhada por código, em `scripts/build-icons.mjs`) — sem arte de terceiros.
+- **Processo de engenharia**: inspirado no [ai-memory](https://github.com/akitaonrails/ai-memory) (licença MIT do autor Fabio Akita) — seguimos o padrão de wiki versionada em `docs/memory/`; não usa código desse projeto.
+
 ## Testes
 
 ```powershell
@@ -115,8 +152,10 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 - `src/core/`: grelha, transformações, histórico, workspace de documentos e formato de projeto.
 - `src/engine/`: catálogo de paletas, técnicas, propostas, resolvedor e conversor.
 - `src/ui/`: coordenadas e navegação do Canvas.
+- `assets/icons/`: ícones da PWA gerados por `scripts/build-icons.mjs`.
 - `tests/unit/`, `tests/integration/`, `tests/e2e/`: testes por camada.
-- `scripts/`: servidor local.
+- `scripts/`: servidor local, build do site (Pages) e gerador de ícones.
+- `desktop/`: wrapper Electron opcional, empacotado com `electron-builder.yml`.
 - `artifacts/`: evidências geradas pelos testes; não são ficheiros-fonte do projeto.
 
 ## Processo de engenharia e prevenção de regressões

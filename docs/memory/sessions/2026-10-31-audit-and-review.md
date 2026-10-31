@@ -14,7 +14,20 @@
 3. **Baixo** — `redoAction` não chama `refreshSelectedDimensionInputs()`.
 4. **Médio** — `applySourceSize` redimensiona saídas personalizadas que coincidam com o tamanho antigo da fonte (contradiz PX-010).
 
-## Próximos passos sugeridos
-- Corrigir os 4 bugs acima em TDD (PX-024…PX-027) — aguardar confirmação do utilizador.
-- Adicionar `LICENSE` (MIT recomendado) e publicar como PWA.
-- Instalar `ai-memory` (requer Rust/cargo) se se quiser memória automática entre sessões; até lá, manter este wiki à mão.
+## Correção dos 4 bugs (TDD, PX-024…PX-027)
+- Todos corrigidos com teste E2E RED→GREEN (`tests/e2e/editor.spec.js`, `tests/e2e/multi-output.spec.js`); commit `117f909`.
+- Histórico de undo/redo agora é guardado/restaurado por documento; handler de paleta pessoal tolera ids não-preset; Redo sincroniza inputs de dimensões; redimensionamento da fonte só afeta saídas com `followsSourceSize`.
+
+## Distribuição gratuita (PWA + Pages + Releases)
+- App instalável: `manifest.webmanifest`, `sw.js` (cache offline `pixel-project-shell-v1`), ícones gerados por `scripts/build-icons.mjs` em `assets/icons/`; testado por `tests/e2e/application-shell.spec.js`.
+- Servidor local ganhou MIME types para `.webmanifest`, `.png` e `.ico` (bug descoberto pelo novo teste).
+- `index.html` usa caminhos relativos (`./src/...`) — funciona em `file://` (Electron) e em subcaminhos do Pages.
+- Deploy: `.github/workflows/deploy.yml` → GitHub Pages com `scripts/build-site.mjs` (cópia mínima em `artifacts/site`); contrato testado em `tests/unit/deploy-workflow.test.js`.
+- Executáveis opcionais: `desktop/main.cjs` + `electron-builder.yml` + `.github/workflows/desktop-release.yml` (manual, win portable + linux AppImage; electron/builder instalam com `--no-save` em CI).
+- `LICENSE` MIT (2026 Siuo-Player); `package.json` com `license`, `main` e scripts `build:site`/`build:icons`.
+- README com secções "Publicar e instalar" (URL https://siuo-player.github.io/pixel-project/) e "Licenças".
+- Suite final: 76 unitários + 16 E2E, verdes.
+
+## Próximos passos pendentes
+- O wiki do GitHub precisa da primeira página criada pela UI (limitação do GitHub) antes de poder ser populado a partir de `docs/memory/`; `--enable-wiki` já foi corrido.
+- Instalar `ai-memory` (instalador nativo Windows, sem Rust) se se quiser memória automática entre sessões.

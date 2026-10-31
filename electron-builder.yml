@@ -1,0 +1,30 @@
+appId: io.github.siuoplayer.pixelproject
+productName: Pixel Project
+
+directories:
+  output: dist
+  buildResources: assets/icons
+
+files:
+  - index.html
+  - manifest.webmanifest
+  - src/**/*
+  - desktop/**/*
+  - assets/icons/**/*
+  - package.json
+
+win:
+  target:
+    - portable
+
+nsis:
+  oneClick: true
+  perMachine: false
+
+linux:
+  target: AppImage
+  category: Graphics
+
+mac:
+  target: dmg
+  identity: null
