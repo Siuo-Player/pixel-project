@@ -109,6 +109,16 @@ Se precisares de um ficheiro executável para distribuir diretamente (sem loja e
 
 Os builds usam Electron 45.2.1 e electron-builder 26.18.0, fixados no workflow. O job de build tem apenas leitura do repositório; só o job final recebe contents: write para publicar o release.
 
+Também podes lançar o mesmo workflow sem browser, com GitHub CLI autenticado:
+
+```bash
+gh workflow run desktop-release.yml --ref main -f tag=desktop-latest
+gh run watch
+```
+
+Para um release versionado, troca `desktop-latest` por uma tag, por exemplo `desktop-v0.6.0`. O comando requer permissão para executar workflows (`workflow` no OAuth/PAT clássico ou Actions write num fine-grained PAT).
+
+
 Alternativa local (opcional, no teu PC): `npm install --no-save --package-lock=false electron@45.2.1 electron-builder@26.18.0` e depois `npx electron-builder --win --publish never`. O Chromium do Electron é descarregado apenas nesta etapa — não faz parte do `npm install` normal do projeto.
 
 Nota: a ligação para a PWA aparece nas notas do release no workflow `desktop-release.yml`; se o nome de utilizador do GitHub mudar, ajusta-a nesse ficheiro.
