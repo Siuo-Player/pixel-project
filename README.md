@@ -162,6 +162,17 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 - `desktop/`: wrapper Electron opcional, empacotado com `electron-builder.yml`.
 - `artifacts/`: evidências geradas pelos testes; não são ficheiros-fonte do projeto.
 
+
+### Memória de agentes — ai-memory (opcional)
+
+Para instalar e ligar a memória local do ai-memory ao OpenCode no Windows, fecha o OpenCode e executa:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1
+```
+
+O script instala o binário nativo, ativa a allowlist e regista este projeto. O primeiro setup pergunta os nomes do workspace e do projeto. Vê [o procedimento e a alternativa WSL2](docs/memory/procedures/ai-memory-windows.md); Windows nativo está marcado como experimental upstream.
+
 ## Processo de engenharia e prevenção de regressões
 
 Antes de alterar código, qualquer agente deve ler [`AGENTS.md`](AGENTS.md). Bugs e falhas conhecidos ficam ligados a testes reais em [`docs/REGRESSION_CATALOG.md`](docs/REGRESSION_CATALOG.md). O ciclo obrigatório é: escrever o teste, confirmar RED, corrigir, confirmar GREEN, executar `npm run test:all` e verificar CI no SHA exato.
