@@ -347,7 +347,7 @@ test('16 and 32 colour palettes are selectable in setup and editor', async ({ pa
   const outputHex = hexFromRgba(await sampleCell(page, '#output-canvas', 32, 32, 16, 16));
   const paletteColors = await page.locator('#editor-palette-swatches .palette-swatch').evaluateAll(elements =>
     elements.map(element => {
-      const rgb = getComputedStyle(element).backgroundColor.match(/\\d+/g).slice(0, 3);
+      const rgb = getComputedStyle(element).backgroundColor.match(/\d+/g).slice(0, 3);
       return '#' + rgb.map(value => Number(value).toString(16).padStart(2, '0')).join('').toUpperCase();
     })
   );
