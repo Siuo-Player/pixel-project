@@ -13,15 +13,18 @@ if (-not (Get-Command opencode -ErrorAction SilentlyContinue)) {
     }
 }
 
-if (-not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {
-    Write-Host "A instalar ai-memory (binário oficial Windows, checksum verificado)..."
-    irm https://github.com/akitaonrails/ai-memory/releases/latest/download/install.ps1 | iex
-}
-
 $installDirectory = Join-Path $env:LOCALAPPDATA "Programs\ai-memory"
 $binary = Join-Path $installDirectory "ai-memory.exe"
 if ((Test-Path $binary) -and -not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {
     $env:PATH = "$installDirectory;$env:PATH"
+}
+
+if (-not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {
+    Write-Host "A instalar ai-memory (binário oficial Windows, checksum verificado)..."
+    irm https://github.com/akitaonrails/ai-memory/releases/latest/download/install.ps1 | iex
+    if ((Test-Path $binary) -and -not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {
+        $env:PATH = "$installDirectory;$env:PATH"
+    }
 }
 
 if (-not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {
