@@ -16,6 +16,9 @@ export function addDocument(workspace, project) {
     converted: null,
     selectedTool: 'black',
     paintState: 1,
+    paintColorName: 'black',
+    activeOutputId: project.outputs?.[0]?.id ?? null,
+    selectedCanvas: null,
     camera: { zoom: 1, panX: 0, panY: 0 },
     history: createHistory(),
     dirty: false
