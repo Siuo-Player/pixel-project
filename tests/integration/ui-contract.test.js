@@ -35,3 +35,13 @@ test('canvas uses an actual matrix-aligned transparency grid, not viewport-wide 
   assert.match(main, /geometry\.height/);
   assert.doesNotMatch(main, /const tile = 10/);
 });
+
+test('editor exposes document tabs, safe close/return actions, history and shape tools', async () => {
+  const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
+  for (const id of ['document-tabs', 'new-document', 'close-document', 'back-to-setup', 'undo-action', 'redo-action', 'editor-color-count-select']) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  for (const tool of ['line', 'rectangle', 'filled-rectangle', 'ellipse', 'fill', 'eyedropper']) {
+    assert.match(html, new RegExp(`data-tool="${tool}"`));
+  }
+});
