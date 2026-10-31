@@ -1,0 +1,20 @@
+# OpenCode deve correr num runner do GitHub Actions.
+# É necessário criar um secret "ANTHROPIC_API_KEY" no repositório
+# (Settings > Secrets and variables > Actions) antes de este workflow funcionar.
+# Para outro provedor, troque o "--model" e o secret correspondente,
+# por exemplo: opencode run --standalone --model openai/gpt-... "..."
+#   env: OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+name: OpenCode review
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --global @opencode/cli
+      - run: opencode run --standalone --model anthropic/claude-sonnet-5-5 "Review this repository for correctness and summarize any issues."
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
