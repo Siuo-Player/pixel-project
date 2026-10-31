@@ -102,10 +102,24 @@ A app é uma PWA válida (manifest + service worker com suporte offline) e insta
 Se precisares de um ficheiro executável para distribuir diretamente (sem loja e sem pagamento), o GitHub Releases hospeda-os de graça:
 
 1. GitHub → **Actions** → **Desktop release** → **Run workflow** (indicar a tag, ex.: `desktop-v0.6.0`).
-2. O job publica **.exe portátil para Windows** e **AppImage para Linux** no release indicado.
-3. Qualquer pessoa descarrega diretamente da página *Releases* do repositório — sem lojas nem contas.
+2. São construídos **.exe portátil para Windows**, **AppImage para Linux** e **.dmg para macOS**.
+3. Só depois dos três builds terminarem, um job separado publica os binários e os respetivos hashes SHA-256 no release indicado.
+4. Qualquer pessoa descarrega diretamente da página [Releases](https://github.com/Siuo-Player/pixel-project/releases) — sem lojas nem contas.
+5. Os executáveis não são assinados nem notarizados (isso exigiria certificados/contas pagos); Windows/macOS podem mostrar avisos de primeira execução. Confirma o SHA-256 publicado antes de abrir o ficheiro.
 
-Alternativa local (opcional, no teu PC): `npm install --save-dev electron electron-builder && npx electron-builder --win`. O Chromium do Electron só é descarregado ao instalar — não faz parte do `npm install` normal do projeto.
+Os builds usam Electron 45.2.1 e electron-builder 26.18.0, fixados no workflow. O job de build tem apenas leitura do repositório; só o job final recebe contents: write para publicar o release.
+
+Também podes lançar o mesmo workflow sem browser, com GitHub CLI autenticado:
+
+```bash
+gh workflow run desktop-release.yml --ref main -f tag=desktop-latest
+gh run watch
+```
+
+Para um release versionado, troca `desktop-latest` por uma tag, por exemplo `desktop-v0.6.0`. O comando requer permissão para executar workflows (`workflow` no OAuth/PAT clássico ou Actions write num fine-grained PAT).
+
+
+Alternativa local (opcional, no teu PC): `npm install --no-save --package-lock=false electron@45.2.1 electron-builder@26.18.0` e depois `npx electron-builder --win --publish never`. O Chromium do Electron é descarregado apenas nesta etapa — não faz parte do `npm install` normal do projeto.
 
 Nota: a ligação para a PWA aparece nas notas do release no workflow `desktop-release.yml`; se o nome de utilizador do GitHub mudar, ajusta-a nesse ficheiro.
 
@@ -158,6 +172,31 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 - `desktop/`: wrapper Electron opcional, empacotado com `electron-builder.yml`.
 - `artifacts/`: evidências geradas pelos testes; não são ficheiros-fonte do projeto.
 
+
+### Memória de agentes — ai-memory (opcional)
+
+Para instalar e ligar a memória local do ai-memory ao OpenCode no Windows, fecha o OpenCode e executa:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1
+```
+
+O script instala o binário nativo, ativa a allowlist e regista este projeto. O primeiro setup pergunta os nomes do workspace e do projeto. Vê [o procedimento e a alternativa WSL2](docs/memory/procedures/ai-memory-windows.md); Windows nativo está marcado como experimental upstream.
+
 ## Processo de engenharia e prevenção de regressões
 
 Antes de alterar código, qualquer agente deve ler [`AGENTS.md`](AGENTS.md). Bugs e falhas conhecidos ficam ligados a testes reais em [`docs/REGRESSION_CATALOG.md`](docs/REGRESSION_CATALOG.md). O ciclo obrigatório é: escrever o teste, confirmar RED, corrigir, confirmar GREEN, executar `npm run test:all` e verificar CI no SHA exato.
+
+
+## GitHub Wiki — documentação navegável
+
+A [Wiki do projeto](https://github.com/Siuo-Player/pixel-project/wiki) tem páginas para começar, desenvolver, descarregar e compreender a memória dos agentes. As páginas-fonte também vivem em `wiki/` no repositório, para serem revistas e versionadas com o código.
+
+Depois de a Wiki estar inicializada no GitHub, sincroniza-a a partir de PowerShell:
+
+```powershell
+git pull origin main
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-wiki.ps1
+```
+
+Se a Wiki ainda não tiver nenhuma página, abre [Criar a primeira página](https://github.com/Siuo-Player/pixel-project/wiki/_new), cria e guarda `Home`, e volta a executar o comando.

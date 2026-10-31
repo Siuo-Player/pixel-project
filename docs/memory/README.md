@@ -22,3 +22,9 @@ Inspirado no projeto [ai-memory](https://github.com/akitaonrails/ai-memory) (lic
 - `docs/REGRESSION_CATALOG.md` — proteção executável (testes). Este wiki explica o **porquê**; o catálogo garante o **comportamento**.
 - `docs/TESTING_STRATEGY.md` — como validar.
 - `AGENTS.md` — regras de trabalho.
+
+## Instalação local com ai-memory
+
+Para Windows nativo (experimental) e OpenCode, segue [o procedimento passo a passo](procedures/ai-memory-windows.md). O ai-memory upstream é MIT; este projeto adota o padrão e não copia código-fonte nem binários.
+
+Atalho Windows (OpenCode nativo): a partir da raiz do clone, executa `powershell -ExecutionPolicy Bypass -File .\\scripts\\setup-ai-memory.ps1`. O procedimento completo e a alternativa WSL2 estão em [ai-memory-windows.md](procedures/ai-memory-windows.md).
