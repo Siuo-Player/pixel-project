@@ -13,6 +13,15 @@ test('project wiki pages are versioned with the source and can be synced to GitH
     assert.ok(readFileSync(file, 'utf8').trim().length > 0, `Wiki page is empty: ${page}`);
   }
 
+  const memorySetupScript = path.join(root, 'scripts', 'setup-ai-memory.ps1');
+  assert.ok(existsSync(memorySetupScript), 'Provide a one-command PowerShell setup for ai-memory.');
+  const setupScript = readFileSync(memorySetupScript, 'utf8');
+  assert.match(setupScript, /install\.ps1/);
+  assert.match(setupScript, /setup --yes --agent opencode/);
+  assert.match(setupScript, /install-hooks --agent opencode --apply --capture-mode allowlist/);
+  assert.match(setupScript, /project init/);
+  assert.match(setupScript, /ai-memory doctor/);
+
   const syncScript = path.join(root, 'scripts', 'sync-wiki.ps1');
   assert.ok(existsSync(syncScript), 'Provide a PowerShell helper to publish the versioned pages to GitHub Wiki.');
   const script = readFileSync(syncScript, 'utf8');
