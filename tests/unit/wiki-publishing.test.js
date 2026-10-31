@@ -22,7 +22,7 @@ test('project wiki pages are versioned with the source and can be synced to GitH
   assert.match(setupScript, /\.ai-memory\.toml/);
   assert.match(setupScript, /Test-Path \$projectMarker/);
   assert.match(setupScript, /project init/);
-  assert.match(setupScript, /ai-memory doctor/);
+  assert.match(setupScript, /Invoke-AiMemoryCommand doctor/);
 
   const syncScript = path.join(root, 'scripts', 'sync-wiki.ps1');
   assert.ok(existsSync(syncScript), 'Provide a PowerShell helper to publish the versioned pages to GitHub Wiki.');
