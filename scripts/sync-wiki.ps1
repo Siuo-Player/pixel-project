@@ -18,7 +18,7 @@ try {
     Write-Host "A clonar a Wiki do GitHub..."
     git clone $Remote $wikiDirectory
     if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível clonar a Wiki. Abre https://github.com/Siuo-Player/pixel-project/wiki/_new, cria a primeira página e volta a executar este script."
+        throw "Não foi possível clonar a Wiki. Se ainda não houver páginas, abre https://github.com/Siuo-Player/pixel-project/wiki/_new e cria a primeira. Se já estiver inicializada, confirma a autenticação Git local e volta a executar este script."
     }
 
     Write-Host "A sincronizar páginas Markdown..."
