@@ -57,8 +57,8 @@ jobs:
           retention-days: 7
 
   release:
-    name: Publish GitHub Release
     needs: build
+    name: Publish GitHub Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
