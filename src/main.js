@@ -516,11 +516,24 @@ function applyShape(grid, start, end, tool = selectedTool, state = activeTool) {
   else if (tool === 'filled-ellipse') drawEllipse(grid, start.x, start.y, end.x, end.y, state, { filled: true });
 }
 
+function refreshSelectedDimensionInputs() {
+  if (!project) return;
+  if (selectedCanvas === 'source') {
+    $('#source-width').value = String(project.source.width);
+    $('#source-height').value = String(project.source.height);
+  } else if (selectedCanvas === 'output') {
+    const output = outputConfig();
+    $('#output-width').value = String(output.followsSourceSize ? project.source.width : output.width);
+    $('#output-height').value = String(output.followsSourceSize ? project.source.height : output.height);
+  }
+}
+
 function undoAction() {
   if (!project) return;
   const restored = undoGrid(history, project.source);
   if (!restored) return;
   project.source = restored;
+  refreshSelectedDimensionInputs();
   markDocumentDirty();
   recalculate();
   updateHistoryButtons();
@@ -1048,6 +1061,7 @@ function transformSource(transform) {
   if (!project) return;
   recordHistory(history, project.source);
   project.source = transform(project.source);
+  refreshSelectedDimensionInputs();
   markDocumentDirty();
   updateHistoryButtons();
   recalculate();
