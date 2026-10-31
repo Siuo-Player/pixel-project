@@ -54,6 +54,7 @@ test('filled ellipse colors its interior but leaves the exterior untouched', () 
   const grid = createSourceGrid(7, 7);
   drawEllipse(grid, 1, 1, 5, 5, WHITE, { filled: true });
   assert.equal(getPixel(grid, 3, 3), WHITE);
-  assert.equal(getPixel(grid, 1, 1), WHITE);
+  assert.equal(getPixel(grid, 3, 1), WHITE);
+  assert.equal(getPixel(grid, 1, 1), TRANSPARENT);
   assert.equal(getPixel(grid, 0, 0), TRANSPARENT);
 });

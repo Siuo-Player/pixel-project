@@ -315,7 +315,7 @@ test('shape tools draw lines and filled rectangles and ellipses on the actual so
 
   await page.locator('[data-tool="filled-ellipse"]').click();
   const ellipseA = await cellPoint(page, '#source-canvas', 16, 16, 3, 8);
-  const ellipseB = await cellPoint(page, '#source-canvas', 7, 7, 7, 12);
+  const ellipseB = await cellPoint(page, '#source-canvas', 16, 16, 7, 12);
   await page.mouse.move(ellipseA.x, ellipseA.y);
   await page.mouse.down();
   await page.mouse.move(ellipseB.x, ellipseB.y);

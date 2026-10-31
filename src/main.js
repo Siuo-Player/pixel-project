@@ -866,8 +866,8 @@ function initialize() {
   window.addEventListener('pointerup', () => { stopDrawing(); stopPanning(); });
   window.addEventListener('keydown', event => {
     const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName);
+    const key = event.key.toLowerCase();
     if ((event.ctrlKey || event.metaKey) && !typing) {
-      const key = event.key.toLowerCase();
       if (key === 'z') {
         event.preventDefault();
         if (event.shiftKey) redoAction(); else undoAction();
