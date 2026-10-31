@@ -222,6 +222,12 @@ test('12-colour palette selection is available and renders one of its discrete c
   await page.locator('#grid-height').fill('16');
   await page.locator('#create-project').click();
   await expect(page.locator('#editor-color-count')).toHaveText('12 cores');
+  const swatchOverflow = await page.locator('#editor-palette-swatches').evaluate(container => {
+    const bounds = container.getBoundingClientRect();
+    const lastSwatch = container.lastElementChild.getBoundingClientRect();
+    return lastSwatch.right - bounds.right;
+  });
+  expect(swatchOverflow).toBeLessThanOrEqual(1);
 
   await page.getByRole('button', { name: /Preto/ }).click();
   await clickCell(page, '#source-canvas', 32, 16, 15, 8);
