@@ -36,8 +36,13 @@ Invoke-AiMemoryCommand setup --yes --agent opencode
 Write-Host "A ativar captura em allowlist (só projetos com .ai-memory.toml)..."
 Invoke-AiMemoryCommand install-hooks --agent opencode --apply --capture-mode allowlist
 
-Write-Host "A registar este repositório na allowlist..."
-Invoke-AiMemoryCommand project init
+$projectMarker = Join-Path $repoRoot ".ai-memory.toml"
+if (Test-Path $projectMarker) {
+    Write-Host "O marcador .ai-memory.toml já existe; não será sobrescrito."
+} else {
+    Write-Host "A registar este repositório na allowlist..."
+    Invoke-AiMemoryCommand project init
+}
 
 Write-Host "A verificar o estado e a configuração..."
 Invoke-AiMemoryCommand status
