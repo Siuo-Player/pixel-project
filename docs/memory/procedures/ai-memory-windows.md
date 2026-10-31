@@ -2,6 +2,20 @@
 
 Procedimento preparado para Windows x64 com OpenCode a correr como processo nativo do Windows. Se o teu OpenCode corre dentro de WSL2, executa o caminho Linux dentro da própria distribuição WSL2; não mistures caminhos Windows e WSL.
 
+
+## Instalação automatizada (um comando)
+
+Fecha o OpenCode antes de começar e abre PowerShell normal na pasta do projeto:
+
+```powershell
+Set-Location C:\Users\ASUS\Documents\pixel-project
+powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1
+```
+
+O script instala o binário oficial se necessário, verifica que o comando OpenCode existe, executa `setup`, muda os hooks para allowlist, cria o marcador deste repositório e verifica o servidor. A criação do marcador pede apenas os nomes de workspace e projeto. No fim, reabre o OpenCode.
+
+O script não lê nem guarda chaves de API e não configura um modelo pago. A allowlist é uma opção global para esta instalação do ai-memory: os outros checkouts só passam a ser capturados quando também forem inicializados com `ai-memory project init`.
+
 ## Instalação nativa (sem Cargo e sem Docker)
 
 Abre PowerShell normal, sem privilégios de administrador. O instalador descarrega o binário Windows pré-compilado e verifica o SHA-256 antes de o instalar.
