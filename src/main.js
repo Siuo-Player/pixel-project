@@ -421,7 +421,7 @@ function drawAll() {
     if (result) drawGrid(canvas, canvas.getContext('2d'), result, getPaletteForCanvas(output));
     const dimensions = panel.querySelector('[data-output-dimensions]');
     if (dimensions) dimensions.textContent = (result?.width ?? output.width) + ' × ' + (result?.height ?? output.height);
-    panel.dataset.outputDimensions = output.width + ' × ' + output.height;
+    panel.dataset.outputDimensions = (result?.width ?? output.width) + ' × ' + (result?.height ?? output.height);
     panel.dataset.paletteId = output.palette.id;
   }
   $('#zoom-label').textContent = Math.round(camera.zoom * 100) + '%';
@@ -758,7 +758,9 @@ function renderOutputPanels() {
     panel.tabIndex = 0;
     panel.dataset.outputPanel = output.id;
     panel.dataset.paletteId = output.palette.id;
-    panel.dataset.outputDimensions = output.width + ' × ' + output.height;
+    const outputWidth = output.followsSourceSize ? project.source.width : output.width;
+    const outputHeight = output.followsSourceSize ? project.source.height : output.height;
+    panel.dataset.outputDimensions = outputWidth + ' × ' + outputHeight;
     const heading = document.createElement('div');
     heading.className = 'panel-heading';
     const titleGroup = document.createElement('div');
@@ -773,7 +775,7 @@ function renderOutputPanels() {
     const dimensions = document.createElement('span');
     dimensions.className = 'panel-dimensions';
     dimensions.dataset.outputDimensions = '';
-    dimensions.textContent = output.width + ' × ' + output.height;
+    dimensions.textContent = outputWidth + ' × ' + outputHeight;
     actions.append(dimensions);
     if (project.outputs.length > 1) {
       const remove = document.createElement('button');
@@ -873,8 +875,8 @@ function updateEditorControls() {
   $('#editor-color-count').textContent = palette.colors.length + ' cores';
   renderSwatches($('#editor-palette-swatches'), palette.colors);
   $('#resolver-mode').value = output.resolverMode ?? 'weighted-average';
-  $('#output-width').value = String(output.width);
-  $('#output-height').value = String(output.height);
+  $('#output-width').value = String(output.followsSourceSize ? project.source.width : output.width);
+  $('#output-height').value = String(output.followsSourceSize ? project.source.height : output.height);
   $('#new-technique').replaceChildren();
   for (const definition of TECHNIQUE_CATALOG) {
     const option = document.createElement('option');
@@ -920,8 +922,7 @@ function addInterpretation() {
     const paletteId = nextNumber === 2 ? 'aurora-12' : 'spectrum-32';
     const output = addOutput(project, {
       name: 'Interpretação ' + nextNumber,
-      width: project.source.width,
-      height: project.source.height,
+      followsSourceSize: true,
       palette: getPalette(paletteId),
       techniques: makeInitialTechniques()
     });
@@ -971,6 +972,7 @@ function applyOutputSize() {
     resizeGridNearestNeighbor(project.source, width, height);
     output.width = width;
     output.height = height;
+    output.followsSourceSize = false;
     markDocumentDirty();
     renderOutputPanels();
     updateEditorControls();
