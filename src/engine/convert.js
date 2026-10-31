@@ -1,5 +1,6 @@
 import { runTechnique } from './techniques.js';
 import { resolveProposals } from './resolver.js';
+import { resizeGridNearestNeighbor } from '../core/resample.js';
 
 export function convertSource(source, palette, techniqueInstances, options = {}) {
   if (!Array.isArray(techniqueInstances)) throw new TypeError('Technique instances must be an array.');
@@ -9,8 +10,11 @@ export function convertSource(source, palette, techniqueInstances, options = {})
 
 export function convertProject(project, outputId = project.outputs?.[0]?.id) {
   const output = project.outputs?.find(item => item.id === outputId);
-  if (!output) throw new RangeError(`Unknown output: ${outputId}`);
-  return convertSource(project.source, output.palette ?? project.palette, output.techniques, {
+  if (!output) throw new RangeError('Unknown output: ' + outputId);
+  const width = output.width ?? project.source.width;
+  const height = output.height ?? project.source.height;
+  const source = resizeGridNearestNeighbor(project.source, width, height);
+  return convertSource(source, output.palette ?? project.palette, output.techniques, {
     mode: output.resolverMode ?? project.resolverMode ?? 'weighted-average'
   });
 }
