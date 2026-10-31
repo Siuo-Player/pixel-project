@@ -50,10 +50,12 @@ O utilizador:
 A área de trabalho começa com:
 - uma tela-fonte editável;
 - uma tela de interpretação convertida no primeiro MVP;
-- ferramentas preto, branco e apagar;
+- ferramentas preto, branco, apagar, linha, retângulo, elipse, preenchimento e conta-gotas;
+- histórico de desfazer/refazer independente por documento;
 - controlos de zoom e deslocação sincronizados;
 - operações de espelhamento horizontal/vertical e rotação de 90°, 180° e 270° que alteram os pixels da arte;
-- um separador para alterar as regras e paletas do projeto.
+- definições para alterar técnicas e paletas, incluindo 4, 8, 12, 16 ou 32 cores;
+- vários documentos independentes em separadores, com ações para criar, alternar e fechar telas.
 
 A arquitetura representa as interpretações como uma coleção de configurações independentes. O MVP apresenta uma interpretação. A primeira expansão visual terá como limite provisório três painéis no total: a imagem-fonte e até duas interpretações. O modelo de dados não deve impor esse limite e deverá poder suportar mais painéis no futuro.
 
@@ -73,7 +75,7 @@ Fica como experiência futura um modo em camadas: uma regra grande pode definir 
 
 ## 6. Paletas
 
-O utilizador escolhe a quantidade de cores e pode:
+O utilizador escolhe 4, 8, 12, 16 ou 32 cores e pode:
 - selecionar paletas fornecidas pela aplicação;
 - criar uma paleta escolhendo as cores individualmente;
 - alterar uma paleta no projeto atual.
