@@ -125,3 +125,37 @@ Próximas evoluções possíveis:
 - resolução global por otimização de energia.
 
 A especificação modular detalhada está em [MODULAR_TRANSFORMATION_ENGINE.md](MODULAR_TRANSFORMATION_ENGINE.md).
+
+
+## 9. Uma origem, até três interpretações
+
+Um projeto contém exatamente uma grelha `source` e entre uma e três entradas em `outputs`. Cada saída tem os seus próprios:
+- `width` e `height`;
+- `palette` com N cores e a sua correspondência complementar `mirror`;
+- `techniques`, com instâncias, parâmetros, pesos e estado ativo;
+- `resolverMode`.
+
+`convertProject(project, outputId)` reamostra a matriz original para a dimensão pedida através de nearest-neighbour e só depois executa as técnicas dessa saída. A reamostragem não modifica `project.source`. A versão 2 do formato de projeto persiste as dimensões de cada saída; projetos versão 1 continuam a ser importados, herdando a dimensão da origem.
+
+A interface cria dinamicamente os painéis de saída. A seleção de uma tela abre um inspector contextual; a seleção da origem mostra as dimensões e ações da origem, enquanto a seleção de uma saída apresenta apenas a configuração dessa interpretação. As saídas podem ser removidas, mas o projeto mantém sempre pelo menos uma.
+
+## 10. Ferramentas de pintura
+
+`selectedTool` e `paintState` são estados distintos. A ferramenta seleciona a operação geométrica (por exemplo, elipse preenchida); o estado de pintura seleciona preto, branco ou transparência. Assim, mudar a cor não desativa a ferramenta. O conta-gotas atualiza a cor de pintura e regressa à ferramenta previamente selecionada.
+
+## 11. Técnicas implementadas
+
+O catálogo tem sete técnicas:
+- **Weighted neighbourhood:** média contextual com kernel espacial selecionável.
+- **Directional lines:** deteção de sequências da mesma polaridade e comprimento máximo configurável.
+- **Local entropy:** ajuste contextual do contraste pela entropia binária.
+- **Local majority:** decisão suavizada baseada num limiar local.
+- **Edge-aware contrast:** reforço adaptativo do contraste em regiões com transições frequentes.
+- **Directional gradient:** ajuste contextual a partir de diferenças horizontais e verticais.
+- **Ordered dithering:** quantização espacial com matriz Bayer 4×4.
+
+## 12. Resolvedores
+
+- **Weighted average:** média das distribuições de probabilidade, ponderada pela importância de cada instância.
+- **Highest confidence:** seleciona a proposta individual com maior probabilidade máxima, ajustada pelo peso.
+- **Weighted vote:** cada instância ativa vota na sua cor de maior probabilidade; o peso da instância determina a força do voto.
