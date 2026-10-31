@@ -20,14 +20,15 @@ concurrency:
 jobs:
   review:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check OpenCode provider configuration
         id: provider
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: node scripts/check-opencode-review-config.mjs
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.provider.outputs.configured == 'true'
         with:
           node-version: 22
