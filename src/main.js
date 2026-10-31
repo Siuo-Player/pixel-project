@@ -842,6 +842,9 @@ function setActiveCanvas(kind, outputId = null) {
     $('#source-height').value = String(project.source.height);
   } else {
     const output = outputConfig();
+    editorCustom = false;
+    $('#editor-custom-colors').hidden = true;
+    $('#editor-custom-toggle').textContent = 'Editar cores desta paleta';
     $('#inspector-title').textContent = output.name;
     updateEditorControls();
   }
@@ -940,10 +943,13 @@ function addInterpretation() {
 function deleteInterpretation(outputId) {
   if (!project || project.outputs.length <= 1) return;
   try {
-    removeOutput(project, outputId);
-    outputResults.delete(outputId);
-    if (selectedOutputId === outputId) selectedOutputId = project.outputs[0].id;
-    if (selectedCanvas === 'output' && selectedOutputId === outputId) selectedCanvas = null;
+    const wasSelected = selectedOutputId === outputId;
+    const removed = removeOutput(project, outputId);
+    outputResults.delete(removed.id);
+    if (wasSelected) {
+      selectedOutputId = project.outputs[0].id;
+      if (selectedCanvas === 'output') selectedCanvas = null;
+    }
     if (activeDocument) {
       activeDocument.activeOutputId = selectedOutputId;
       activeDocument.selectedCanvas = selectedCanvas;
@@ -960,9 +966,11 @@ function deleteInterpretation(outputId) {
 function applyOutputSize() {
   const output = outputConfig();
   try {
-    output.width = Number($('#output-width').value);
-    output.height = Number($('#output-height').value);
-    resizeGridNearestNeighbor(project.source, output.width, output.height);
+    const width = Number($('#output-width').value);
+    const height = Number($('#output-height').value);
+    resizeGridNearestNeighbor(project.source, width, height);
+    output.width = width;
+    output.height = height;
     markDocumentDirty();
     renderOutputPanels();
     updateEditorControls();
