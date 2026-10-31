@@ -13,6 +13,9 @@ A fonte de verdade é Markdown versionado em Git. O catálogo de regressões man
 
 ## ai-memory (opcional)
 
+No Windows com OpenCode nativo, o atalho é `powershell -ExecutionPolicy Bypass -File .\\scripts\\setup-ai-memory.ps1` (depois de obter o código pelo `git clone`). O primeiro setup pede os nomes do workspace/projeto; vê o [guia completo](https://github.com/Siuo-Player/pixel-project/blob/main/docs/memory/procedures/ai-memory-windows.md).
+
+
 O projeto segue o padrão de memória do [akitaonrails/ai-memory](https://github.com/akitaonrails/ai-memory), mas não copia o seu código. O ai-memory é MIT; a respetiva licença está no repositório original.
 
 No Windows nativo, o procedimento sem Cargo nem Docker está documentado em [ai-memory Windows setup](https://github.com/Siuo-Player/pixel-project/blob/main/docs/memory/procedures/ai-memory-windows.md).
