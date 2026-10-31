@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSourceGrid, setPixel, BLACK, WHITE, TRANSPARENT } from '../../src/core/grid.js';
-import { getPalette, createCustomPalette, mirrorPaletteIndex } from '../../src/engine/palettes.js';
+import { getPalette, listPalettes, createCustomPalette, mirrorPaletteIndex } from '../../src/engine/palettes.js';
 import { createTechniqueInstance, runTechnique } from '../../src/engine/techniques.js';
 import { resolveProposals } from '../../src/engine/resolver.js';
 import { convertSource } from '../../src/engine/convert.js';
@@ -17,6 +17,39 @@ test('palette mirroring is an involution and returns valid palette indexes', () 
   const palette = getPalette('blue-red-4');
   for (let i = 0; i < palette.colors.length; i += 1) {
     assert.equal(mirrorPaletteIndex(palette, mirrorPaletteIndex(palette, i)), i);
+  }
+});
+
+
+test('built-in palette catalog includes balanced 4, 8 and 12 colour options', () => {
+  const palettes = listPalettes();
+  const twelveColour = palettes.filter(palette => palette.colors.length === 12);
+
+  assert.ok(palettes.filter(palette => palette.colors.length === 4).length >= 5);
+  assert.ok(palettes.filter(palette => palette.colors.length === 8).length >= 4);
+  assert.ok(twelveColour.length >= 3);
+
+  for (const palette of palettes) {
+    assert.equal(palette.mirror.length, palette.colors.length);
+    assert.deepEqual(
+      palette.mirror,
+      palette.colors.map((_, index) => palette.colors.length - 1 - index)
+    );
+    assert.ok(palette.colors.every(color => /^#[0-9A-F]{6}$/i.test(color)));
+  }
+});
+
+test('12-colour palettes work in the contextual converter and preserve polarity symmetry', () => {
+  const source = sampleRatioGrid(4);
+  const palette = getPalette('aurora-12');
+  const technique = [createTechniqueInstance('weighted-neighbourhood', { radius: 1, includeCenter: true })];
+  const original = convertSource(source, palette, technique);
+  const inverted = convertSource(invertPolarity(source), palette, technique);
+
+  assert.ok(original.data.every((value, index) => source.data[index] === TRANSPARENT || (value >= 0 && value < 12)));
+  for (let index = 0; index < source.data.length; index += 1) {
+    if (source.data[index] === TRANSPARENT) assert.equal(inverted.data[index], -1);
+    else assert.equal(inverted.data[index], mirrorPaletteIndex(palette, original.data[index]));
   }
 });
 
