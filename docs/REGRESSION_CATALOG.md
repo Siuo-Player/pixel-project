@@ -55,3 +55,5 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 5. Não apagues entradas antigas. Se o requisito mudar, documenta a decisão e atualiza o teste com ela.
 
 Os testes de contrato em `tests/unit/engineering-workflow-contract.test.js` verificam que os ficheiros de processo existem e que cada linha aponta para um teste real com esse nome.
+| PX-029 | Lacuna de distribuição encontrada na auditoria pós-GLM | Os três pacotes desktop devem ser construídos antes de um único job publicar os binários e hashes; os jobs de build não recebem permissões de escrita. | `tests/unit/desktop-release-workflow.test.js` — `desktop release builds Windows, Linux and macOS artifacts before one release publication` | CI |
+| PX-030 | Documentação do projeto sem espelho navegável | As páginas de Wiki devem existir versionadas no repositório e ter um procedimento explícito de sincronização para o repositório Wiki do GitHub. | `tests/unit/wiki-publishing.test.js` — `project wiki pages are versioned with the source and can be synced to GitHub Wiki` | Unitário |
