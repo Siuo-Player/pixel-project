@@ -49,3 +49,11 @@ test('flood fill is a no-op when the target already has the selected state', () 
   assert.equal(floodFill(grid, 0, 0, TRANSPARENT), 0);
   assert.ok(grid.data.every(value => value === TRANSPARENT));
 });
+
+test('filled ellipse colors its interior but leaves the exterior untouched', () => {
+  const grid = createSourceGrid(7, 7);
+  drawEllipse(grid, 1, 1, 5, 5, WHITE, { filled: true });
+  assert.equal(getPixel(grid, 3, 3), WHITE);
+  assert.equal(getPixel(grid, 1, 1), WHITE);
+  assert.equal(getPixel(grid, 0, 0), TRANSPARENT);
+});

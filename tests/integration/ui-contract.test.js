@@ -41,7 +41,7 @@ test('editor exposes document tabs, safe close/return actions, history and shape
   for (const id of ['document-tabs', 'new-document', 'close-document', 'back-to-setup', 'undo-action', 'redo-action', 'editor-color-count-select']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  for (const tool of ['line', 'rectangle', 'filled-rectangle', 'ellipse', 'fill', 'eyedropper']) {
+  for (const tool of ['line', 'rectangle', 'filled-rectangle', 'ellipse', 'filled-ellipse', 'fill', 'eyedropper']) {
     assert.match(html, new RegExp(`data-tool="${tool}"`));
   }
 });

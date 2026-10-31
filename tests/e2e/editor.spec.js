@@ -290,7 +290,7 @@ test('multiple document tabs keep independent drawings and support undo/redo and
   await expect(page.locator('#document-tabs [data-document-tab]')).toHaveCount(1);
 });
 
-test('shape tools draw lines and filled rectangles on the actual source matrix', async ({ page }) => {
+test('shape tools draw lines and filled rectangles and ellipses on the actual source matrix', async ({ page }) => {
   await page.goto('/');
   await page.locator('#grid-width').fill('16');
   await page.locator('#grid-height').fill('16');
@@ -312,4 +312,13 @@ test('shape tools draw lines and filled rectangles on the actual source matrix',
   await page.mouse.move(b.x, b.y);
   await page.mouse.up();
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 9, 9)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('[data-tool="filled-ellipse"]').click();
+  const ellipseA = await cellPoint(page, '#source-canvas', 16, 16, 3, 8);
+  const ellipseB = await cellPoint(page, '#source-canvas', 7, 7, 7, 12);
+  await page.mouse.move(ellipseA.x, ellipseA.y);
+  await page.mouse.down();
+  await page.mouse.move(ellipseB.x, ellipseB.y);
+  await page.mouse.up();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 5, 10)).toEqual([15, 16, 19, 255]);
 });
