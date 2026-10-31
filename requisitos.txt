@@ -19,7 +19,7 @@ RF-03 — Transparência
 A transparência representa ausência de pixel. Não deve ser interpretada como preto ou branco, nem receber uma cor de saída.
 
 RF-04 — Paletas
-O utilizador pode escolher paletas predefinidas de 4 ou 8 cores e personalizar as cores. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
+O utilizador pode escolher paletas predefinidas de 4, 8 ou 12 cores e personalizar as cores. Existem várias rampas para cada dimensão de paleta. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
 
 RF-05 — Complementaridade
 A inversão de preto e branco na fonte deve refletir a interpretação pela ordem inversa da paleta, mantendo a transparência. Formalmente, F(S(I)) = T(F(I)), com S e T involutivas.
@@ -44,6 +44,9 @@ A vista original e a vista convertida partilham zoom e deslocamento. O layout ad
 
 RF-12 — Persistência
 O utilizador pode exportar e importar projetos num ficheiro .pixelproj, preservando a fonte e as configurações necessárias à conversão.
+
+RF-13 — Grelha de píxeis visível
+A área da matriz deve ser visualmente distinguível do espaço exterior ao desenho. Cada célula transparente apresenta um padrão discreto alinhado com o píxel real da matriz; o fundo exterior à matriz não deve imitar células editáveis. Um contorno deve delimitar a área que aceita desenho.
 
 3. REQUISITOS DE QUALIDADE
 
