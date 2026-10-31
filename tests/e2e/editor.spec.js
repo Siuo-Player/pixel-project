@@ -257,3 +257,68 @@ test('transparent cells align to real matrix pixels and the area outside the gri
   expect(outsideTop).toEqual(outsideBottom);
   await capture(page, '16-grelha-pixeis-reais.png');
 });
+
+test('multiple document tabs keep independent drawings and support undo/redo and editor palette sizing', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
+  await page.goto('/');
+  await page.locator('#grid-width').fill('16');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+  await expect(page.locator('#document-tabs [data-document-tab]')).toHaveCount(1);
+  await page.locator('#new-document').click();
+  await expect(page.locator('#document-tabs [data-document-tab]')).toHaveCount(2);
+
+  await page.getByRole('button', { name: /Preto/ }).click();
+  await clickCell(page, '#source-canvas', 16, 16, 3, 4);
+  await page.locator('#undo-action').click();
+  const transparent = await sampleCell(page, '#source-canvas', 16, 16, 3, 4);
+  expect(transparent).not.toEqual([15, 16, 19, 255]);
+  await page.locator('#redo-action').click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('#editor-color-count-select').selectOption('12');
+  await expect(page.locator('#editor-color-count')).toHaveText('12 cores');
+  await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(12);
+
+  const firstTab = page.locator('#document-tabs [data-document-tab]').first();
+  await firstTab.click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).not.toEqual([15, 16, 19, 255]);
+  await page.locator('#document-tabs [data-document-tab]').last().click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('#close-document').click();
+  await expect(page.locator('#document-tabs [data-document-tab]')).toHaveCount(1);
+});
+
+test('shape tools draw lines and filled rectangles and ellipses on the actual source matrix', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('16');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+  const start = await cellPoint(page, '#source-canvas', 16, 16, 2, 2);
+  const end = await cellPoint(page, '#source-canvas', 16, 16, 7, 2);
+  await page.locator('[data-tool="line"]').click();
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y);
+  await page.mouse.up();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 5, 2)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('[data-tool="filled-rectangle"]').click();
+  const a = await cellPoint(page, '#source-canvas', 16, 16, 8, 8);
+  const b = await cellPoint(page, '#source-canvas', 16, 16, 10, 10);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y);
+  await page.mouse.up();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 9, 9)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('[data-tool="filled-ellipse"]').click();
+  const ellipseA = await cellPoint(page, '#source-canvas', 16, 16, 3, 8);
+  const ellipseB = await cellPoint(page, '#source-canvas', 16, 16, 7, 12);
+  await page.mouse.move(ellipseA.x, ellipseA.y);
+  await page.mouse.down();
+  await page.mouse.move(ellipseB.x, ellipseB.y);
+  await page.mouse.up();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 5, 10)).toEqual([15, 16, 19, 255]);
+});

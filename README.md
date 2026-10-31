@@ -10,7 +10,11 @@ A ideia central é desenhar com duas cores de entrada e observar como diferentes
 - ecrã de criação com dimensões e paletas de 4, 8 ou 12 cores;
 - 13 paletas predefinidas (6 de 4 cores, 4 de 8 cores e 3 de 12 cores) e edição das cores;
 - tela original e pré-visualização convertida, com transparência desenhada por célula real e contorno da grelha editável;
-- pincel preto, branco e borracha;
+- pincel preto, branco e borracha, linha, retângulo, retângulo preenchido, elipse, elipse preenchida, balde de preenchimento e conta-gotas;
+- vários documentos independentes em separadores, com criação e fecho de telas;
+- histórico de desfazer/refazer por documento e atalhos de teclado (B, W, E, L, R, O, G e I para ferramentas);
+- alteração do tamanho da paleta (4, 8 ou 12 cores) diretamente no editor;
+- menus de Ficheiro, Editar e Ver, com ações de exportação, importação, limpeza e navegação;
 - desenho por arrastamento sem falhas;
 - zoom e pan partilhados;
 - espelhamento e rotação da matriz original;
@@ -21,7 +25,7 @@ A ideia central é desenhar com duas cores de entrada e observar como diferentes
 - testes unitários e de integração com Node.js;
 - testes de browser com Chromium e capturas de ecrã automáticas.
 
-A primeira versão apresenta uma interpretação convertida. O modelo de projeto já guarda uma coleção de saídas para permitir várias interpretações no futuro.
+Cada separador mantém o seu próprio desenho, paleta, zoom, técnicas e histórico. Os projetos continuam a ser exportados individualmente em `.pixelproj`.
 
 ## Requisitos
 

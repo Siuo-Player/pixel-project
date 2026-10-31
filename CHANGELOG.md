@@ -1,3 +1,11 @@
+## [0.4.0] - 2026-10-31
+
+- Added independent document tabs, new/close document actions and return-to-home workflow.
+- Added per-document undo/redo, including keyboard shortcuts.
+- Added line, rectangle, filled rectangle, ellipse, flood-fill and eyedropper tools.
+- Added palette-size switching (4/8/12) inside the editor.
+- Added File, Edit and View menus.
+
 # Histórico de alterações
 
 ## 2026-10-30 — Primeiro protótipo executável
