@@ -1,12 +1,6 @@
 import { BLACK, WHITE, TRANSPARENT } from '../core/grid.js';
 
 export const TECHNIQUE_CATALOG = [
-  { id: 'weighted-neighbourhood', name: 'Weighted neighbourhood', description: 'Maps the local white proportion to the selected palette ramp.', defaults: { radius: 1, includeCenter: true, kernel: 'uniform' } },
-  { id: 'directional-lines', name: 'Directional lines', description: 'Detects continuous runs and gives line structure additional influence.', defaults: { radius: 2, maxLength: 7, contrastBoost: 1.2, includeCenter: true } },
-  { id: 'local-entropy', name: 'Local entropy', description: 'Uses local binary entropy to increase or reduce contextual contrast.', defaults: { radius: 2, contrastBoost: 0.8, includeCenter: true } }
-];
-
-export const TECHNIQUE_CATALOG = [
   { id: 'weighted-neighbourhood', name: 'Weighted neighbourhood', description: 'Converte a proporção local de branco numa distribuição contínua de cores.', defaults: { radius: 1, includeCenter: true, kernel: 'uniform' } },
   { id: 'directional-lines', name: 'Directional lines', description: 'Dá mais influência a traços e linhas contínuas.', defaults: { radius: 2, maxLength: 7, contrastBoost: 1.2, includeCenter: true } },
   { id: 'local-entropy', name: 'Local entropy', description: 'Ajusta o contraste de acordo com a diversidade local.', defaults: { radius: 2, contrastBoost: 0.8, includeCenter: true } },
