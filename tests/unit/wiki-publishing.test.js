@@ -39,6 +39,7 @@ test('the Windows ai-memory guide uses the verified native release installer and
   const guidePath = path.join(root, 'docs', 'memory', 'procedures', 'ai-memory-windows.md');
   assert.ok(existsSync(guidePath), 'Document the reproducible native Windows installation procedure.');
   const guide = readFileSync(guidePath, 'utf8');
+  assert.match(guide, /setup-ai-memory\.ps1/);
   assert.match(guide, /releases\/latest\/download\/install\.ps1/);
   assert.match(guide, /ai-memory setup/);
   assert.match(guide, /ai-memory project init/);
