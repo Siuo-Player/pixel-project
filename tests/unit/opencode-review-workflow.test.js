@@ -42,4 +42,7 @@ test('GitHub review workflow gates installation and model calls on provider conf
   assert.match(workflow, /name:\s*Check OpenCode provider configuration/);
   assert.match(workflow, /if:\s*steps\.provider\.outputs\.configured == 'true'/);
   assert.match(workflow, /OPENCODE_API_KEY:\s*\$\{\{\s*secrets\.OPENCODE_API_KEY\s*\}\}/);
+  assert.match(workflow, /permissions:\s*[\r\n]+\s*contents:\s*read/);
+  assert.match(workflow, /npm install --global @opencode\/cli@\d+/);
+  assert.match(workflow, /OPENCODE_REVIEW_MODEL/);
 });
