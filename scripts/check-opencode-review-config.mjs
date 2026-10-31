@@ -1,6 +1,6 @@
 import { appendFileSync } from 'node:fs';
 
-const configured = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
+const configured = Boolean(process.env.OPENCODE_API_KEY?.trim());
 const output = `configured=${configured ? 'true' : 'false'}\n`;
 
 if (process.env.GITHUB_OUTPUT) {
@@ -10,5 +10,5 @@ if (process.env.GITHUB_OUTPUT) {
 if (configured) {
   console.log('OpenCode review provider is configured.');
 } else {
-  console.log('::warning::Skipping optional OpenCode review: ANTHROPIC_API_KEY is not configured.');
+  console.log('::warning::Skipping optional OpenCode review: OPENCODE_API_KEY is not configured.');
 }

@@ -14,8 +14,8 @@ function runChecker(apiKey) {
   writeFileSync(output, '');
   try {
     const env = { ...process.env, GITHUB_OUTPUT: output };
-    if (apiKey === undefined) delete env.ANTHROPIC_API_KEY;
-    else env.ANTHROPIC_API_KEY = apiKey;
+    if (apiKey === undefined) delete env.OPENCODE_API_KEY;
+    else env.OPENCODE_API_KEY = apiKey;
     const result = spawnSync(process.execPath, [checker], { cwd: root, env, encoding: 'utf8' });
     return { ...result, output: readFileSync(output, 'utf8') };
   } finally {
@@ -23,7 +23,7 @@ function runChecker(apiKey) {
   }
 }
 
-test('OpenCode review skips cleanly when the Anthropic API key is absent', () => {
+test('OpenCode review skips cleanly when the OpenCode API key is absent', () => {
   const result = runChecker('');
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.output, /^configured=false$/m);
@@ -41,5 +41,5 @@ test('GitHub review workflow gates installation and model calls on provider conf
   assert.match(workflow, /id:\s*provider/);
   assert.match(workflow, /name:\s*Check OpenCode provider configuration/);
   assert.match(workflow, /if:\s*steps\.provider\.outputs\.configured == 'true'/);
-  assert.match(workflow, /ANTHROPIC_API_KEY:\s*\$\{\{\s*secrets\.ANTHROPIC_API_KEY\s*\}\}/);
+  assert.match(workflow, /OPENCODE_API_KEY:\s*\$\{\{\s*secrets\.OPENCODE_API_KEY\s*\}\}/);
 });
