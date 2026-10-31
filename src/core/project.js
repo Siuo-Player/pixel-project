@@ -23,7 +23,7 @@ function cloneTechniques(techniques = []) {
   }));
 }
 
-function createOutput(name, width, height, palette, techniques = []) {
+function createOutput(name, width, height, palette, techniques = [], followsSourceSize = false) {
   validateOutputDimensions(width, height);
   const safePalette = validatePalette(palette);
   return {
@@ -31,6 +31,7 @@ function createOutput(name, width, height, palette, techniques = []) {
     name,
     width,
     height,
+    followsSourceSize,
     palette: safePalette,
     resolverMode: 'weighted-average',
     techniques: cloneTechniques(techniques)
@@ -39,7 +40,7 @@ function createOutput(name, width, height, palette, techniques = []) {
 
 export function createProject(width, height, palette, techniques = [createTechniqueInstance()]) {
   const safePalette = validatePalette(palette);
-  const output = createOutput('Interpretation 1', width, height, safePalette, techniques);
+  const output = createOutput('Interpretation 1', width, height, safePalette, techniques, true);
   return {
     version: PROJECT_VERSION,
     id: makeId(),
@@ -65,7 +66,8 @@ export function addOutput(project, options = {}) {
     width,
     height,
     palette,
-    techniques
+    techniques,
+    options.followsSourceSize ?? (options.width === undefined && options.height === undefined)
   );
   if (options.resolverMode) output.resolverMode = options.resolverMode;
   project.outputs.push(output);
@@ -93,6 +95,7 @@ export function serializeProject(project) {
       name: output.name,
       width: output.width ?? project.source.width,
       height: output.height ?? project.source.height,
+      followsSourceSize: output.followsSourceSize ?? false,
       palette: output.palette,
       resolverMode: output.resolverMode ?? 'weighted-average',
       techniques: output.techniques.map(instance => ({ ...instance, params: { ...instance.params } }))
@@ -121,6 +124,7 @@ export function parseProject(serialized) {
       name: output.name ?? 'Interpretation ' + (index + 1),
       width,
       height,
+      followsSourceSize: output.followsSourceSize ?? (output.width === undefined && output.height === undefined),
       palette: validatePalette(output.palette ?? palette),
       resolverMode: output.resolverMode ?? 'weighted-average',
       techniques: (output.techniques ?? []).map(instance => createTechniqueInstance(instance.techniqueId, instance.params, {
