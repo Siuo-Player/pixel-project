@@ -100,6 +100,7 @@ test('fluxo visual completo: desenhar, transformar, configurar e importar/export
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 24, 10, 18)).toEqual([15, 16, 19, 255]);
   await capture(page, '07-rotacao.png');
 
+  await page.locator('#output-canvas').click();
   await page.locator('#resolver-mode').selectOption('highest-confidence');
   await expect(page.locator('#resolver-mode')).toHaveValue('highest-confidence');
   await page.locator('#new-technique').selectOption('local-entropy');
@@ -168,6 +169,7 @@ test('fluxo visual completo: desenhar, transformar, configurar e importar/export
   await expect(page.locator('#zoom-label')).toHaveText('120%');
   await capture(page, '10-layout-e-zoom.png');
 
+  await page.locator('#source-canvas').click();
   await page.locator('#clear-canvas').click();
   const clearedPixel = await sampleCell(page, '#source-canvas', 16, 24, 10, 18);
   expect(clearedPixel).not.toEqual([15, 16, 19, 255]);
@@ -221,6 +223,7 @@ test('12-colour palette selection is available and renders one of its discrete c
   await page.locator('#grid-width').fill('32');
   await page.locator('#grid-height').fill('16');
   await page.locator('#create-project').click();
+  await page.locator('#output-canvas').click();
   await expect(page.locator('#editor-color-count')).toHaveText('12 cores');
   const swatchOverflow = await page.locator('#editor-palette-swatches').evaluate(container => {
     const bounds = container.getBoundingClientRect();
@@ -276,6 +279,7 @@ test('multiple document tabs keep independent drawings and support undo/redo and
   await page.locator('#redo-action').click();
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
 
+  await page.locator('#output-canvas').click();
   await page.locator('#editor-color-count-select').selectOption('12');
   await expect(page.locator('#editor-color-count')).toHaveText('12 cores');
   await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(12);
@@ -331,6 +335,7 @@ test('16 and 32 colour palettes are selectable in setup and editor', async ({ pa
   await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(16);
   await page.locator('#setup-palette').selectOption('earth-16');
   await page.locator('#create-project').click();
+  await page.locator('#output-canvas').click();
   await expect(page.locator('#editor-color-count')).toHaveText('16 cores');
   await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(16);
 
