@@ -45,6 +45,8 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 | PX-026 | Bug confirmado pela revisão automática GLM | Refazer uma redimensionação da fonte volta a sincronizar os inputs de largura/altura com as dimensões ativas. | `tests/e2e/editor.spec.js` — `redo keeps the dimension inputs in sync after undoing a source resize` | E2E |
 | PX-027 | Bug confirmado pela revisão automática GLM, violação de PX-010 | Redimensionar a fonte só atualiza as saídas que seguem a fonte (`followsSourceSize`); saídas com dimensão própria mantêm-se, mesmo que coincidam com o tamanho antigo. | `tests/e2e/multi-output.spec.js` — `resizing the source keeps custom-sized outputs independent` | E2E |
 | PX-028 | Falha de CI descoberta no primeiro push do workflow desktop | Nenhum YAML de `.github/workflows/*.yml` pode ter um valor não citado com `": "` embutido (ex.: `ex.: desktop-v0.6.0`); o Actions rejeita o ficheiro e cria um run fantasma falhado em cada push. | `tests/unit/workflows-lint.test.js` — `every workflow YAML value is quoted or free of bare ": " sequences` | Unitário |
+| PX-029 | Lacuna de distribuição encontrada na auditoria pós-GLM | Os três pacotes desktop devem ser construídos antes de um único job publicar os binários e hashes; os jobs de build não recebem permissões de escrita. | `tests/unit/desktop-release-workflow.test.js` — `desktop release builds Windows, Linux and macOS artifacts before one release publication` | CI |
+| PX-030 | Documentação do projeto sem espelho navegável | As páginas de Wiki devem existir versionadas no repositório e ter um procedimento explícito de sincronização para o repositório Wiki do GitHub. | `tests/unit/wiki-publishing.test.js` — `project wiki pages are versioned with the source and can be synced to GitHub Wiki` | Unitário |
 
 ## Como adicionar uma entrada
 
@@ -55,5 +57,3 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 5. Não apagues entradas antigas. Se o requisito mudar, documenta a decisão e atualiza o teste com ela.
 
 Os testes de contrato em `tests/unit/engineering-workflow-contract.test.js` verificam que os ficheiros de processo existem e que cada linha aponta para um teste real com esse nome.
-| PX-029 | Lacuna de distribuição encontrada na auditoria pós-GLM | Os três pacotes desktop devem ser construídos antes de um único job publicar os binários e hashes; os jobs de build não recebem permissões de escrita. | `tests/unit/desktop-release-workflow.test.js` — `desktop release builds Windows, Linux and macOS artifacts before one release publication` | CI |
-| PX-030 | Documentação do projeto sem espelho navegável | As páginas de Wiki devem existir versionadas no repositório e ter um procedimento explícito de sincronização para o repositório Wiki do GitHub. | `tests/unit/wiki-publishing.test.js` — `project wiki pages are versioned with the source and can be synced to GitHub Wiki` | Unitário |
