@@ -4,6 +4,22 @@ Este documento cataloga famílias de técnicas a experimentar: retas e continuid
 
 **A arquitetura modular, os contratos de entrada/saída, as instâncias reutilizáveis, a inversão contextual, as distribuições por cor e o resolvedor de conflitos estão agora definidos em [MODULAR_TRANSFORMATION_ENGINE.md](MODULAR_TRANSFORMATION_ENGINE.md).** Esse documento é a referência normativa para implementar as técnicas deste catálogo.
 
+## Técnicas já implementadas na versão 0.6
+
+Estas técnicas já fazem parte do motor executável. Não devem ser confundidas com as famílias de investigação da secção seguinte:
+
+| Técnica | Ideia do cálculo | Parâmetros ajustáveis |
+|---|---|---|
+| Weighted neighbourhood | Proporção local de branco e kernel espacial. | Raio, centro, kernel |
+| Directional lines | Continuidade de segmentos ao longo de quatro eixos. | Raio, comprimento máximo, reforço |
+| Local entropy | Contraste ajustado à entropia binária local. | Raio, reforço |
+| Local majority | Decisão suavizada em torno da maioria local. | Raio, limiar, suavidade |
+| Edge-aware contrast | Reforça a diferença em regiões com transições. | Raio, intensidade |
+| Directional gradient | Usa diferenças horizontais e verticais. | Raio, intensidade |
+| Ordered dithering | Quantiza por uma matriz Bayer 4×4. | Raio contextual, intensidade do padrão |
+
+O resolvedor também tem três modos: média ponderada, maior confiança individual e votação ponderada das cores vencedoras de cada instância.
+
 ## 1. Famílias de detetores
 
 - **Linhas:** perfis direcionais, sequência digital, Transformada de Hough e Transformada de Radon.
