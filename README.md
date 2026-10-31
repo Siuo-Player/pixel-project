@@ -109,6 +109,19 @@ Alternativa local (opcional, no teu PC): `npm install --save-dev electron electr
 
 Nota: a ligação para a PWA aparece nas notas do release no workflow `desktop-release.yml`; se o nome de utilizador do GitHub mudar, ajusta-a nesse ficheiro.
 
+### Wiki do GitHub — memória navegável
+
+O separador [Wiki](https://github.com/Siuo-Player/pixel-project/wiki) espelha a memória e as regras do projeto. A fonte oficial continua em `docs/memory/`, `AGENTS.md` e `docs/REGRESSION_CATALOG.md`; a Wiki é uma cópia pública para consulta.
+
+**Primeira utilização:** cria a página inicial `Home` uma vez na interface do GitHub (Wiki → New Page → Save). Depois, no terminal autenticado com GitHub, executa:
+
+```powershell
+gh auth setup-git
+npm run wiki:publish
+```
+
+O script sincroniza as páginas reservadas ao projeto e preserva as restantes páginas da Wiki. Sempre que atualizares a memória versionada, volta a executar `npm run wiki:publish`.
+
 ## Licenças
 
 - **Este projeto: MIT** (ver [`LICENSE`](LICENSE)) — uso, modificação, distribuição e comercialização permitidos, sem qualquer custo. A única obrigação é manter o aviso de copyright.
