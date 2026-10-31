@@ -1,5 +1,6 @@
 # OpenCode deve correr num runner do GitHub Actions.
-# A revisão é opcional: sem o secret ANTHROPIC_API_KEY, é ignorada sem falhar a CI.
+# A revisão é opcional: sem o secret OPENCODE_API_KEY, é ignorada sem falhar a CI.
+# Modelo: GLM-5.3-Flash grátis (custo 0) via provedor OpenCode.
 # Para outro provedor, altere o modelo, o secret e o verificador de configuração.
 name: OpenCode review
 on:
@@ -14,13 +15,13 @@ jobs:
       - name: Check OpenCode provider configuration
         id: provider
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         run: node scripts/check-opencode-review-config.mjs
       - name: Install OpenCode CLI
         if: steps.provider.outputs.configured == 'true'
         run: npm install --global @opencode/cli
       - name: Review pull request
         if: steps.provider.outputs.configured == 'true'
-        run: opencode run --standalone --model anthropic/claude-sonnet-5-5 "Review this repository for correctness and summarize any issues."
+        run: opencode run --standalone --model opencode/glm-5.3-flash-free "Review this repository for correctness and summarize any issues."
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
