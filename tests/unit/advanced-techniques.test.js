@@ -65,6 +65,6 @@ test('weighted-vote resolver counts technique winners instead of averaging soft 
   ];
   const result = resolveProposals(source, proposals, palette, { mode: 'weighted-vote' });
   assert.equal(result.data[0], 1);
-  assert.equal(result.probabilities[4 + 1], 2 / 3);
-  assert.equal(result.probabilities[4 + 2], 1 / 3);
+  assert.equal(result.probabilities[1], 2 / 3);
+  assert.equal(result.probabilities[2], 1 / 3);
 });
