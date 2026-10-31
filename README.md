@@ -80,6 +80,22 @@ npm start
 
 Abrir [http://localhost:4173](http://localhost:4173).
 
+## Guia de comandos rápidos
+
+| Tarefa | Comando (PowerShell / Bash) |
+|---|---|
+| **Iniciar aplicação** | `npm start` |
+| **Correr testes unitários** | `npm test` |
+| **Correr testes E2E Playwright** | `npm run test:e2e` |
+| **Correr todos os testes** | `npm run test:all` |
+| **Gerar executáveis (.exe, .AppImage, .dmg)** | `gh workflow run desktop-release.yml --ref main -f tag=desktop-v0.6.0` |
+| **Acompanhar geração de executáveis** | `gh run watch` |
+| **Descarregar executáveis do release** | `gh release download desktop-v0.6.0` |
+| **Sincronizar a GitHub Wiki** | `powershell -ExecutionPolicy Bypass -File .\scripts\sync-wiki.ps1` |
+| **Instalar OpenCode CLI** | `npm install --global @opencode/cli@2` |
+| **Configurar ai-memory em 1 comando** | `powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1` |
+| **Empacotar executável no PC (sem CI)** | `npm install --no-save electron@45.2.1 electron-builder@26.18.0`<br>`npx electron-builder --win --publish never` |
+
 ## Publicar e instalar (tudo gratuito)
 
 ### App online — GitHub Pages
@@ -112,12 +128,22 @@ Os builds usam Electron 45.2.1 e electron-builder 26.18.0, fixados no workflow. 
 Também podes lançar o mesmo workflow sem browser, com GitHub CLI autenticado:
 
 ```bash
-gh workflow run desktop-release.yml --ref main -f tag=desktop-latest
+# 1. Disparar o build multi-plataforma e publicação de release
+gh workflow run desktop-release.yml --ref main -f tag=desktop-v0.6.0
+
+# 2. Acompanhar o progresso do build
 gh run watch
+
+# 3. Descarregar os executáveis gerados (.exe, .AppImage, .dmg)
+gh release download desktop-v0.6.0
 ```
 
-Para um release versionado, troca `desktop-latest` por uma tag, por exemplo `desktop-v0.6.0`. O comando requer permissão para executar workflows (`workflow` no OAuth/PAT clássico ou Actions write num fine-grained PAT).
+Para listar e descarregar apenas o executável Windows:
+```bash
+gh release download desktop-v0.6.0 --pattern "*.exe"
+```
 
+O comando requer permissão para executar workflows (`workflow` no OAuth/PAT clássico ou Actions write num fine-grained PAT).
 
 Alternativa local (opcional, no teu PC): `npm install --no-save --package-lock=false electron@45.2.1 electron-builder@26.18.0` e depois `npx electron-builder --win --publish never`. O Chromium do Electron é descarregado apenas nesta etapa — não faz parte do `npm install` normal do projeto.
 
@@ -175,7 +201,7 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 
 ### Memória de agentes — ai-memory (opcional)
 
-Para instalar e ligar a memória local do ai-memory ao OpenCode no Windows, fecha o OpenCode e executa:
+Para instalar e ligar a memória local do ai-memory ao OpenCode no Windows, garante que tens o OpenCode instalado (`npm install --global @opencode/cli@2`), fecha o OpenCode e executa:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1

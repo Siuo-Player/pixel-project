@@ -4,7 +4,13 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
 if (-not (Get-Command opencode -ErrorAction SilentlyContinue)) {
-    throw "Não encontrei o comando 'opencode'. Instala o OpenCode primeiro e volta a executar este script na mesma instalação Windows/WSL."
+    if (Get-Command npm -ErrorAction SilentlyContinue) {
+        Write-Host "OpenCode não encontrado no PATH. A instalar @opencode/cli@2 globalmente via npm..."
+        npm install --global @opencode/cli@2
+    }
+    if (-not (Get-Command opencode -ErrorAction SilentlyContinue)) {
+        throw "Não encontrei o comando 'opencode'. Instala com 'npm install --global @opencode/cli@2' e volta a executar este script."
+    }
 }
 
 if (-not (Get-Command ai-memory -ErrorAction SilentlyContinue)) {

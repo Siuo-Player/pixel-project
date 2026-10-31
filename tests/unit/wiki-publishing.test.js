@@ -16,6 +16,7 @@ test('project wiki pages are versioned with the source and can be synced to GitH
   const memorySetupScript = path.join(root, 'scripts', 'setup-ai-memory.ps1');
   assert.ok(existsSync(memorySetupScript), 'Provide a one-command PowerShell setup for ai-memory.');
   const setupScript = readFileSync(memorySetupScript, 'utf8');
+  assert.match(setupScript, /@opencode\/cli/);
   assert.match(setupScript, /install\.ps1/);
   assert.match(setupScript, /setup --yes --agent opencode/);
   assert.match(setupScript, /install-hooks --agent opencode --apply --capture-mode allowlist/);
@@ -35,6 +36,8 @@ test('project wiki pages are versioned with the source and can be synced to GitH
   const readme = readFileSync(path.join(root, 'README.md'), 'utf8');
   assert.match(readme, /github\.com\/Siuo-Player\/pixel-project\/wiki/);
   assert.match(readme, /sync-wiki\.ps1/);
+  assert.match(readme, /gh workflow run desktop-release\.yml/);
+  assert.match(readme, /gh release download/);
 });
 
 test('the Windows ai-memory guide uses the verified native release installer and explains the MIT reference', () => {
