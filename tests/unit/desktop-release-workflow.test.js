@@ -18,3 +18,10 @@ test('desktop builds are uploaded separately and one release job publishes the c
   assert.match(workflow, /gh release (?:create|upload)/);
   assert.match(workflow, /permissions:[\s\S]*?contents:\s*write/);
 });
+
+test('the README documents the free command to create and locate desktop release assets', () => {
+  const readme = readFileSync(path.join(process.cwd(), 'README.md'), 'utf8');
+  assert.match(readme, /gh workflow run desktop-release\.yml/);
+  assert.match(readme, /gh run list --workflow desktop-release\.yml/);
+  assert.match(readme, /github\.com\/Siuo-Player\/pixel-project\/releases/);
+});
