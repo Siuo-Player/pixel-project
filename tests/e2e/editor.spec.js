@@ -373,3 +373,81 @@ test('all supported palette sizes expose multiple presets', async ({ page }) => 
     await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(Number(count));
   }
 });
+
+test('undo and redo history stays isolated per document tab', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('16');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+
+  await page.getByRole('button', { name: /Preto/ }).click();
+  await clickCell(page, '#source-canvas', 16, 16, 3, 4);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('#new-document').click();
+  await expect(page.locator('#document-tabs [data-document-tab]')).toHaveCount(2);
+  await clickCell(page, '#source-canvas', 16, 16, 10, 10);
+  await clickCell(page, '#source-canvas', 16, 16, 12, 12);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).toEqual([15, 16, 19, 255]);
+
+  await page.locator('#document-tabs [data-document-tab]').first().click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).not.toEqual([15, 16, 19, 255]);
+
+  await page.locator('#undo-action').click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 10, 10)).not.toEqual([15, 16, 19, 255]);
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).not.toEqual([15, 16, 19, 255]);
+
+  await page.locator('#redo-action').click();
+  await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 3, 4)).toEqual([15, 16, 19, 255]);
+});
+
+test('redo keeps the dimension inputs in sync after undoing a source resize', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('16');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+
+  await page.locator('#source-canvas').click();
+  await expect(page.locator('#source-settings')).toBeVisible();
+  await page.locator('#source-width').fill('20');
+  await page.locator('#source-height').fill('18');
+  await page.locator('#apply-source-size').click();
+  await expect(page.locator('#source-dimensions')).toHaveText('20 × 18');
+
+  await page.locator('#undo-action').click();
+  await expect(page.locator('#source-dimensions')).toHaveText('16 × 16');
+  await expect(page.locator('#source-width')).toHaveValue('16');
+  await expect(page.locator('#source-height')).toHaveValue('16');
+
+  await page.locator('#redo-action').click();
+  await expect(page.locator('#source-dimensions')).toHaveText('20 × 18');
+  await expect(page.locator('#source-width')).toHaveValue('20');
+  await expect(page.locator('#source-height')).toHaveValue('18');
+});
+
+test('selecting the custom palette option keeps the current palette without page errors', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.goto('/');
+  await page.locator('#create-project').click();
+  await page.locator('#output-canvas').click();
+  await expect(page.locator('#output-settings')).toBeVisible();
+
+  await page.locator('#editor-custom-toggle').click();
+  await page.locator('#editor-custom-colors input[type="color"]').first().fill('#123456');
+  await expect(page.locator('#editor-palette')).toHaveValue(/^custom-/);
+
+  const swatchRgba = await page.locator('#editor-palette-swatches .palette-swatch')
+    .first().evaluate(element => getComputedStyle(element).backgroundColor);
+  expect(swatchRgba).toEqual('rgb(18, 52, 86)');
+
+  await page.dispatchEvent('#editor-palette', 'change');
+
+  expect(pageErrors).toEqual([]);
+  await expect(page.locator('#editor-palette')).toHaveValue(/^custom-/);
+  await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(4);
+  const keptRgba = await page.locator('#editor-palette-swatches .palette-swatch')
+    .first().evaluate(element => getComputedStyle(element).backgroundColor);
+  expect(keptRgba).toEqual(swatchRgba);
+});

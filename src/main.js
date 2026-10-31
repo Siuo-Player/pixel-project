@@ -73,6 +73,7 @@ function saveActiveDocumentState() {
   activeDocument.paintColorName = paintColorName;
   activeDocument.activeOutputId = selectedOutputId;
   activeDocument.selectedCanvas = selectedCanvas;
+  activeDocument.history = history;
 }
 
 function loadDocument(documentState) {
@@ -81,6 +82,7 @@ function loadDocument(documentState) {
   converted = documentState.converted;
   outputResults = new Map();
   camera = documentState.camera;
+  history = documentState.history ?? createHistory();
   selectedOutputId = project.outputs.some(item => item.id === documentState.activeOutputId)
     ? documentState.activeOutputId
     : project.outputs[0].id;
@@ -544,6 +546,7 @@ function redoAction() {
   const restored = redoGrid(history, project.source);
   if (!restored) return;
   project.source = restored;
+  refreshSelectedDimensionInputs();
   markDocumentDirty();
   recalculate();
   updateHistoryButtons();
@@ -1008,7 +1011,7 @@ function applySourceSize() {
     recordHistory(history, project.source);
     project.source = resized;
     for (const output of project.outputs) {
-      if (output.width === oldWidth && output.height === oldHeight) {
+      if (output.followsSourceSize) {
         output.width = width;
         output.height = height;
       }
@@ -1155,8 +1158,10 @@ function initialize() {
   $('#apply-source-size').addEventListener('click', applySourceSize);
   $('#apply-output-size').addEventListener('click', applyOutputSize);
   $('#editor-palette').addEventListener('change', () => {
+    const id = $('#editor-palette').value;
+    if (!listPalettes().some(palette => palette.id === id)) return;
     editorCustom = false;
-    setProjectPalette(getPalette($('#editor-palette').value));
+    setProjectPalette(getPalette(id));
     $('#editor-custom-colors').hidden = true;
     $('#editor-custom-toggle').textContent = 'Editar cores desta paleta';
   });

@@ -96,3 +96,30 @@ test('source-following output dimensions stay synchronized through rotate, undo 
   await expect(page.locator('#source-dimensions')).toHaveText('16 × 24');
   await expect(firstOutput).toHaveAttribute('data-output-dimensions', '16 × 24');
 });
+
+test('resizing the source keeps custom-sized outputs independent', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('16');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+
+  await page.locator('#add-output').click();
+  const outputs = page.locator('#output-panels .canvas-panel');
+  await outputs.nth(1).locator('canvas').click();
+  await expect(page.locator('#output-settings')).toBeVisible();
+
+  await page.locator('#output-width').fill('16');
+  await page.locator('#output-height').fill('16');
+  await page.locator('#apply-output-size').click();
+  await expect(outputs.nth(1)).toHaveAttribute('data-output-dimensions', '16 × 16');
+
+  await page.locator('#source-canvas').click();
+  await expect(page.locator('#source-settings')).toBeVisible();
+  await page.locator('#source-width').fill('20');
+  await page.locator('#source-height').fill('18');
+  await page.locator('#apply-source-size').click();
+
+  await expect(page.locator('#source-dimensions')).toHaveText('20 × 18');
+  await expect(outputs.nth(0)).toHaveAttribute('data-output-dimensions', '20 × 18');
+  await expect(outputs.nth(1)).toHaveAttribute('data-output-dimensions', '16 × 16');
+});
