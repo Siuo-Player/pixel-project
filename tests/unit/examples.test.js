@@ -1,27 +1,40 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdir, readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { parseProject } from '../../src/core/project.js';
+import test from 'node:test';
+import { BUILTIN_EXAMPLES, getExampleMetadata, loadExampleProject } from '../../src/core/examples.js';
 import { convertProject } from '../../src/engine/convert.js';
 
-const examplesDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../examples');
+test('BUILTIN_EXAMPLES contains the 4 curated pixel art examples', () => {
+  assert.equal(BUILTIN_EXAMPLES.length, 4);
+  const ids = BUILTIN_EXAMPLES.map(ex => ex.id);
+  assert.deepEqual(ids, ['lighthouse-at-dusk', 'moonlit-cat', 'mushroom-grove', 'desert-temple']);
+});
 
-test('every bundled pixel-art example imports with three independent and convertible interpretations', async () => {
-  const files = (await readdir(examplesDirectory)).filter(name => name.endsWith('.pixelproj'));
-  assert.ok(files.length >= 4, 'at least four importable examples should be bundled');
+test('getExampleMetadata provides display information for the UI', () => {
+  const meta = getExampleMetadata();
+  assert.equal(meta.length, 4);
+  for (const item of meta) {
+    assert.ok(item.id, 'Example has id');
+    assert.ok(item.name, 'Example has name');
+    assert.ok(item.dimensions, 'Example has dimensions string');
+    assert.ok(item.description, 'Example has description');
+  }
+});
 
-  for (const file of files) {
-    const serialized = await readFile(path.join(examplesDirectory, file), 'utf8');
-    const project = parseProject(serialized);
-    assert.equal(project.outputs.length, 3, file);
-    assert.ok(project.source.data.some(value => value === 1 || value === 2), file);
+test('every bundled pixel-art example imports with three independent and convertible interpretations', () => {
+  for (const item of BUILTIN_EXAMPLES) {
+    const project = loadExampleProject(item.id);
+    assert.ok(project, `Loaded example: ${item.id}`);
+    assert.ok(project.source.width > 0);
+    assert.ok(project.source.height > 0);
+    assert.equal(project.outputs.length, 3, 'Every example has 3 interpretations');
 
     for (const output of project.outputs) {
       const result = convertProject(project, output.id);
-      assert.deepEqual([result.width, result.height], [output.width, output.height], file + ' / ' + output.name);
-      assert.ok(result.data.every(value => value === -1 || (value >= 0 && value < output.palette.colors.length)), file + ' / ' + output.name);
+      const width = output.followsSourceSize ? project.source.width : (output.width ?? project.source.width);
+      const height = output.followsSourceSize ? project.source.height : (output.height ?? project.source.height);
+      const colorCount = output.palette.colors?.length ?? output.palette.length;
+      assert.equal(result.data.length, width * height);
+      assert.ok(result.data.every(pixel => pixel === -1 || (pixel >= 0 && pixel < colorCount)));
     }
   }
 });

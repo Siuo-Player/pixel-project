@@ -361,3 +361,73 @@ h1 span { color: var(--accent); }
     overflow: visible;
   }
 }
+
+
+/* Examples Gallery and Modal */
+.examples-card {
+  margin-top: 20px;
+}
+.examples-description {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-block: 8px 14px;
+}
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+.example-card-button {
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  color: var(--text-light);
+}
+.example-card-button:hover,
+.example-card-button:focus-visible {
+  border-color: var(--accent);
+  background: rgba(255, 107, 44, 0.08);
+  transform: translateY(-1px);
+}
+.example-card-button strong {
+  font-size: 14px;
+  color: #fff;
+}
+.example-card-button span {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.examples-dialog {
+  background: var(--surface-panel);
+  color: var(--text-light);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 580px;
+  width: 90vw;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+}
+.examples-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dialog-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}

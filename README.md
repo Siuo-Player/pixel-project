@@ -48,7 +48,7 @@ Editor web de pixel art com conversão contextual de uma imagem de entrada trans
 
 ## Projetos de exemplo
 
-A pasta [examples/](examples/) contém quatro projetos importáveis em formato `.pixelproj`. Cada um inclui uma única imagem original e três interpretações, com paletas, resoluções, técnicas e resolvedores diferentes:
+O Pixel Project inclui quatro projetos de exemplo com arte finalizada de alta qualidade e três interpretações contextuais cada, acessíveis diretamente na **galeria do ecrã inicial** ou pelo menu **Ficheiro → Projetos de exemplo…** (e também disponíveis como ficheiros `.pixelproj` na pasta [examples/](examples/)):
 
 | Projeto | Arte | Variações incluídas |
 |---|---|---|
@@ -57,7 +57,10 @@ A pasta [examples/](examples/) contém quatro projetos importáveis em formato `
 | [Bosque dos cogumelos](examples/mushroom-grove.pixelproj) | Cogumelos e árvores | 4, 12 e 32 cores; minimalista e texturado |
 | [Templo no deserto](examples/desert-temple.pixelproj) | Templo, dunas e cactos | 12 e 16 cores; diferentes resoluções e métodos |
 
-Para abrir um exemplo, inicia o editor, clica em **Importar** e escolhe o ficheiro `.pixelproj`. As três interpretações aparecem ligadas à mesma origem.
+Para abrir um exemplo:
+- **No ecrã inicial:** basta clicar no cartão correspondente na secção **"Projetos de exemplo"**.
+- **No editor:** acede a **Ficheiro → Projetos de exemplo…** para abrir um novo separador com a arte escolhida.
+- **Por ficheiro:** clica em **Importar** e seleciona qualquer ficheiro `.pixelproj` local. As três interpretações aparecem ligadas à mesma matriz de origem.
 
 ## Limitações conhecidas
 

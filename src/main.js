@@ -9,6 +9,7 @@ import { TECHNIQUE_CATALOG, createTechniqueInstance } from './engine/techniques.
 import { convertProject } from './engine/convert.js';
 import { getCanvasGeometry, pointerToGrid } from './ui/canvas-coordinates.js';
 import { resizeGridNearestNeighbor } from './core/resample.js';
+import { getExampleMetadata, loadExampleProject } from './core/examples.js';
 
 const $ = selector => document.querySelector(selector);
 const DEFAULT_PALETTE_BY_SIZE = {
@@ -1060,6 +1061,22 @@ async function importProject(file) {
   }
 }
 
+
+function openExample(id) {
+  try {
+    saveActiveDocumentState();
+    const exampleProject = loadExampleProject(id);
+    const documentState = addDocument(workspaceState, exampleProject);
+    documentState.dirty = false;
+    loadDocument(documentState);
+    showEditor();
+    toast(`Projeto "${exampleProject.name}" carregado com sucesso.`, 'success');
+    $('#examples-dialog')?.close();
+  } catch (error) {
+    toast(`Não foi possível carregar o exemplo: ${error.message}`, 'error');
+  }
+}
+
 function transformSource(transform) {
   if (!project) return;
   recordHistory(history, project.source);
@@ -1111,7 +1128,7 @@ function initialize() {
   $('#resume-project').addEventListener('click', resumeEditor);
   $('#new-document').addEventListener('click', createAdditionalDocument);
   $('#add-output').addEventListener('click', addInterpretation);
-  $('#close-settings').addEventListener('click', closeSettingsPanel);
+  ($('#close-inspector') || $('#close-settings'))?.addEventListener('click', closeSettingsPanel);
   $('#close-document').addEventListener('click', () => activeDocument && closeDocumentTab(activeDocument.id));
   $('#menu-new-document').addEventListener('click', createAdditionalDocument);
   $('#menu-import-project').addEventListener('click', () => $('#import-project-file').click());
@@ -1178,6 +1195,40 @@ function initialize() {
       });
     }
   });
+  
+  function renderExamples() {
+    const list = $('#examples-list');
+    const dialogList = $('#dialog-examples-list');
+    const examples = getExampleMetadata();
+    const populate = container => {
+      if (!container) return;
+      container.replaceChildren();
+      for (const item of examples) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'example-card-button';
+        btn.dataset.example = item.id;
+        const title = document.createElement('strong');
+        title.textContent = item.name;
+        const info = document.createElement('span');
+        info.textContent = `${item.dimensions} · ${item.description}`;
+        btn.append(title, info);
+        btn.addEventListener('click', () => openExample(item.id));
+        container.append(btn);
+      }
+    };
+    populate(list);
+    populate(dialogList);
+  }
+
+  renderExamples();
+  $('#menu-open-example')?.addEventListener('click', () => {
+    $('#examples-dialog')?.showModal();
+  });
+  $('#close-examples-dialog')?.addEventListener('click', () => {
+    $('#examples-dialog')?.close();
+  });
+
   $('#back-to-setup').addEventListener('click', showSetup);
   $('#export-project').addEventListener('click', exportProject);
   $('#import-project-button').addEventListener('click', () => $('#import-project-file').click());

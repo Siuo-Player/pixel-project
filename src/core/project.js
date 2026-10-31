@@ -2,6 +2,7 @@ import { createSourceGrid } from './grid.js';
 import { createTechniqueInstance } from '../engine/techniques.js';
 import { validatePalette } from '../engine/palettes.js';
 import { RESOLVER_MODES } from '../engine/resolver.js';
+import { validateSafePayload, safeJsonParse, sanitizeText } from './security.js';
 
 const PROJECT_VERSION = 2;
 const MAX_OUTPUTS = 3;
@@ -34,7 +35,7 @@ function createOutput(name, width, height, palette, techniques = [], followsSour
   const safePalette = validatePalette(palette);
   return {
     id: makeId(),
-    name,
+    name: sanitizeText(name),
     width,
     height,
     followsSourceSize,
@@ -93,12 +94,12 @@ export function serializeProject(project) {
     version: PROJECT_VERSION,
     resolverMode: project.resolverMode ?? 'weighted-average',
     id: project.id,
-    name: project.name,
+    name: sanitizeText(project.name),
     source: { width: project.source.width, height: project.source.height, data: Array.from(project.source.data) },
     palette: project.palette,
     outputs: project.outputs.map(output => ({
       id: output.id,
-      name: output.name,
+      name: sanitizeText(output.name),
       width: output.width ?? project.source.width,
       height: output.height ?? project.source.height,
       followsSourceSize: output.followsSourceSize ?? false,
@@ -112,9 +113,14 @@ export function serializeProject(project) {
 
 export function parseProject(serialized) {
   let parsed;
-  try { parsed = typeof serialized === 'string' ? JSON.parse(serialized) : serialized; }
-  catch { throw new TypeError('Project file is not valid JSON.'); }
+  try {
+    parsed = typeof serialized === 'string' ? safeJsonParse(serialized) : serialized;
+  } catch (err) {
+    if (err instanceof TypeError && err.message.includes('forbidden property')) throw err;
+    throw new TypeError('Project file is not valid JSON.');
+  }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new TypeError('Project data must be an object.');
+  validateSafePayload(parsed);
   if (![1, PROJECT_VERSION].includes(parsed.version)) throw new RangeError('Unsupported project version: ' + parsed.version);
   if (parsed.resolverMode !== undefined) validateResolverMode(parsed.resolverMode);
   if (!parsed.source || !Array.isArray(parsed.source.data)) throw new TypeError('Project source is missing or invalid.');
@@ -129,7 +135,7 @@ export function parseProject(serialized) {
     validateOutputDimensions(width, height);
     return {
       id: output.id ?? makeId(),
-      name: output.name ?? 'Interpretation ' + (index + 1),
+      name: sanitizeText(output.name ?? 'Interpretation ' + (index + 1)),
       width,
       height,
       followsSourceSize: output.followsSourceSize ?? (output.width === undefined && output.height === undefined),
@@ -144,7 +150,7 @@ export function parseProject(serialized) {
     version: PROJECT_VERSION,
     resolverMode: parsed.resolverMode ?? 'weighted-average',
     id: parsed.id ?? makeId(),
-    name: parsed.name ?? 'Imported project',
+    name: sanitizeText(parsed.name ?? 'Imported project'),
     source,
     palette,
     outputs

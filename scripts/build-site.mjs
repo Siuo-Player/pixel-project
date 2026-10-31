@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootRelative = entry => path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const APP_FILES = ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'assets'];
+const APP_FILES = ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'assets', 'examples'];
 
 export async function buildSite(destination = path.join(rootRelative(), 'artifacts', 'site')) {
   const siteDirectory = path.resolve(destination);

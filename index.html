@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111318" />
     <meta name="description" content="Editor de pixel art com conversão contextual para paletas reduzidas." />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';"
+    />
     <title>Pixel Project — Contextual Pixel Art</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
@@ -32,6 +36,7 @@
               <div class="menu-popover">
                 <button id="menu-new-document" type="button">+ Nova tela</button>
                 <button id="menu-import-project" type="button">Importar projeto…</button>
+                <button id="menu-open-example" type="button">Projetos de exemplo…</button>
                 <button id="menu-export-project" type="button">Exportar tela ativa</button>
                 <button id="menu-close-document" type="button">Fechar tela</button>
                 <button id="menu-home" type="button">Voltar ao início</button>
@@ -91,6 +96,14 @@
             <button id="create-project" class="button button-primary button-large">Criar projeto <span aria-hidden="true">→</span></button>
             <button id="resume-project" class="button button-quiet button-block resume-button" hidden>Continuar a editar telas abertas</button>
             <p class="small-note">Cada tela é independente. Exporta o projeto para guardar uma cópia no teu dispositivo.</p>
+          </div>
+                    <div class="setup-card examples-card">
+            <div class="setup-card-heading">
+              <div><p class="eyebrow">EXPLORAR ARTE PRONTA</p><h2>Projetos de exemplo</h2></div>
+              <span class="step-indicator">4 disponíveis</span>
+            </div>
+            <p class="examples-description">Carrega uma arte completa com matriz desenhada e 3 interpretações pré-configuradas:</p>
+            <div id="examples-list" class="examples-grid"></div>
           </div>
           <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.6</span></div>
         </section>
@@ -215,6 +228,16 @@
       </main>
       <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.6</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
     </div>
+        <dialog id="examples-dialog" class="examples-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h3>Projetos de exemplo</h3>
+          <button id="close-examples-dialog" type="button" class="icon-button" aria-label="Fechar">✕</button>
+        </div>
+        <p class="examples-description">Escolhe uma arte finalizada para abrir como nova tela no editor:</p>
+        <div id="dialog-examples-list" class="examples-grid"></div>
+      </div>
+    </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </body>
 </html>

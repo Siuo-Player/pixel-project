@@ -1,0 +1,23 @@
+# Sessão — Galeria integrada de exemplos, segurança defensiva e harness ai-memory
+
+- **Data:** 31-10-2026
+- **Contexto:** Continuação do desenvolvimento como pair-programmer no Antigravity após esgotamento de tokens do OpenCode. Foco em integrar os projetos de arte finalizada na UI para exploração imediata, endurecer a segurança geral e documentar a rota para contas/Google Sign-In.
+- **Harness Antigravity com ai-memory:**
+  - Configurado o ai-memory para o Antigravity (`setup --yes --agent antigravity-cli`).
+  - Instalados hooks em modo `allowlist` (`~/.gemini/config/hooks.json`).
+  - Configurado MCP bridge no `mcp_config.json` e geradas as skills do agente.
+- **Galeria Integrada de Projetos de Exemplo:**
+  - Empacotados os 4 projetos de exemplo (`lighthouse-at-dusk`, `moonlit-cat`, `mushroom-grove`, `desert-temple`) no módulo `src/core/examples-data.js` e expostos através de `src/core/examples.js`.
+  - Criada a galeria visual no ecrã de setup (`#examples-list`) e diálogo acessível via menu (`#examples-dialog` e `Ficheiro → Projetos de exemplo…`).
+  - Adicionado suporte no `scripts/build-site.mjs` para copiar o diretório `examples/`.
+  - Escritos testes unitários em `tests/unit/examples.test.js` e testes E2E Playwright em `tests/e2e/examples.spec.js`.
+- **Endurecimento de Segurança e Roteiro de Autenticação:**
+  - Criado `src/core/security.js` com mitigação de Prototype Pollution (`safeJsonParse`, `validateSafePayload`), higienização de caracteres de controlo (`sanitizeText`) e armazenamento seguro com fallback (`createSafeStorage`).
+  - Integrada a validação defensiva em `src/core/project.js`.
+  - Configurada Content-Security-Policy (CSP) robusta em `index.html` com suporte prévio reservado para `https://accounts.google.com` e `https://oauth2.googleapis.com`.
+  - Criado documento de arquitetura `docs/SECURITY_AND_AUTH.md` documentando o modelo de ameaça e o roteiro para Google Sign-In (OAuth 2.0 PKCE sem servidor), Passkeys (WebAuthn) e encriptação ponta-a-ponta (E2EE) com Web Crypto API.
+- **Verificação:**
+  - 88/88 testes unitários passaram (`npm test`).
+  - 18/18 testes E2E passaram (`npm run test:e2e`).
+  - Suite completa validada com sucesso via `npm run test:all`.
+  - Registados `PX-031` e `PX-032` em `docs/REGRESSION_CATALOG.md`.
