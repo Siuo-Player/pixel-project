@@ -25,6 +25,9 @@ test('setup exposes 4, 8 and 12 colour counts', async () => {
   assert.match(html, /<option value="4" selected>4 cores<\/option>/);
   assert.match(html, /<option value="8">8 cores<\/option>/);
   assert.match(html, /<option value="12">12 cores<\/option>/);
+  assert.match(html, /<option value="16">16 cores<\/option>/);
+  assert.match(html, /<option value="32">32 cores<\/option>/);
+  assert.match(html, /id="editor-color-count-select"[\s\S]*?<option value="32">32 cores<\/option>/);
 });
 
 test('canvas uses an actual matrix-aligned transparency grid, not viewport-wide checkerboard noise', async () => {
