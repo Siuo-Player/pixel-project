@@ -19,6 +19,8 @@ test('project wiki pages are versioned with the source and can be synced to GitH
   assert.match(setupScript, /install\.ps1/);
   assert.match(setupScript, /setup --yes --agent opencode/);
   assert.match(setupScript, /install-hooks --agent opencode --apply --capture-mode allowlist/);
+  assert.match(setupScript, /\.ai-memory\.toml/);
+  assert.match(setupScript, /Test-Path \$projectMarker/);
   assert.match(setupScript, /project init/);
   assert.match(setupScript, /ai-memory doctor/);
 
