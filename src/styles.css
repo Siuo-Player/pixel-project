@@ -46,6 +46,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, canvas:focus-vi
 .document-tab.is-active { color:var(--accent); background:#29382f; }
 .document-tab-close { width:25px; min-height:31px; border:0; color:#788291; background:transparent; font-size:15px; }
 .document-tab-close:hover { color:var(--danger); background:rgba(239,139,139,.08); }
+.document-tab span { position:relative; }
+.document-tab-group:has(.document-tab span) .document-tab.is-active { color:var(--accent); }
 .new-document-button { flex:0 0 auto; min-height:31px; padding:0 10px; border:1px dashed #4b5665; border-radius:7px; color:var(--accent); background:transparent; font-size:9px; }
 .new-document-button:hover { border-color:var(--accent); background:#25332c; }
 .resume-button { margin-top:9px; min-height:38px; }

@@ -14,12 +14,12 @@ export function recordHistory(history, grid) {
 export function undoGrid(history, currentGrid) {
   if (!history.undo.length) return null;
   history.redo.push(cloneGrid(currentGrid));
-  return history.undo.pop();
+  return cloneGrid(history.undo.pop());
 }
 
 export function redoGrid(history, currentGrid) {
   if (!history.redo.length) return null;
   history.undo.push(cloneGrid(currentGrid));
   if (history.undo.length > history.limit) history.undo.shift();
-  return history.redo.pop();
+  return cloneGrid(history.redo.pop());
 }

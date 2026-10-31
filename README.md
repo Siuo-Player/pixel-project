@@ -10,9 +10,9 @@ A ideia central é desenhar com duas cores de entrada e observar como diferentes
 - ecrã de criação com dimensões e paletas de 4, 8 ou 12 cores;
 - 13 paletas predefinidas (6 de 4 cores, 4 de 8 cores e 3 de 12 cores) e edição das cores;
 - tela original e pré-visualização convertida, com transparência desenhada por célula real e contorno da grelha editável;
-- pincel preto, branco e borracha, linha, retângulo, elipse, balde de preenchimento e conta-gotas;
+- pincel preto, branco e borracha, linha, retângulo, retângulo preenchido, elipse, elipse preenchida, balde de preenchimento e conta-gotas;
 - vários documentos independentes em separadores, com criação e fecho de telas;
-- histórico de desfazer/refazer por documento e atalhos de teclado;
+- histórico de desfazer/refazer por documento e atalhos de teclado (B, W, E, L, R, O, G e I para ferramentas);
 - alteração do tamanho da paleta (4, 8 ou 12 cores) diretamente no editor;
 - menus de Ficheiro, Editar e Ver, com ações de exportação, importação, limpeza e navegação;
 - desenho por arrastamento sem falhas;

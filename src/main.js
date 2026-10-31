@@ -93,7 +93,7 @@ function renderDocumentTabs() {
     tab.setAttribute('aria-selected', String(doc.id === activeDocument?.id));
     tab.classList.toggle('is-active', doc.id === activeDocument?.id);
     const name = document.createElement('span');
-    name.textContent = doc.project.name || 'Tela sem nome';
+    name.textContent = `${doc.project.name || 'Tela sem nome'}${doc.dirty ? ' •' : ''}`;
     tab.append(name);
     tab.addEventListener('click', () => switchDocument(doc.id));
     const close = document.createElement('button');
@@ -448,7 +448,7 @@ function setActiveTool(name) {
 }
 
 function isShapeTool(name = selectedTool) {
-  return ['line', 'rectangle', 'filled-rectangle', 'ellipse'].includes(name);
+  return ['line', 'rectangle', 'filled-rectangle', 'ellipse', 'filled-ellipse'].includes(name);
 }
 
 function applyShape(grid, start, end, tool = selectedTool, state = activeTool) {
@@ -456,6 +456,7 @@ function applyShape(grid, start, end, tool = selectedTool, state = activeTool) {
   else if (tool === 'rectangle') drawRectangle(grid, start.x, start.y, end.x, end.y, state);
   else if (tool === 'filled-rectangle') drawRectangle(grid, start.x, start.y, end.x, end.y, state, { filled: true });
   else if (tool === 'ellipse') drawEllipse(grid, start.x, start.y, end.x, end.y, state);
+  else if (tool === 'filled-ellipse') drawEllipse(grid, start.x, start.y, end.x, end.y, state, { filled: true });
 }
 
 function undoAction() {
@@ -876,6 +877,17 @@ function initialize() {
       if (key === 'n') { event.preventDefault(); createAdditionalDocument(); return; }
       if (key === 's') { event.preventDefault(); exportProject(); return; }
       if (key === 'w') { event.preventDefault(); if (activeDocument) closeDocumentTab(activeDocument.id); return; }
+    }
+    if (!typing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      const tools = {
+        b: 'black', w: 'white', e: 'erase',
+        l: 'line', r: 'rectangle', o: 'ellipse',
+        g: 'fill', i: 'eyedropper'
+      };
+      if (tools[key] && !event.repeat) {
+        setActiveTool(tools[key]);
+        return;
+      }
     }
     if (event.code === 'Space' && !typing) {
       spaceHeld = true;
