@@ -65,7 +65,13 @@
             <div class="form-grid">
               <label class="field"><span>Largura</span><input id="grid-width" type="number" min="4" max="256" value="32" /></label>
               <label class="field"><span>Altura</span><input id="grid-height" type="number" min="4" max="256" value="32" /></label>
-              <label class="field"><span>Número de cores</span><select id="color-count"><option value="4" selected>4 cores</option><option value="8">8 cores</option><option value="12">12 cores</option></select></label>
+              <label class="field"><span>Número de cores</span><select id="color-count">
+                <option value="4" selected>4 cores</option>
+                <option value="8">8 cores</option>
+                <option value="12">12 cores</option>
+                <option value="16">16 cores</option>
+                <option value="32">32 cores</option>
+              </select></label>
               <label class="field"><span>Paleta inicial</span><select id="setup-palette"></select></label>
             </div>
             <div class="palette-editor-block">
@@ -78,7 +84,7 @@
             <button id="resume-project" class="button button-quiet button-block resume-button" hidden>Continuar a editar telas abertas</button>
             <p class="small-note">Cada tela é independente. Exporta o projeto para guardar uma cópia no teu dispositivo.</p>
           </div>
-          <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.4</span></div>
+          <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.5</span></div>
         </section>
 
         <section id="editor-view" class="editor-view view" hidden>
@@ -139,7 +145,11 @@
                 <div class="section-title-row"><h3>Paleta</h3><span id="editor-color-count" class="count-pill">4 cores</span></div>
                 <label class="field compact-field"><span>Número de cores</span>
                   <select id="editor-color-count-select" aria-label="Número de cores da paleta">
-                    <option value="4">4 cores</option><option value="8">8 cores</option><option value="12">12 cores</option>
+                    <option value="4">4 cores</option>
+                    <option value="8">8 cores</option>
+                    <option value="12">12 cores</option>
+                    <option value="16">16 cores</option>
+                    <option value="32">32 cores</option>
                   </select>
                 </label>
                 <label class="field compact-field"><span>Preset</span><select id="editor-palette"></select></label>
@@ -163,7 +173,7 @@
           </div>
         </section>
       </main>
-      <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.4</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
+      <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.5</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </body>

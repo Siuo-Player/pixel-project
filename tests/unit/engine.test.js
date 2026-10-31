@@ -39,6 +39,39 @@ test('built-in palette catalog includes balanced 4, 8 and 12 colour options', ()
   }
 });
 
+test('catalog contains expanded and validated palette families for every supported count', () => {
+  const palettes = listPalettes();
+  const expectedMinimums = new Map([[4, 10], [8, 8], [12, 6], [16, 6], [32, 4]]);
+  for (const [count, minimum] of expectedMinimums) {
+    const family = palettes.filter(palette => palette.colors.length === count);
+    assert.ok(family.length >= minimum, `Expected at least ${minimum} palettes with ${count} colors, got ${family.length}`);
+    assert.equal(new Set(family.map(palette => palette.id)).size, family.length);
+    for (const palette of family) {
+      assert.equal(new Set(palette.colors).size, count);
+      assert.deepEqual(palette.mirror, Array.from({ length: count }, (_, index) => count - 1 - index));
+    }
+  }
+});
+
+test('16 and 32 colour palettes convert contextually and preserve polarity symmetry', () => {
+  const source = sampleRatioGrid(4);
+  const techniques = [
+    createTechniqueInstance('weighted-neighbourhood', { radius: 1, includeCenter: true }),
+    createTechniqueInstance('local-entropy', { radius: 1, contrastBoost: 0.5 }, { weight: 0.4 })
+  ];
+  for (const paletteId of ['pastel-16', 'spectrum-32']) {
+    const palette = getPalette(paletteId);
+    const original = convertSource(source, palette, techniques);
+    const inverted = convertSource(invertPolarity(source), palette, techniques);
+    assert.equal(original.colorCount, palette.colors.length);
+    assert.ok(original.data.every((value, index) => source.data[index] === TRANSPARENT || (value >= 0 && value < palette.colors.length)));
+    for (let index = 0; index < source.data.length; index += 1) {
+      if (source.data[index] === TRANSPARENT) assert.equal(inverted.data[index], -1);
+      else assert.equal(inverted.data[index], mirrorPaletteIndex(palette, original.data[index]));
+    }
+  }
+});
+
 test('12-colour palettes work in the contextual converter and preserve polarity symmetry', () => {
   const source = sampleRatioGrid(4);
   const palette = getPalette('aurora-12');

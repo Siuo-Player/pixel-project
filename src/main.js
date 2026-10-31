@@ -13,7 +13,9 @@ const $ = selector => document.querySelector(selector);
 const DEFAULT_PALETTE_BY_SIZE = {
   4: 'blue-red-4',
   8: 'retro-8',
-  12: 'aurora-12'
+  12: 'aurora-12',
+  16: 'pastel-16',
+  32: 'spectrum-32'
 };
 const TRANSPARENT_CELL_COLORS = [
   [48, 54, 65, 255],

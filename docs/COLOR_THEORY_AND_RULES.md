@@ -1,6 +1,6 @@
 # Teoria das cores e regras práticas para o Pixel Project
 
-**Objetivo:** transformar investigação sobre cor em critérios concretos para criar, selecionar e avaliar paletas de 4, 8 ou mais cores no conversor.
+**Objetivo:** transformar investigação sobre cor em critérios concretos para criar, selecionar e avaliar paletas de 4, 8, 12, 16 ou 32 cores no conversor.
 
 Este documento não tenta definir uma fórmula universal de beleza. A investigação mostra tendências e condições úteis, mas o resultado final depende também do desenho, da distribuição espacial das cores, do estilo pretendido e da preferência de quem cria.
 
@@ -227,3 +227,17 @@ O conjunto final deve resultar de pré-visualizações e comparação, não apen
 - A distribuição espacial das cores pelo algoritmo pode alterar radicalmente a perceção da mesma paleta.
 
 Por estas razões, as métricas devem ajudar a gerar e filtrar candidatos, mas a validação final será feita através de testes visuais no próprio Pixel Project.
+
+
+## Paletas extensas: 16 e 32 cores
+
+As paletas de 16 e 32 cores permitem dividir uma rampa contextual em mais níveis, mas não tornam automaticamente a conversão melhor. Uma sequência com muitos tons próximos pode reduzir a diferença percetível entre células adjacentes; uma sequência com mudanças cromáticas muito abruptas pode produzir padrões fragmentados.
+
+Ao criar ou escolher estes presets:
+- verificar a progressão de luminosidade em escala de cinzentos;
+- observar as cores em blocos 1×1, 2×2 e 4×4;
+- comparar o mesmo desenho com 4, 8, 12, 16 e 32 cores;
+- confirmar que as cores continuam distinguíveis em dimensões pequenas;
+- avaliar a rampa nos dois sentidos, porque a inversão complementar usa a ordem inversa.
+
+O catálogo concreto e as respetivas limitações estão em [PALETTE_CATALOG.md](PALETTE_CATALOG.md).

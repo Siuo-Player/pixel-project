@@ -375,3 +375,12 @@ Se uma técnica Python for demasiado complexa para reimplementar, podemos estuda
 8. Comparar fusão por pixel com otimização global quando existirem conflitos reais.
 
 O primeiro objetivo é ter um motor modular e explicável, não acumular dezenas de algoritmos sem uma arquitetura comum.
+
+
+## 11. Independência em relação ao número de cores
+
+A implementação atual tem presets de 4, 8, 12, 16 e 32 cores. O contrato das técnicas e do resolvedor é genérico: para N entradas, cada pixel opaco tem uma distribuição de N probabilidades, armazenada num segmento de comprimento N.
+
+Nenhum detetor ou resolvedor deve assumir quatro canais por pixel. A dimensão é comunicada por `palette.colors.length` e pelo campo `colorCount` das propostas. Esta regra é importante para que uma nova dimensão de paleta não exija reescrever os algoritmos.
+
+A correspondência de inversão atual é a reversão do índice `i → N - 1 - i`. Qualquer futura paleta não ordenada terá de definir explicitamente uma correspondência compatível e testável.

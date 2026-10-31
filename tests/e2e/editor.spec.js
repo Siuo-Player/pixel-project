@@ -213,7 +213,7 @@ test('12-colour palette selection is available and renders one of its discrete c
   await page.goto('/');
   await page.locator('#color-count').selectOption('12');
   await expect(page.locator('#setup-palette')).toHaveValue('aurora-12');
-  await expect(page.locator('#setup-palette option')).toHaveCount(3);
+  await expect(page.locator('#setup-palette option')).toHaveCount(6);
   await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(12);
   await page.locator('#setup-palette').selectOption('ember-12');
   await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(12);
@@ -321,4 +321,50 @@ test('shape tools draw lines and filled rectangles and ellipses on the actual so
   await page.mouse.move(ellipseB.x, ellipseB.y);
   await page.mouse.up();
   await expect.poll(() => sampleCell(page, '#source-canvas', 16, 16, 5, 10)).toEqual([15, 16, 19, 255]);
+});
+
+test('16 and 32 colour palettes are selectable in setup and editor', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#color-count').selectOption('16');
+  await expect(page.locator('#setup-palette')).toHaveValue('pastel-16');
+  await expect(page.locator('#setup-palette option')).toHaveCount(6);
+  await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(16);
+  await page.locator('#setup-palette').selectOption('earth-16');
+  await page.locator('#create-project').click();
+  await expect(page.locator('#editor-color-count')).toHaveText('16 cores');
+  await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(16);
+
+  await page.locator('#editor-color-count-select').selectOption('32');
+  await expect(page.locator('#editor-color-count')).toHaveText('32 cores');
+  await expect(page.locator('#editor-palette')).toHaveValue('spectrum-32');
+  await expect(page.locator('#editor-palette option')).toHaveCount(4);
+  await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(32);
+  await page.locator('#editor-palette').selectOption('terrain-32');
+  await expect(page.locator('#editor-palette-swatches .palette-swatch')).toHaveCount(32);
+
+  await page.getByRole('button', { name: /Preto/ }).click();
+  await clickCell(page, '#source-canvas', 32, 32, 16, 16);
+  const outputHex = hexFromRgba(await sampleCell(page, '#output-canvas', 32, 32, 16, 16));
+  const paletteColors = await page.locator('#editor-palette-swatches .palette-swatch').evaluateAll(elements =>
+    elements.map(element => {
+      const rgb = getComputedStyle(element).backgroundColor.match(/\d+/g).slice(0, 3);
+      return '#' + rgb.map(value => Number(value).toString(16).padStart(2, '0')).join('').toUpperCase();
+    })
+  );
+  expect(paletteColors).toContain(outputHex);
+  expect((await page.locator('#editor-palette-swatches .palette-swatch').count())).toBe(32);
+  const editorPalette = await page.locator('#editor-palette').inputValue();
+  expect(['spectrum-32', 'terrain-32', 'arcade-32', 'oceanic-32']).toContain(editorPalette);
+  expect(outputHex).toMatch(/^#[0-9A-F]{6}$/);
+  await capture(page, '17-paletas-16-e-32-cores.png');
+});
+
+test('all supported palette sizes expose multiple presets', async ({ page }) => {
+  await page.goto('/');
+  const expected = { 4: 10, 8: 8, 12: 6, 16: 6, 32: 4 };
+  for (const [count, minimum] of Object.entries(expected)) {
+    await page.locator('#color-count').selectOption(count);
+    await expect(page.locator('#setup-palette option')).toHaveCount(minimum);
+    await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(Number(count));
+  }
 });

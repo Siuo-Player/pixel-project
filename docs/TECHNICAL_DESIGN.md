@@ -1,35 +1,58 @@
-# Desenho técnico da primeira implementação
+# Desenho técnico da aplicação
 
 ## 1. Arquitetura
 
 A aplicação está separada em quatro partes:
 
-1. **Core:** representação da fonte, operações matriciais e formato de projeto.
-2. **Engine:** técnicas, instâncias, regras de transformação, propostas e resolução de conflitos.
-3. **UI:** edição e apresentação em Canvas, sem conter lógica de conversão.
-4. **Tests:** testes unitários, de integração e de contrato da interface.
+1. **Core:** representação da fonte, operações matriciais, histórico, documentos e formato de projeto.
+2. **Engine:** paletas, técnicas, instâncias, propostas, resolvedor e conversor.
+3. **UI:** edição e apresentação em Canvas, menus e navegação; não contém as regras matemáticas de conversão.
+4. **Tests:** testes unitários, de integração, de contrato e end-to-end.
 
-## 2. Dados da imagem original
+## 2. Imagem original
 
-Cada célula usa um valor:
+Cada célula da origem usa um valor guardado num `Uint8Array`:
 - 0: transparente;
 - 1: preto;
 - 2: branco.
 
-A transparência não é uma cor e nunca recebe uma cor de saída. A matriz é guardada num Uint8Array.
+A transparência não é uma cor e nunca recebe uma cor de saída. As células transparentes são apresentadas com um padrão alternado alinhado com a matriz real; o espaço fora da matriz tem fundo uniforme.
 
-## 3. Técnicas e instâncias
+## 3. Paletas e dimensão dinâmica
 
-Uma definição de técnica é reutilizável. Uma instância contém identificador, parâmetros, peso, estado ativo e configuração própria. O utilizador pode adicionar várias instâncias da mesma técnica.
+O catálogo está em `src/engine/palettes.js`. Existem 34 presets distribuídos por cinco tamanhos:
+
+| Número de cores | Presets |
+|---:|---:|
+| 4 | 10 |
+| 8 | 8 |
+| 12 | 6 |
+| 16 | 6 |
+| 32 | 4 |
+
+Cada preset possui `id`, `name`, `colors` e `mirror`. Para N cores, a correspondência complementar usa `mirror[i] = N - 1 - i`.
+
+O motor não deve assumir um número fixo de quatro cores:
+- as técnicas alocam uma distribuição com `pixelCount * N` valores;
+- as propostas declaram a dimensão `colorCount`;
+- o resolvedor valida essa dimensão e calcula as probabilidades sobre N entradas;
+- o resultado guarda o índice da cor em cada pixel;
+- o desenho da imagem convertida resolve esse índice através da paleta ativa.
+
+Os tamanhos 4/8/12/16/32 são opções de interface; a lógica do motor é parametrizada pelo comprimento real da paleta.
+
+## 4. Técnicas e instâncias
+
+Uma definição de técnica é reutilizável. Uma instância contém identificador, parâmetros, peso e estado ativo. O utilizador pode adicionar várias instâncias da mesma técnica.
 
 Técnicas atualmente implementadas:
 - **Weighted neighbourhood:** calcula a proporção ponderada de branco numa janela e mapeia o resultado para uma rampa discreta de paleta.
 - **Directional lines:** mede sequências contínuas da mesma cor em quatro eixos e usa esse sinal para modificar a distribuição contextual.
 - **Local entropy:** calcula entropia binária local e ajusta o contraste contextual.
 
-Cada técnica devolve uma proposta com uma distribuição completa pelas cores, uma máscara de pixels válidos e o peso da instância.
+Cada técnica devolve uma proposta com uma distribuição completa pelas N cores, uma máscara de pixels válidos, dimensões, `colorCount` e peso da instância.
 
-## 4. Fusão de propostas
+## 5. Fusão de propostas
 
 O resolvedor tem dois modos:
 
@@ -38,45 +61,63 @@ O resolvedor tem dois modos:
 
 A saída escolhe sempre o índice de maior probabilidade. Não mistura canais RGB nem cria cores fora da paleta. Em caso de empate, o desempate depende da polaridade da fonte para preservar a inversão complementar.
 
-## 5. Inversão complementar
+## 6. Inversão complementar
 
-A conversão é contextual. Inverter preto/branco na fonte reflete a característica de proporção de branco (m passa a 1-m) e deve refletir a saída na ordem inversa da paleta.
+A conversão é contextual. Inverter preto/branco na fonte reflete a proporção de branco (`m` passa a `1-m`) e deve refletir a saída na ordem inversa da paleta.
 
-Para a rampa ordenada usada na primeira versão:
-- a paleta define as cores em ordem de contexto preto → branco;
+Para qualquer tamanho N:
+- a paleta define as cores em ordem de contexto;
 - a correspondência de inversão é a ordem inversa;
 - a transparência permanece transparente.
 
 Isto não equivale a mapear preto sempre para uma cor e branco sempre para outra. O contexto dos restantes pixels continua a determinar a cor.
 
-## 6. Projeto e persistência
+## 7. Projeto, documentos e persistência
 
-Um projeto contém a matriz original, paleta, modo de resolução e uma lista de saídas. Cada saída tem a própria paleta, modo de resolução e lista de instâncias de técnicas. O MVP mostra uma saída, mas a estrutura não assume uma única saída.
+Um ficheiro `.pixelproj` contém a matriz original, paleta, modo de resolução e uma lista de saídas. Cada saída tem a sua própria paleta, modo de resolução e lista de instâncias de técnicas. Atualmente, a interface apresenta uma saída por projeto.
 
-Os ficheiros .pixelproj são JSON versionado e preservam a origem e a configuração. A imagem convertida é recalculada ao abrir o projeto.
+A aplicação mantém um workspace em memória com vários documentos independentes. Cada documento guarda:
+- objeto de projeto e matriz original;
+- resultado convertido em cache;
+- câmara (zoom e deslocação);
+- ferramenta e estado de pintura selecionados;
+- histórico de undo/redo.
 
-## 7. UI e Canvas
+O módulo `src/core/workspace.js` gere a criação, ativação e fecho dos documentos. `src/core/history.js` guarda snapshots da matriz; o limite atual é 50 estados por documento.
 
-A imagem original e a interpretação são desenhadas em Canvas, com pixels nítidos e fundo axadrezado para indicar transparência.
+Importar um `.pixelproj` cria um novo separador. Exportar guarda apenas o documento ativo. Ainda não existe autosave do workspace no armazenamento local; fechar/atualizar o browser elimina os documentos não exportados.
 
-A conversão da posição do ponteiro para coordenadas da grelha é uma função pura em src/ui/canvas-coordinates.js, testada com zoom e deslocação. O traço usa Bresenham para não deixar falhas durante movimentos rápidos.
+## 8. Ferramentas de desenho
 
-Zoom e pan usam uma câmara partilhada. O layout automático divide os dois painéis pelo eixo maior da área de trabalho; os modos lado a lado e grelha também estão disponíveis.
+As ferramentas geométricas e o balde estão em `src/core/drawing-tools.js`:
+- retângulo de contorno e preenchido;
+- elipse de contorno e preenchida;
+- flood fill de quatro vizinhos;
+- linha de Bresenham (partilhada com o pincel ao arrastar).
 
-## 8. Transformações da matriz
+A interface escolhe a ferramenta ativa, recolhe coordenadas através de `pointerToGrid` e aplica as operações à matriz da fonte. As ferramentas não podem pintar o espaço exterior ao retângulo da grelha.
 
-Espelhamento horizontal, espelhamento vertical e rotações de 90°, 180° e 270° alteram efetivamente a matriz original. Rotações de 90°/270° trocam largura e altura. As saídas são recalculadas depois da operação.
+## 9. UI e Canvas
 
-## 9. Executar e testar
+A imagem original e a interpretação são desenhadas em Canvas, com pixels nítidos. `src/ui/canvas-coordinates.js` calcula a geometria de escala/offset e transforma o ponteiro em coordenadas da grelha; a função é pura e testada com zoom e deslocação.
+
+Zoom e pan usam uma câmara partilhada pelas duas vistas do documento. O layout automático adapta-se ao espaço disponível; os modos lado a lado e grelha também estão disponíveis. Os controlos de paleta no editor atualizam imediatamente o projeto e recalculam a interpretação.
+
+## 10. Executar e testar
 
 - Node.js 20+
-- npm start: servidor estático local na porta 4173.
-- npm test: testes com Node's built-in test runner.
-- GitHub Actions executa npm test em pushes e pull requests.
+- `npm start`: servidor estático local na porta 4173.
+- `npm test`: testes com o test runner integrado no Node.js.
+- `npm run test:e2e`: Playwright/Chromium.
+- `npm run test:all`: executa as suites Node e browser.
+- GitHub Actions executa `npm test` e `npm run test:e2e` em pushes e pull requests.
 
-## 10. Evolução
+## 11. Evolução técnica
 
-As próximas técnicas podem ser adicionadas sem alterar a interface:
+Próximas evoluções possíveis:
+- persistência automática do workspace;
+- camadas e frames de animação;
+- importação de PNG/JPG e formatos de paleta externos;
 - linhas Hough/Radon;
 - componentes, esqueletização, eixo medial e curvatura;
 - GLCM, LBP, run-length e entropia;

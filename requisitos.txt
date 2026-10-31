@@ -19,7 +19,7 @@ RF-03 — Transparência
 A transparência representa ausência de pixel. Não deve ser interpretada como preto ou branco, nem receber uma cor de saída.
 
 RF-04 — Paletas
-O utilizador pode escolher paletas predefinidas de 4, 8 ou 12 cores e personalizar as cores. Existem várias rampas para cada dimensão de paleta. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
+O utilizador pode escolher 4, 8, 12, 16 ou 32 cores, selecionar um preset dessa dimensão e personalizar as entradas de cor. Existem 34 presets: 10 de 4 cores, 8 de 8, 6 de 12, 6 de 16 e 4 de 32. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
 
 RF-05 — Complementaridade
 A inversão de preto e branco na fonte deve refletir a interpretação pela ordem inversa da paleta, mantendo a transparência. Formalmente, F(S(I)) = T(F(I)), com S e T involutivas.
@@ -47,6 +47,18 @@ O utilizador pode exportar e importar projetos num ficheiro .pixelproj, preserva
 
 RF-13 — Grelha de píxeis visível
 A área da matriz deve ser visualmente distinguível do espaço exterior ao desenho. Cada célula transparente apresenta um padrão discreto alinhado com o píxel real da matriz; o fundo exterior à matriz não deve imitar células editáveis. Um contorno deve delimitar a área que aceita desenho.
+
+RF-14 — Documentos independentes
+O utilizador pode manter vários projetos abertos em separadores, criar novas telas, alternar entre elas e fechar uma tela. Cada documento mantém a sua matriz, paleta, técnicas, zoom e histórico independentes durante a sessão.
+
+RF-15 — Ferramentas de desenho
+Além do pincel preto/branco e da borracha, o utilizador pode desenhar linhas, retângulos e elipses (contorno e preenchidos), preencher regiões contíguas e selecionar o estado de um píxel através do conta-gotas.
+
+RF-16 — Histórico
+O utilizador pode desfazer e refazer alterações da matriz. O histórico é independente por documento e tem um limite configurado de snapshots.
+
+RF-17 — Menus e navegação
+A interface apresenta menus Ficheiro, Editar e Ver, ações de criar/importar/exportar/fechar e regressar ao início, bem como atalhos de teclado para as operações principais.
 
 3. REQUISITOS DE QUALIDADE
 
@@ -82,9 +94,12 @@ A aplicação requer Node.js 20 ou superior e npm. Não requer Python para execu
 
 5. FUNCIONALIDADES FUTURAS
 
-- Mostrar várias interpretações convertidas em simultâneo.
+- Várias interpretações geradas visíveis em simultâneo dentro do mesmo projeto.
+- Camadas editáveis, com ordem, visibilidade e bloqueio.
+- Animação por frames e exportação GIF/spritesheet.
+- Gravação automática e recuperação dos documentos ao reabrir.
+- Importação de PNG/JPG e importação/exportação de ficheiros de paleta PAL/ASE/GPL.
 - Técnicas Hough/Radon, esqueletização, GLCM/LBP, autocorrelação, Fourier e wavelets.
-- Editor avançado de regras, camadas, undo/redo e otimização global.
-- Armazenamento automático local.
+- Editor avançado de regras e otimização global.
 
 As funcionalidades futuras são objetivos de evolução e não devem ser apresentadas como já implementadas.
