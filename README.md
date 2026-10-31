@@ -120,7 +120,7 @@ gh auth setup-git
 npm run wiki:publish
 ```
 
-O comando `npm run wiki:publish` executa `scripts/publish-wiki.mjs`, sincroniza as páginas reservadas ao projeto e preserva as restantes páginas da Wiki. Sempre que atualizares a memória versionada, volta a executar o mesmo comando.
+O comando `npm run wiki:publish` executa `scripts/publish-wiki.mjs`, sincroniza as páginas reservadas ao projeto e preserva as restantes páginas da Wiki. Também podes executar `node scripts/publish-wiki.mjs` diretamente. Sempre que atualizares a memória versionada, volta a executar o mesmo comando.
 
 ## Licenças
 
