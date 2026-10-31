@@ -19,13 +19,13 @@ RF-03 — Transparência
 A transparência representa ausência de pixel. Não deve ser interpretada como preto ou branco, nem receber uma cor de saída.
 
 RF-04 — Paletas
-O utilizador pode escolher 4, 8, 12, 16 ou 32 cores, selecionar um preset dessa dimensão e personalizar as entradas de cor. Existem 34 presets: 10 de 4 cores, 8 de 8, 6 de 12, 6 de 16 e 4 de 32. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
+O utilizador pode escolher 4, 8, 12, 16 ou 32 cores, selecionar um preset dessa dimensão e personalizar as entradas de cor. Existem 34 presets: 10 de 4 cores, 8 de 8, 6 de 12, 6 de 16 e 4 de 32. Cada interpretação escolhe a sua própria paleta. A saída deve usar apenas cores da paleta ativa, sem misturar cores RGB.
 
 RF-05 — Complementaridade
 A inversão de preto e branco na fonte deve refletir a interpretação pela ordem inversa da paleta, mantendo a transparência. Formalmente, F(S(I)) = T(F(I)), com S e T involutivas.
 
 RF-06 — Técnicas modulares
-Cada técnica analisa a imagem e produz uma proposta independente. O utilizador pode ativar, desativar, repetir e configurar instâncias da mesma técnica.
+Cada técnica analisa a imagem e produz uma proposta independente. Estão implementadas sete: vizinhança ponderada, linhas direcionais, entropia local, maioria local, contraste sensível a arestas, gradiente direcional e dithering ordenado. O utilizador pode ativar, desativar, repetir e configurar instâncias da mesma técnica.
 
 RF-07 — Distribuições
 Cada proposta válida apresenta uma distribuição de probabilidades sobre todas as cores da paleta. As probabilidades devem ser finitas, não negativas e somar 1. O peso da instância é independente da distribuição.
@@ -34,13 +34,13 @@ RF-08 — Abstenção
 Uma técnica sem evidência suficiente pode abster-se. Abstenção significa não votar naquele pixel; não significa votar com confiança zero.
 
 RF-09 — Resolução
-O resolvedor combina as propostas e escolhe uma única cor discreta da paleta para cada pixel válido. Não pode produzir misturas RGB.
+O resolvedor combina as propostas por média ponderada, maior confiança individual ou votação ponderada e escolhe uma única cor discreta da paleta para cada pixel válido. Não pode produzir misturas RGB.
 
 RF-10 — Transformações
 O utilizador pode espelhar horizontalmente/verticalmente e rodar a imagem. Estas operações devem alterar os dados reais da matriz, não apenas a apresentação CSS.
 
 RF-11 — Navegação
-A vista original e a vista convertida partilham zoom e deslocamento. O layout adapta-se ao espaço disponível e permite escolher a disposição.
+A vista original e até três interpretações partilham zoom e deslocamento. Cada interpretação tem cálculos, paleta e resolução próprios. O layout adapta-se ao espaço disponível e permite escolher a disposição. As configurações só aparecem quando a tela correspondente é selecionada.
 
 RF-12 — Persistência
 O utilizador pode exportar e importar projetos num ficheiro .pixelproj, preservando a fonte e as configurações necessárias à conversão.
@@ -56,6 +56,15 @@ Além do pincel preto/branco e da borracha, o utilizador pode desenhar linhas, r
 
 RF-16 — Histórico
 O utilizador pode desfazer e refazer alterações da matriz. O histórico é independente por documento e tem um limite configurado de snapshots.
+
+RF-18 — Interpretações independentes
+Cada projeto contém uma imagem original e permite até três interpretações geradas. Cada uma possui paleta, dimensão, técnicas, parâmetros, pesos e resolvedor independentes. A seleção de uma tela abre apenas as suas configurações.
+
+RF-19 — Ferramenta e cor independentes
+Mudar a cor de pintura entre preto, branco e transparência não pode alterar a ferramenta geométrica ou de preenchimento atualmente selecionada.
+
+RF-20 — Resolução por interpretação
+Cada interpretação pode acompanhar a dimensão da origem ou ter dimensão própria. A conversão reamostra a origem por nearest-neighbour sem a modificar.
 
 RF-17 — Menus e navegação
 A interface apresenta menus Ficheiro, Editar e Ver, ações de criar/importar/exportar/fechar e regressar ao início, bem como atalhos de teclado para as operações principais.
@@ -87,6 +96,9 @@ A aplicação requer Node.js 20 ou superior e npm. Não requer Python para execu
 - Comprovar que apagar restaura o estado transparente.
 - Espelhar e rodar a matriz e verificar posição/dimensões dos pixels.
 - Alterar técnica, paleta, resolvedor, zoom e disposição.
+- Alterar a cor de pintura mantendo uma ferramenta geométrica ativa.
+- Criar três interpretações independentes, alterar a paleta/resolução de uma e preservar as restantes.
+- Importar exemplos e executar as três conversões.
 - Limpar a imagem.
 - Exportar e voltar a importar o projeto.
 - Verificar a disposição vertical em viewport móvel.
@@ -94,7 +106,6 @@ A aplicação requer Node.js 20 ou superior e npm. Não requer Python para execu
 
 5. FUNCIONALIDADES FUTURAS
 
-- Várias interpretações geradas visíveis em simultâneo dentro do mesmo projeto.
 - Camadas editáveis, com ordem, visibilidade e bloqueio.
 - Animação por frames e exportação GIF/spritesheet.
 - Gravação automática e recuperação dos documentos ao reabrir.
