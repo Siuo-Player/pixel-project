@@ -28,13 +28,20 @@ test('the regression catalogue maps known failures to real named automated tests
   const file = path.join(root, 'docs', 'REGRESSION_CATALOG.md');
   assert.ok(existsSync(file), 'Add docs/REGRESSION_CATALOG.md to preserve the project failure history.');
   const catalogue = readFileSync(file, 'utf8');
-  const rowPattern = /^\|\s*(PX-\d{3})\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*\`([^\`]+)\`\s+—\s+\`([^\`]+)\`\s*\|\s*([^|]+?)\s*\|$/gm;
-  const rows = [...catalogue.matchAll(rowPattern)];
+  const rows = catalogue.split(/\r?\n/)
+    .filter(line => /^\|\s*PX-\d{3}\s*\|/.test(line))
+    .map(line => {
+      const cells = line.split('|').slice(1, -1).map(cell => cell.trim());
+      const reference = cells[3]?.match(/^`([^`]+)`\s+—\s+`([^`]+)`$/);
+      if (!reference) return null;
+      return { id: cells[0], origin: cells[1], behaviour: cells[2], relativePath: reference[1], testName: reference[2] };
+    })
+    .filter(Boolean);
 
   assert.ok(rows.length >= 10, 'The catalogue must include the known regression cases, not just a placeholder.');
-  assert.equal(new Set(rows.map(row => row[1])).size, rows.length, 'Regression IDs must be unique.');
+  assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'Regression IDs must be unique.');
 
-  for (const [, id, origin, behaviour, relativePath, testName] of rows) {
+  for (const { id, origin, behaviour, relativePath, testName } of rows) {
     const testPath = path.join(root, relativePath);
     assert.ok(existsSync(testPath), `${id} points to a missing test file: ${relativePath}`);
     const source = readFileSync(testPath, 'utf8');
@@ -43,6 +50,6 @@ test('the regression catalogue maps known failures to real named automated tests
     assert.ok(behaviour.trim().length > 0, `${id} must describe the behaviour that must not regress.`);
   }
 
-  assert.ok(rows.some(row => /relatado pelo utilizador/i.test(row[2]) && /cor de desenho/i.test(row[3]) && /paint colour/i.test(row[5])),
+  assert.ok(rows.some(row => /relatado pelo utilizador/i.test(row.origin) && /cor de desenho/i.test(row.behaviour) && /paint colour/i.test(row.testName)),
     'The shape-tool/paint-colour bug reported by the user must remain in the catalogue.');
 });
