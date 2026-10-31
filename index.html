@@ -84,13 +84,14 @@
             <button id="resume-project" class="button button-quiet button-block resume-button" hidden>Continuar a editar telas abertas</button>
             <p class="small-note">Cada tela é independente. Exporta o projeto para guardar uma cópia no teu dispositivo.</p>
           </div>
-          <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.5</span></div>
+          <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.6</span></div>
         </section>
 
         <section id="editor-view" class="editor-view view" hidden>
           <div class="document-tabs-bar">
             <div id="document-tabs" class="document-tabs" role="tablist" aria-label="Telas abertas"></div>
-            <button id="new-document" class="new-document-button" type="button" title="Criar uma nova tela">＋ Nova tela</button>
+            <button id="add-output" class="new-document-button" type="button" title="Adicionar uma interpretação calculada">＋ Interpretação</button>
+            <button id="new-document" class="new-document-button" type="button" title="Criar uma nova tela (outro projeto)">＋ Nova tela
           </div>
           <div class="editor-toolbar">
             <div class="tool-group" role="group" aria-label="Ferramentas de desenho">
@@ -129,51 +130,82 @@
 
           <div class="editor-layout">
             <div id="workspace" class="workspace" data-layout="auto" data-flow="horizontal">
-              <section class="canvas-panel" aria-labelledby="source-panel-title">
+              <section class="canvas-panel source-canvas-panel" data-canvas-kind="source" aria-labelledby="source-panel-title">
                 <div class="panel-heading"><div><span class="panel-dot source-dot"></span><h2 id="source-panel-title">Imagem original</h2><span class="panel-tag">EDITÁVEL</span></div><span id="source-dimensions" class="panel-dimensions">32 × 32</span></div>
                 <div class="canvas-wrap"><canvas id="source-canvas" aria-label="Tela original, desenha aqui" tabindex="0"></canvas><span class="canvas-hint">Cada célula é um píxel · Pinta ou arrasta · Espaço + arrastar para mover</span></div>
               </section>
-              <section class="canvas-panel" aria-labelledby="output-panel-title">
-                <div class="panel-heading"><div><span class="panel-dot output-dot"></span><h2 id="output-panel-title">Interpretação 1</h2><span class="panel-tag panel-tag-output">GERADA</span></div><span id="output-dimensions" class="panel-dimensions">32 × 32</span></div>
-                <div class="canvas-wrap"><canvas id="output-canvas" aria-label="Pré-visualização da conversão" tabindex="0"></canvas><span class="canvas-hint">Cada célula é um píxel · Resultado automático</span></div>
-              </section>
+              <div id="output-panels" class="output-panels" data-count="1" aria-label="Interpretações geradas"></div>
             </div>
 
-            <aside class="settings-panel">
-              <div class="settings-heading"><div><p class="eyebrow">CONFIGURAÇÃO</p><h2>Motor de cor</h2></div><span class="live-indicator"><i></i> LIVE</span></div>
-              <section class="settings-section">
-                <div class="section-title-row"><h3>Paleta</h3><span id="editor-color-count" class="count-pill">4 cores</span></div>
-                <label class="field compact-field"><span>Número de cores</span>
-                  <select id="editor-color-count-select" aria-label="Número de cores da paleta">
-                    <option value="4">4 cores</option>
-                    <option value="8">8 cores</option>
-                    <option value="12">12 cores</option>
-                    <option value="16">16 cores</option>
-                    <option value="32">32 cores</option>
-                  </select>
-                </label>
-                <label class="field compact-field"><span>Preset</span><select id="editor-palette"></select></label>
-                <div id="editor-palette-swatches" class="palette-swatches compact-swatches"></div>
-                <button id="editor-custom-toggle" class="text-button" type="button">Editar cores desta paleta</button>
-                <div id="editor-custom-colors" class="custom-colors" hidden></div>
-              </section>
-              <section class="settings-section techniques-section">
-                <div class="section-title-row"><h3>Técnicas ativas</h3><span id="technique-count" class="count-pill">3</span></div>
-                <p class="section-description">Cada instância analisa o desenho de forma independente. Podes repetir a mesma técnica com parâmetros diferentes.</p>
-                <div id="technique-list" class="technique-list"></div>
-                <div class="add-technique-row"><label class="sr-only" for="new-technique">Técnica a adicionar</label><select id="new-technique"></select><button id="add-technique" class="button button-secondary">+ Adicionar</button></div>
-              </section>
-              <section class="settings-section resolver-section">
-                <div class="section-title-row"><h3>Combinação</h3><span class="count-pill">por pixel</span></div>
-                <label class="field compact-field"><span>Resolvedor</span><select id="resolver-mode"><option value="weighted-average">Média ponderada</option><option value="highest-confidence">Maior probabilidade individual</option></select></label>
-                <p class="helper-note">Cada técnica devolve uma distribuição completa pelas cores. O resolvedor combina as distribuições e escolhe uma cor da paleta — sem misturar RGB.</p>
-              </section>
-              <div class="settings-bottom"><button id="clear-canvas" class="button button-quiet button-block">Limpar imagem original</button><span id="engine-status" class="engine-status">Pronto para desenhar.</span></div>
+            <aside id="settings-panel" class="settings-panel" hidden>
+              <div class="settings-heading">
+                <div><p class="eyebrow">CONFIGURAÇÃO DA TELA SELECIONADA</p><h2 id="inspector-title">Seleciona uma tela</h2></div>
+                <button id="close-settings" class="icon-button" type="button" aria-label="Fechar configurações" title="Fechar configurações">×</button>
+              </div>
+
+              <div id="source-settings" hidden>
+                <section class="settings-section">
+                  <div class="section-title-row"><h3>Dimensão da imagem original</h3><span class="count-pill">preto e branco</span></div>
+                  <div class="form-grid">
+                    <label class="field compact-field"><span>Largura</span><input id="source-width" type="number" min="4" max="256" /></label>
+                    <label class="field compact-field"><span>Altura</span><input id="source-height" type="number" min="4" max="256" /></label>
+                  </div>
+                  <button id="apply-source-size" class="button button-secondary button-block">Aplicar dimensão</button>
+                  <p class="helper-note">Ajusta a grelha original. As interpretações que ainda acompanham a dimensão original serão atualizadas; dimensões personalizadas mantêm-se.</p>
+                </section>
+                <div class="settings-bottom">
+                  <button id="clear-canvas" class="button button-quiet button-block">Limpar imagem original</button>
+                  <span id="engine-status" class="engine-status">Pronto para desenhar.</span>
+                </div>
+              </div>
+
+              <div id="output-settings" hidden>
+                <section class="settings-section">
+                  <div class="section-title-row"><h3>Dimensão do resultado</h3><span class="count-pill">independente</span></div>
+                  <div class="form-grid">
+                    <label class="field compact-field"><span>Largura</span><input id="output-width" type="number" min="4" max="256" /></label>
+                    <label class="field compact-field"><span>Altura</span><input id="output-height" type="number" min="4" max="256" /></label>
+                  </div>
+                  <button id="apply-output-size" class="button button-secondary button-block">Aplicar dimensão</button>
+                  <p class="helper-note">O desenho original é reamostrado por nearest-neighbour para esta resolução, sem alterar a imagem de origem.</p>
+                </section>
+                <section class="settings-section">
+                  <div class="section-title-row"><h3>Paleta</h3><span id="editor-color-count" class="count-pill">4 cores</span></div>
+                  <label class="field compact-field"><span>Número de cores</span>
+                    <select id="editor-color-count-select" aria-label="Número de cores da paleta">
+                      <option value="4">4 cores</option>
+                      <option value="8">8 cores</option>
+                      <option value="12">12 cores</option>
+                      <option value="16">16 cores</option>
+                      <option value="32">32 cores</option>
+                    </select>
+                  </label>
+                  <label class="field compact-field"><span>Preset</span><select id="editor-palette"></select></label>
+                  <div id="editor-palette-swatches" class="palette-swatches compact-swatches"></div>
+                  <button id="editor-custom-toggle" class="text-button" type="button">Editar cores desta paleta</button>
+                  <div id="editor-custom-colors" class="custom-colors" hidden></div>
+                </section>
+                <section class="settings-section techniques-section">
+                  <div class="section-title-row"><h3>Técnicas de cálculo</h3><span id="technique-count" class="count-pill">3</span></div>
+                  <p class="section-description">Cada técnica produz uma distribuição de probabilidades. Podes combinar técnicas diferentes ou repetir a mesma com parâmetros distintos.</p>
+                  <div id="technique-list" class="technique-list"></div>
+                  <div class="add-technique-row"><label class="sr-only" for="new-technique">Técnica a adicionar</label><select id="new-technique"></select><button id="add-technique" class="button button-secondary">+ Adicionar técnica</button></div>
+                </section>
+                <section class="settings-section resolver-section">
+                  <div class="section-title-row"><h3>Combinação das técnicas</h3><span class="count-pill">por píxel</span></div>
+                  <label class="field compact-field"><span>Resolvedor</span><select id="resolver-mode">
+                    <option value="weighted-average">Média ponderada</option>
+                    <option value="highest-confidence">Maior confiança individual</option>
+                    <option value="weighted-vote">Votação ponderada</option>
+                  </select></label>
+                  <p class="helper-note">A média combina distribuições; a maior confiança escolhe a proposta mais segura; a votação ponderada dá um voto ao vencedor de cada técnica.</p>
+                </section>
+                <div class="settings-bottom"><span id="engine-status" class="engine-status">Pronto para calcular.</span></div>
+              </div>
             </aside>
-          </div>
-        </section>
+          </div></section>
       </main>
-      <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.5</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
+      <footer class="app-footer"><span>PIXEL PROJECT <b>·</b> BUILD 0.6</span><span id="footer-status">Sem projeto aberto</span><a href="https://github.com/Siuo-Player/pixel-project" target="_blank" rel="noreferrer">GitHub ↗</a></footer>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   </body>
