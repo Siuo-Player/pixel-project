@@ -17,7 +17,7 @@ test('AGENTS.md makes the test-first debugging workflow mandatory', () => {
     ['bugs are reproduced with controlled data in a sandbox', /sandbox/i],
     ['the complete local suite is required', /npm run test:all/],
     ['the exact commit SHA must have green CI', /SHA exato/i],
-    ['tests must not be weakened to obtain a pass', /n[aã]o.*enfraquec/i],
+    ['tests must not be weakened to obtain a pass', /não.*enfraqueças/i],
     ['the final diff receives a separate review', /revis[aã]o independente/i]
   ]) {
     assert.match(instructions, pattern, `Missing agent rule: ${label}`);
