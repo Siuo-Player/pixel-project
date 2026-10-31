@@ -1,33 +1,40 @@
-# Publica executáveis desktop opcionais no GitHub Releases.
-# A app em si já é instalável como PWA (GitHub Pages); este job existe para
-# quem prefere um executável autónomo. Corre manualmente: Actions > Desktop release > Run.
-# Atomizado por SO: win => portable .exe; linux => AppImage; mac => dmg.
+# Gera um pacote desktop por sistema e publica apenas depois de todos os builds terminarem.
 name: Desktop release
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (ex.: desktop-v0.6.0)"
+        description: "Tag do release (por exemplo desktop-v0.6.0)"
         required: false
         default: desktop-latest
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: desktop-release-${{ github.event.inputs.tag }}
+  group: desktop-release-${{ github.event.inputs.tag || 'desktop-latest' }}
   cancel-in-progress: false
 
 jobs:
   build:
+    name: Build ${{ matrix.platform }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
+            platform: windows
             args: --win
+            artifact: dist/*.exe
           - os: ubuntu-latest
+            platform: linux
             args: --linux
+            artifact: dist/*.AppImage
+          - os: macos-latest
+            platform: macos
+            args: --mac
+            artifact: dist/*.dmg
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -35,15 +42,74 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies and packaging tools
-        run: npm install --no-save --no-audit --no-fund electron electron-builder
-      - name: Build executables
+      - name: Install project dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned desktop packaging tools
+        run: npm install --no-save --package-lock=false --no-audit --no-fund electron@45.2.1 electron-builder@26.18.0
+      - name: Build desktop package
         run: npx electron-builder ${{ matrix.args }} --publish never
-      - name: Upload to GitHub Releases
-        shell: bash
+      - name: Upload platform artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pixel-project-${{ matrix.platform }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all platform builds
+        uses: actions/download-artifact@v7
+        with:
+          pattern: pixel-project-*
+          path: release-assets
+          merge-multiple: false
+      - name: Create checksums and publish release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.inputs.tag }}
+          TAG: ${{ github.event.inputs.tag || 'desktop-latest' }}
+          RELEASE_TITLE: Pixel Project ${{ github.event.inputs.tag || 'desktop-latest' }}
+        shell: bash
         run: |
-          gh release create "$TAG" --title "Pixel Project $TAG" --notes "Executáveis desktop gerados automaticamente. Também podes instalar a app como PWA: https://siuo-player.github.io/pixel-project/" || true
-          gh release upload "$TAG" dist/*.* --clobber
+          set -euo pipefail
+          mapfile -d '' -t binaries < <(find release-assets -type f -print0)
+          if [ "${#binaries[@]}" -ne 3 ]; then
+            echo "::error::Expected exactly three desktop binaries, found ${#binaries[@]}."
+            find release-assets -maxdepth 3 -type f -print
+            exit 1
+          fi
+
+          for binary in "${binaries[@]}"; do
+            directory="$(dirname "$binary")"
+            filename="$(basename "$binary")"
+            (cd "$directory" && sha256sum "$filename" > "$filename.sha256")
+          done
+
+          notes=$(cat <<'EOF'
+          Executáveis gratuitos do Pixel Project, construídos em runners oficiais do GitHub Actions.
+
+          - Windows: executável portátil (.exe).
+          - Linux: AppImage.
+          - macOS: imagem de disco (.dmg).
+
+          Cada binário inclui o respetivo ficheiro SHA-256. Confirma o hash antes de executar.
+
+          Os binários não são assinados com certificados comerciais nem notarizados pela Apple. O Windows pode mostrar um aviso SmartScreen e o macOS pode bloquear a primeira abertura. Em Linux, executa chmod +x no AppImage antes de o abrir.
+
+          Alternativa sem download: https://siuo-player.github.io/pixel-project/
+          EOF
+          )
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$RELEASE_TITLE" --notes "$notes"
+          else
+            gh release create "$TAG" --title "$RELEASE_TITLE" --notes "$notes" --target "$GITHUB_SHA"
+          fi
+
+          mapfile -d '' -t release_files < <(find release-assets -type f -print0)
+          gh release upload "$TAG" "${release_files[@]}" --clobber
