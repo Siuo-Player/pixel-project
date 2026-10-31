@@ -47,3 +47,14 @@ chmod +x "Pixel Project.AppImage"
 ```
 
 A PWA continua a ser a opção mais simples, sem download de executável.
+
+## Iniciar pela linha de comandos
+
+Com GitHub CLI autenticado e permissão para executar workflows:
+
+```bash
+gh workflow run desktop-release.yml --ref main -f tag=desktop-latest
+gh run watch
+```
+
+Para um release versionado usa, por exemplo, `-f tag=desktop-v0.6.0`.
