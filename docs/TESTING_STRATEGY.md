@@ -23,7 +23,8 @@ Testam uma função ou módulo isolado:
 - pintura de pixels e interpolação de linhas;
 - espelhamento e rotação;
 - transformação das coordenadas do ponteiro;
-- validação de paletas;
+- validação das paletas, contagem de cores, identificadores e correspondência de inversão;
+- conversão contextual para 16 e 32 cores, sem assumir buffers fixos de quatro valores por pixel;
 - cálculo das distribuições de cada técnica;
 - fusão de propostas e desempates.
 
@@ -39,7 +40,9 @@ Testam módulos em conjunto:
 
 Confirmam que controlos essenciais continuam presentes e com papéis acessíveis:
 - tela editável versus tela gerada;
-- ferramentas preto, branco e apagar;
+- ferramentas básicas e geométricas, preenchimento e conta-gotas;
+- separadores independentes, criação/fecho de documentos e undo/redo por documento;
+- escolha das cinco dimensões de paleta e quantidade de swatches;
 - importação/exportação;
 - escolha de layout e resolvedor.
 
@@ -52,6 +55,7 @@ O cenário principal verifica:
 - desenho real no Canvas a preto, branco e transparência;
 - espelhamento e rotação da matriz, incluindo atualização das dimensões;
 - alteração de técnicas, paleta, resolvedor, zoom e layout;
+- seleção e renderização de paletas de 16 e 32 cores;
 - limpeza da imagem;
 - exportação e importação de um ficheiro de projeto;
 - ausência de erros JavaScript na página.
