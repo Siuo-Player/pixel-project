@@ -28,7 +28,7 @@ test('the regression catalogue maps known failures to real named automated tests
   const file = path.join(root, 'docs', 'REGRESSION_CATALOG.md');
   assert.ok(existsSync(file), 'Add docs/REGRESSION_CATALOG.md to preserve the project failure history.');
   const catalogue = readFileSync(file, 'utf8');
-  const rowPattern = /^\|\s*(PX-\d{3})\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s+—\s+`([^`]+)`\s*\|\s*([^|]+?)\s*\|$/gm;
+  const rowPattern = /^\|\s*(PX-\d{3})\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*\`([^\`]+)\`\s+—\s+\`([^\`]+)\`\s*\|\s*([^|]+?)\s*\|$/gm;
   const rows = [...catalogue.matchAll(rowPattern)];
 
   assert.ok(rows.length >= 10, 'The catalogue must include the known regression cases, not just a placeholder.');
