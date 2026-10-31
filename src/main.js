@@ -7,6 +7,15 @@ import { convertProject } from './engine/convert.js';
 import { getCanvasGeometry, pointerToGrid } from './ui/canvas-coordinates.js';
 
 const $ = selector => document.querySelector(selector);
+const DEFAULT_PALETTE_BY_SIZE = {
+  4: 'blue-red-4',
+  8: 'retro-8',
+  12: 'aurora-12'
+};
+const TRANSPARENT_CELL_COLORS = [
+  [48, 54, 65, 255],
+  [65, 73, 86, 255]
+];
 const sourceCanvas = $('#source-canvas');
 const outputCanvas = $('#output-canvas');
 const workspace = $('#workspace');
@@ -176,17 +185,9 @@ function drawGrid(canvas, context, grid, paletteColors = null) {
   }
   context.setTransform(dpr, 0, 0, dpr, 0, 0);
   context.clearRect(0, 0, width, height);
+  // The area outside the artwork is a neutral matte, not a fake pixel grid.
   context.fillStyle = '#20232b';
   context.fillRect(0, 0, width, height);
-  const tile = 10;
-  for (let y = 0; y < height; y += tile) {
-    for (let x = 0; x < width; x += tile) {
-      if ((Math.floor(x / tile) + Math.floor(y / tile)) % 2 === 0) {
-        context.fillStyle = '#292d36';
-        context.fillRect(x, y, tile, tile);
-      }
-    }
-  }
   const geometry = getCanvasGeometry(width, height, grid, camera);
   const buffer = document.createElement('canvas');
   buffer.width = grid.width;
@@ -195,7 +196,10 @@ function drawGrid(canvas, context, grid, paletteColors = null) {
   const image = bufferContext.createImageData(grid.width, grid.height);
   for (let i = 0; i < grid.data.length; i += 1) {
     const value = grid.data[i];
-    let rgba = [0, 0, 0, 0];
+    const x = i % grid.width;
+    const y = Math.floor(i / grid.width);
+    const transparentColor = TRANSPARENT_CELL_COLORS[(x + y) % 2];
+    let rgba = transparentColor;
     if (paletteColors) {
       if (value >= 0) rgba = hexToRgba(paletteColors[value]);
     } else if (value === BLACK) rgba = [15, 16, 19, 255];
@@ -209,10 +213,10 @@ function drawGrid(canvas, context, grid, paletteColors = null) {
   bufferContext.putImageData(image, 0, 0);
   context.imageSmoothingEnabled = false;
   context.drawImage(buffer, geometry.x, geometry.y, geometry.width, geometry.height);
-  if (geometry.scale >= 7) {
+  if (geometry.scale >= 3.5) {
     context.beginPath();
     context.strokeStyle = 'rgba(15, 18, 24, 0.24)';
-    context.lineWidth = Math.max(0.5, 0.65 / camera.zoom);
+    context.lineWidth = Math.max(0.35, Math.min(0.85, 0.65 / camera.zoom));
     for (let x = 0; x <= grid.width; x += 1) {
       const px = geometry.x + x * geometry.scale;
       context.moveTo(px, geometry.y);
@@ -225,6 +229,16 @@ function drawGrid(canvas, context, grid, paletteColors = null) {
     }
     context.stroke();
   }
+
+  // A clear outline identifies the exact rectangle containing editable grid cells.
+  context.strokeStyle = 'rgba(220, 230, 242, 0.62)';
+  context.lineWidth = 1;
+  context.strokeRect(
+    geometry.x + 0.5,
+    geometry.y + 0.5,
+    Math.max(0, geometry.width - 1),
+    Math.max(0, geometry.height - 1)
+  );
 }
 
 function drawAll() {
@@ -500,7 +514,7 @@ function initialize() {
   refreshSetupPalette();
   $('#color-count').addEventListener('change', () => {
     const count = Number($('#color-count').value);
-    fillPaletteSelect($('#setup-palette'), count, count === 8 ? 'retro-8' : 'blue-red-4');
+    fillPaletteSelect($('#setup-palette'), count, DEFAULT_PALETTE_BY_SIZE[count] ?? 'blue-red-4');
     setupCustom = false;
     $('#toggle-custom-palette').textContent = 'Personalizar cores';
     refreshSetupPalette();
