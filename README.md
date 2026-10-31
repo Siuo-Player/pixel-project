@@ -101,9 +101,15 @@ A app é uma PWA válida (manifest + service worker com suporte offline) e insta
 
 Se precisares de um ficheiro executável para distribuir diretamente (sem loja e sem pagamento), o GitHub Releases hospeda-os de graça:
 
-1. GitHub → **Actions** → **Desktop release** → **Run workflow** (indicar a tag, ex.: `desktop-v0.6.0`).
-2. O job publica **.exe portátil para Windows** e **AppImage para Linux** no release indicado.
-3. Qualquer pessoa descarrega diretamente da página *Releases* do repositório — sem lojas nem contas.
+1. Com GitHub CLI autenticado e permissão para executar workflows, usa:
+   ```bash
+   gh workflow run desktop-release.yml --ref main -f tag=desktop-v0.6.0
+   gh run list --workflow desktop-release.yml --limit 1
+   ```
+   Altera a tag para a versão que queres publicar. Para acompanhar a execução, copia o ID mostrado no segundo comando e executa `gh run watch ID`.
+2. Alternativamente: GitHub → **Actions** → **Desktop release** → **Run workflow** e indica a tag.
+3. O job publica **.exe portátil para Windows** e **AppImage para Linux** no mesmo GitHub Release.
+4. Qualquer pessoa descarrega diretamente de [Releases](https://github.com/Siuo-Player/pixel-project/releases) — sem lojas nem contas.
 
 Alternativa local (opcional, no teu PC): `npm install --save-dev electron electron-builder && npx electron-builder --win`. O Chromium do Electron só é descarregado ao instalar — não faz parte do `npm install` normal do projeto.
 
