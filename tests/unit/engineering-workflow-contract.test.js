@@ -34,14 +34,15 @@ test('the regression catalogue maps known failures to real named automated tests
   assert.ok(rows.length >= 10, 'The catalogue must include the known regression cases, not just a placeholder.');
   assert.equal(new Set(rows.map(row => row[1])).size, rows.length, 'Regression IDs must be unique.');
 
-  for (const [, id, origin, relativePath, testName] of rows) {
+  for (const [, id, origin, behaviour, relativePath, testName] of rows) {
     const testPath = path.join(root, relativePath);
     assert.ok(existsSync(testPath), `${id} points to a missing test file: ${relativePath}`);
     const source = readFileSync(testPath, 'utf8');
     assert.ok(source.includes(testName), `${id} points to a test name that does not exist: ${testName}`);
     assert.ok(origin.trim().length > 0, `${id} must identify where the failure came from.`);
+    assert.ok(behaviour.trim().length > 0, `${id} must describe the behaviour that must not regress.`);
   }
 
-  assert.ok(rows.some(row => /relatado pelo utilizador/i.test(row[2]) && /paint colour|cor de desenho/i.test(row[4])),
+  assert.ok(rows.some(row => /relatado pelo utilizador/i.test(row[2]) && /cor de desenho/i.test(row[3]) && /paint colour/i.test(row[5])),
     'The shape-tool/paint-colour bug reported by the user must remain in the catalogue.');
 });
