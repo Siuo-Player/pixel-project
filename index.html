@@ -40,7 +40,7 @@
             <div class="form-grid">
               <label class="field"><span>Largura</span><input id="grid-width" type="number" min="4" max="256" value="32" /></label>
               <label class="field"><span>Altura</span><input id="grid-height" type="number" min="4" max="256" value="32" /></label>
-              <label class="field"><span>Número de cores</span><select id="color-count"><option value="4" selected>4 cores</option><option value="8">8 cores</option></select></label>
+              <label class="field"><span>Número de cores</span><select id="color-count"><option value="4" selected>4 cores</option><option value="8">8 cores</option><option value="12">12 cores</option></select></label>
               <label class="field"><span>Paleta inicial</span><select id="setup-palette"></select></label>
             </div>
             <div class="palette-editor-block">
@@ -83,11 +83,11 @@
             <div id="workspace" class="workspace" data-layout="auto" data-flow="horizontal">
               <section class="canvas-panel" aria-labelledby="source-panel-title">
                 <div class="panel-heading"><div><span class="panel-dot source-dot"></span><h2 id="source-panel-title">Imagem original</h2><span class="panel-tag">EDITÁVEL</span></div><span id="source-dimensions" class="panel-dimensions">32 × 32</span></div>
-                <div class="canvas-wrap"><canvas id="source-canvas" aria-label="Tela original, desenha aqui" tabindex="0"></canvas><span class="canvas-hint">Pinta ou arrasta · Espaço + arrastar para mover</span></div>
+                <div class="canvas-wrap"><canvas id="source-canvas" aria-label="Tela original, desenha aqui" tabindex="0"></canvas><span class="canvas-hint">Cada célula é um píxel · Pinta ou arrasta · Espaço + arrastar para mover</span></div>
               </section>
               <section class="canvas-panel" aria-labelledby="output-panel-title">
                 <div class="panel-heading"><div><span class="panel-dot output-dot"></span><h2 id="output-panel-title">Interpretação 1</h2><span class="panel-tag panel-tag-output">GERADA</span></div><span id="output-dimensions" class="panel-dimensions">32 × 32</span></div>
-                <div class="canvas-wrap"><canvas id="output-canvas" aria-label="Pré-visualização da conversão" tabindex="0"></canvas><span class="canvas-hint">Resultado automático · não editável</span></div>
+                <div class="canvas-wrap"><canvas id="output-canvas" aria-label="Pré-visualização da conversão" tabindex="0"></canvas><span class="canvas-hint">Cada célula é um píxel · Resultado automático</span></div>
               </section>
             </div>
 

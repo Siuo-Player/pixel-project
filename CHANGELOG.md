@@ -36,3 +36,12 @@
 - Constrain desktop editor panels to the viewport and allow the technique settings panel to scroll independently.
 - Add a browser regression assertion for desktop canvas orientation and viewport overflow.
 - Fix an off-screen accessibility label that extended the document height and created phantom desktop scrolling.
+
+## 0.3.0 — Paletas de 12 cores e grelha real
+
+- Alargado o seletor de dimensão de paleta para 4, 8 e 12 cores.
+- Criadas 13 paletas predefinidas: seis de 4 cores, quatro de 8 cores e três de 12 cores.
+- Mantida a correspondência complementar por inversão da ordem de todas as rampas.
+- Substituído o checkerboard do viewport por fundo uniforme e transparência desenhada célula a célula dentro da matriz.
+- Adicionado contorno explícito da grelha e indicação de que cada célula corresponde a um píxel editável.
+- Acrescentados testes unitários, de contrato e de browser para paletas de 12 cores e representação da grelha.

@@ -58,8 +58,8 @@ h1 span { color: var(--accent); }
 .inline-heading small { display: block; color: var(--muted); font-size: 9px; margin-top: 3px; line-height: 1.5; }
 .text-button { border: 0; padding: 4px 0; color: var(--accent); background: transparent; font-size: 10px; font-weight: 700; white-space: nowrap; }
 .text-button:hover { color: #d1f5e0; text-decoration: underline; }
-.palette-swatches { display: flex; gap: 5px; margin-top: 13px; min-height: 28px; }
-.palette-swatch { display: block; height: 27px; min-width: 20px; flex: 1; border: 1px solid rgba(255,255,255,.15); border-radius: 4px; }
+.palette-swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(12px, 1fr)); gap: 5px; margin-top: 13px; min-height: 28px; }
+.palette-swatch { display: block; width: 100%; min-width: 0; height: 27px; border: 1px solid rgba(255,255,255,.15); border-radius: 4px; }
 .custom-colors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding: 10px; border-radius: 7px; background: #15181e; }
 .color-picker { display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--muted); font: 9px var(--mono); }
 .color-picker input { width: 34px; height: 29px; border: 0; background: transparent; padding: 0; cursor: pointer; }
@@ -94,10 +94,10 @@ h1 span { color: var(--accent); }
 .panel-tag { padding: 3px 5px; background: #333842; color: #afb6c1; border-radius: 3px; font: 8px var(--mono); letter-spacing: .06em; }
 .panel-tag-output { color: #edc18e; background: #45372b; }
 .panel-dimensions { color: #727b89; font: 9px var(--mono); }
-.canvas-wrap { position: relative; flex: 1; min-height: 0; padding: 10px; overflow: hidden; }
+.canvas-wrap { position: relative; flex: 1; min-height: 0; padding: 10px; overflow: hidden; background: #171a20; }
 .canvas-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; border-radius: 4px; cursor: crosshair; }
 #output-canvas { cursor: grab; }
-.canvas-hint { position: absolute; left: 16px; bottom: 15px; pointer-events: none; color: rgba(210,216,226,.46); font: 8px var(--mono); }
+.canvas-hint { position: absolute; left: 16px; bottom: 15px; pointer-events: none; padding: 6px 8px; color: rgba(226,232,240,.78); background: rgba(18,21,27,.82); border: 1px solid rgba(220,230,242,.14); border-radius: 6px; font: 8px var(--mono); letter-spacing: .02em; }
 .settings-panel { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; background: #1a1e26; border: 1px solid #333a46; border-radius: 10px; }
 .settings-heading { display: flex; align-items: center; justify-content: space-between; padding: 16px 15px 12px; border-bottom: 1px solid #343a45; }
 .settings-heading .eyebrow { font-size: 8px; margin-bottom: 5px; }

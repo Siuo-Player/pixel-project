@@ -7,9 +7,9 @@ A ideia central é desenhar com duas cores de entrada e observar como diferentes
 ## Estado do projeto
 
 **Primeiro protótipo executável em desenvolvimento.** Já existe:
-- ecrã de criação com dimensões e paletas de 4 ou 8 cores;
-- paletas predefinidas e edição das cores;
-- tela original e pré-visualização convertida;
+- ecrã de criação com dimensões e paletas de 4, 8 ou 12 cores;
+- 13 paletas predefinidas (6 de 4 cores, 4 de 8 cores e 3 de 12 cores) e edição das cores;
+- tela original e pré-visualização convertida, com transparência desenhada por célula real e contorno da grelha editável;
 - pincel preto, branco e borracha;
 - desenho por arrastamento sem falhas;
 - zoom e pan partilhados;
