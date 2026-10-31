@@ -22,3 +22,9 @@ Inspirado no projeto [ai-memory](https://github.com/akitaonrails/ai-memory) (lic
 - `docs/REGRESSION_CATALOG.md` — proteção executável (testes). Este wiki explica o **porquê**; o catálogo garante o **comportamento**.
 - `docs/TESTING_STRATEGY.md` — como validar.
 - `AGENTS.md` — regras de trabalho.
+
+## Publicação na GitHub Wiki
+
+A Wiki do GitHub é um **espelho de leitura**, não uma segunda fonte de verdade. Os ficheiros neste diretório continuam a ser a fonte oficial, versionada e revista em pull requests.
+
+Depois de criares a primeira página `Home` na interface GitHub (necessário para inicializar a Wiki), executa `gh auth setup-git` e `npm run wiki:publish`. O script atualiza apenas as páginas que pertencem ao projeto e não remove páginas adicionais criadas manualmente.
