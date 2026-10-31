@@ -109,7 +109,7 @@ Se precisares de um ficheiro executável para distribuir diretamente (sem loja e
 
 Os builds usam Electron 45.2.1 e electron-builder 26.18.0, fixados no workflow. O job de build tem apenas leitura do repositório; só o job final recebe contents: write para publicar o release.
 
-Alternativa local (opcional, no teu PC): `npm install --save-dev electron electron-builder && npx electron-builder --win`. O Chromium do Electron só é descarregado ao instalar — não faz parte do `npm install` normal do projeto.
+Alternativa local (opcional, no teu PC): `npm install --no-save --package-lock=false electron@45.2.1 electron-builder@26.18.0` e depois `npx electron-builder --win --publish never`. O Chromium do Electron é descarregado apenas nesta etapa — não faz parte do `npm install` normal do projeto.
 
 Nota: a ligação para a PWA aparece nas notas do release no workflow `desktop-release.yml`; se o nome de utilizador do GitHub mudar, ajusta-a nesse ficheiro.
 
@@ -167,7 +167,7 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 Antes de alterar código, qualquer agente deve ler [`AGENTS.md`](AGENTS.md). Bugs e falhas conhecidos ficam ligados a testes reais em [`docs/REGRESSION_CATALOG.md`](docs/REGRESSION_CATALOG.md). O ciclo obrigatório é: escrever o teste, confirmar RED, corrigir, confirmar GREEN, executar `npm run test:all` e verificar CI no SHA exato.
 
 
-### GitHub Wiki — documentação navegável
+## GitHub Wiki — documentação navegável
 
 A [Wiki do projeto](https://github.com/Siuo-Player/pixel-project/wiki) tem páginas para começar, desenvolver, descarregar e compreender a memória dos agentes. As páginas-fonte também vivem em `wiki/` no repositório, para serem revistas e versionadas com o código.
 
