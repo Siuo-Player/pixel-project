@@ -37,7 +37,7 @@ test('flood fill changes only the connected region and returns its pixel count',
   const grid = createSourceGrid(4, 3);
   grid.data.set([0,0,2,2, 0,2,2,2, 0,0,0,2]);
   const changed = floodFill(grid, 0, 0, BLACK);
-  assert.equal(changed, 4);
+  assert.equal(changed, 6);
   assert.equal(getPixel(grid, 0, 0), BLACK);
   assert.equal(getPixel(grid, 1, 0), BLACK);
   assert.equal(getPixel(grid, 2, 0), WHITE);

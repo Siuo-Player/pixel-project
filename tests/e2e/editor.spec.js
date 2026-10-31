@@ -259,6 +259,7 @@ test('transparent cells align to real matrix pixels and the area outside the gri
 });
 
 test('multiple document tabs keep independent drawings and support undo/redo and editor palette sizing', async ({ page }) => {
+  page.on('dialog', dialog => dialog.accept());
   await page.goto('/');
   await page.locator('#grid-width').fill('16');
   await page.locator('#grid-height').fill('16');
