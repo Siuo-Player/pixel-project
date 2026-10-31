@@ -118,3 +118,7 @@ Os testes de browser geram capturas em `artifacts/screenshots/`. Em caso de falh
 - `tests/unit/`, `tests/integration/`, `tests/e2e/`: testes por camada.
 - `scripts/`: servidor local.
 - `artifacts/`: evidências geradas pelos testes; não são ficheiros-fonte do projeto.
+
+## Processo de engenharia e prevenção de regressões
+
+Antes de alterar código, qualquer agente deve ler [`AGENTS.md`](AGENTS.md). Bugs e falhas conhecidos ficam ligados a testes reais em [`docs/REGRESSION_CATALOG.md`](docs/REGRESSION_CATALOG.md). O ciclo obrigatório é: escrever o teste, confirmar RED, corrigir, confirmar GREEN, executar `npm run test:all` e verificar CI no SHA exato.
