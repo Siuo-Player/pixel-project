@@ -1,5 +1,17 @@
 import { test, expect } from '@playwright/test';
 
+async function sampleCell(page, x, y, width = 32, height = 32) {
+  return page.locator('#source-canvas').evaluate((canvas, cell) => {
+    const rect = canvas.getBoundingClientRect();
+    const scale = Math.min(rect.width / cell.width, rect.height / cell.height);
+    const offsetX = (rect.width - cell.width * scale) / 2;
+    const offsetY = (rect.height - cell.height * scale) / 2;
+    const px = Math.floor((offsetX + (cell.x + 0.5) * scale) * canvas.width / rect.width);
+    const py = Math.floor((offsetY + (cell.y + 0.5) * scale) * canvas.height / rect.height);
+    return Array.from(canvas.getContext('2d').getImageData(px, py, 1, 1).data);
+  }, { x, y, width, height });
+}
+
 async function cellPoint(page, x, y, width = 32, height = 32) {
   return page.locator('#source-canvas').evaluate((canvas, cell) => {
     const rect = canvas.getBoundingClientRect();
@@ -25,12 +37,8 @@ test('shape tools retain their mode when the user changes the paint colour', asy
   await page.mouse.down();
   await page.mouse.move(end.x, end.y, { steps: 8 });
   await page.mouse.up();
-  const center = await page.locator('#source-canvas').evaluate(canvas => {
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.floor(canvas.width * 0.31);
-    const y = Math.floor(canvas.height * 0.31);
-    return Array.from(canvas.getContext('2d').getImageData(x, y, 1, 1).data);
-  });
+  await expect(page.locator('[data-tool="filled-ellipse"]')).toHaveAttribute('aria-pressed', 'true');
+  const center = await sampleCell(page, 10, 10);
   expect(center).toEqual([247, 247, 244, 255]);
 });
 
