@@ -18,7 +18,32 @@
         </a>
         <div class="header-actions">
           <span id="project-name" class="project-name" hidden></span>
-          <button id="back-to-setup" class="button button-quiet" hidden>← Projeto</button>
+          <nav id="editor-menu-bar" class="menu-bar" aria-label="Menus do editor" hidden>
+            <details class="app-menu" id="file-menu">
+              <summary>Ficheiro</summary>
+              <div class="menu-popover">
+                <button id="menu-new-document" type="button">+ Nova tela</button>
+                <button id="menu-import-project" type="button">Importar projeto…</button>
+                <button id="menu-export-project" type="button">Exportar tela ativa</button>
+                <button id="menu-close-document" type="button">Fechar tela</button>
+                <button id="menu-home" type="button">Voltar ao início</button>
+              </div>
+            </details>
+            <details class="app-menu" id="edit-menu">
+              <summary>Editar</summary>
+              <div class="menu-popover">
+                <button id="menu-undo" type="button">Desfazer <kbd>Ctrl+Z</kbd></button>
+                <button id="menu-redo" type="button">Refazer <kbd>Ctrl+Shift+Z</kbd></button>
+                <button id="menu-clear" type="button">Limpar tela</button>
+              </div>
+            </details>
+            <details class="app-menu" id="view-menu">
+              <summary>Ver</summary>
+              <div class="menu-popover"><button id="menu-reset-zoom" type="button">Repor zoom</button></div>
+            </details>
+          </nav>
+          <button id="back-to-setup" class="button button-quiet" hidden>Início</button>
+          <button id="close-document" class="button button-quiet" hidden>Fechar tela</button>
           <button id="export-project" class="button button-primary" hidden>Exportar projeto</button>
           <button id="import-project-button" class="button button-quiet">Importar</button>
           <input id="import-project-file" type="file" accept="application/json,.pixelproj" hidden />
@@ -50,17 +75,33 @@
               <p class="helper-note">A inversão preto ↔ branco reflete a interpretação através da paleta. A transparência nunca é convertida.</p>
             </div>
             <button id="create-project" class="button button-primary button-large">Criar projeto <span aria-hidden="true">→</span></button>
-            <p class="small-note">O projeto fica no teu dispositivo. Podes exportá-lo para continuar mais tarde.</p>
+            <button id="resume-project" class="button button-quiet button-block resume-button" hidden>Continuar a editar telas abertas</button>
+            <p class="small-note">Cada tela é independente. Exporta o projeto para guardar uma cópia no teu dispositivo.</p>
           </div>
           <div class="setup-footer"><span>LOCAL-FIRST · SEM CONTA</span><span>EXPERIMENTAL BUILD 0.1</span></div>
         </section>
 
         <section id="editor-view" class="editor-view view" hidden>
+          <div class="document-tabs-bar">
+            <div id="document-tabs" class="document-tabs" role="tablist" aria-label="Telas abertas"></div>
+            <button id="new-document" class="new-document-button" type="button" title="Criar uma nova tela">＋ Nova tela</button>
+          </div>
           <div class="editor-toolbar">
             <div class="tool-group" role="group" aria-label="Ferramentas de desenho">
               <button class="tool-button is-active" data-tool="black" aria-pressed="true" title="Pintar a preto">● <span>Preto</span></button>
               <button class="tool-button" data-tool="white" aria-pressed="false" title="Pintar a branco">○ <span>Branco</span></button>
               <button class="tool-button" data-tool="erase" aria-pressed="false" title="Apagar">⌫ <span>Apagar</span></button>
+              <button class="tool-button" data-tool="line" aria-pressed="false" title="Desenhar linha">╱ <span>Linha</span></button>
+              <button class="tool-button" data-tool="rectangle" aria-pressed="false" title="Retângulo sem preenchimento">▢ <span>Retângulo</span></button>
+              <button class="tool-button" data-tool="filled-rectangle" aria-pressed="false" title="Retângulo preenchido">▣ <span>Retângulo cheio</span></button>
+              <button class="tool-button" data-tool="ellipse" aria-pressed="false" title="Elipse sem preenchimento">◯ <span>Elipse</span></button>
+              <button class="tool-button" data-tool="fill" aria-pressed="false" title="Preencher área contígua">▨ <span>Balde</span></button>
+              <button class="tool-button" data-tool="eyedropper" aria-pressed="false" title="Selecionar a cor de um píxel">⌁ <span>Conta-gotas</span></button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <div class="tool-group history-tools" role="group" aria-label="Histórico">
+              <button class="icon-button" id="undo-action" title="Desfazer (Ctrl+Z)" aria-label="Desfazer" disabled>↶</button>
+              <button class="icon-button" id="redo-action" title="Refazer (Ctrl+Shift+Z)" aria-label="Refazer" disabled>↷</button>
             </div>
             <div class="toolbar-divider"></div>
             <div class="tool-group transform-tools" role="group" aria-label="Transformar imagem original">
@@ -95,6 +136,11 @@
               <div class="settings-heading"><div><p class="eyebrow">CONFIGURAÇÃO</p><h2>Motor de cor</h2></div><span class="live-indicator"><i></i> LIVE</span></div>
               <section class="settings-section">
                 <div class="section-title-row"><h3>Paleta</h3><span id="editor-color-count" class="count-pill">4 cores</span></div>
+                <label class="field compact-field"><span>Número de cores</span>
+                  <select id="editor-color-count-select" aria-label="Número de cores da paleta">
+                    <option value="4">4 cores</option><option value="8">8 cores</option><option value="12">12 cores</option>
+                  </select>
+                </label>
                 <label class="field compact-field"><span>Preset</span><select id="editor-palette"></select></label>
                 <div id="editor-palette-swatches" class="palette-swatches compact-swatches"></div>
                 <button id="editor-custom-toggle" class="text-button" type="button">Editar cores desta paleta</button>
