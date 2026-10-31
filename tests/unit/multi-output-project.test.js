@@ -8,6 +8,7 @@ test('a project supports up to three independent outputs with their own palettes
   const project = createProject(32, 24, getPalette('retro-8'), []);
   assert.equal(project.outputs.length, 1);
   assert.deepEqual([project.outputs[0].width, project.outputs[0].height], [32, 24]);
+  assert.equal(project.outputs[0].followsSourceSize, true);
   const second = addOutput(project, {
     name: 'Interpretação 2',
     width: 16,
@@ -24,6 +25,7 @@ test('a project supports up to three independent outputs with their own palettes
   });
   assert.equal(project.outputs.length, 3);
   assert.deepEqual([second.width, second.height], [16, 12]);
+  assert.equal(second.followsSourceSize, false);
   assert.equal(second.palette.id, 'magma-12');
   assert.equal(second.techniques[0].techniqueId, 'ordered-dither');
   assert.equal(third.palette.id, 'spectrum-32');
@@ -54,4 +56,16 @@ test('version 1 project files remain importable and receive output dimensions', 
   };
   const imported = parseProject(legacy);
   assert.deepEqual([imported.outputs[0].width, imported.outputs[0].height], [4, 4]);
+});
+
+
+test('source-following outputs resize with source transforms while custom outputs remain independent', () => {
+  const project = createProject(8, 6, getPalette('retro-8'), []);
+  const fixed = addOutput(project, { width: 12, height: 10, palette: getPalette('magma-12') });
+  project.source = { ...project.source, width: 6, height: 8, data: new Uint8Array(48) };
+  const { convertProject } = await import('../../src/engine/convert.js');
+  const following = convertProject(project, project.outputs[0].id);
+  const independent = convertProject(project, fixed.id);
+  assert.deepEqual([following.width, following.height], [6, 8]);
+  assert.deepEqual([independent.width, independent.height], [12, 10]);
 });
