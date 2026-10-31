@@ -3,11 +3,12 @@ import { drawRectangle, drawEllipse, floodFill } from './core/drawing-tools.js';
 import { createHistory, recordHistory, undoGrid, redoGrid } from './core/history.js';
 import { createWorkspace, addDocument, activateDocument, closeDocument, getActiveDocument } from './core/workspace.js';
 import { flipHorizontal, flipVertical, rotateGrid } from './core/transforms.js';
-import { createProject, serializeProject, parseProject } from './core/project.js';
+import { createProject, addOutput, removeOutput, serializeProject, parseProject } from './core/project.js';
 import { listPalettes, getPalette, createCustomPalette } from './engine/palettes.js';
 import { TECHNIQUE_CATALOG, createTechniqueInstance } from './engine/techniques.js';
 import { convertProject } from './engine/convert.js';
 import { getCanvasGeometry, pointerToGrid } from './ui/canvas-coordinates.js';
+import { resizeGridNearestNeighbor } from './core/resample.js';
 
 const $ = selector => document.querySelector(selector);
 const DEFAULT_PALETTE_BY_SIZE = {
@@ -22,15 +23,18 @@ const TRANSPARENT_CELL_COLORS = [
   [65, 73, 86, 255]
 ];
 const sourceCanvas = $('#source-canvas');
-const outputCanvas = $('#output-canvas');
 const workspace = $('#workspace');
 const sourceContext = sourceCanvas.getContext('2d');
-const outputContext = outputCanvas.getContext('2d');
 
 let project = null;
 let converted = null;
+let outputResults = new Map();
+let selectedOutputId = null;
+let selectedCanvas = null;
 let activeTool = BLACK;
 let selectedTool = 'black';
+let paintColorName = 'black';
+let eyedropperReturnTool = 'black';
 let workspaceState = createWorkspace();
 let activeDocument = null;
 let history = createHistory();
@@ -62,22 +66,30 @@ function saveActiveDocumentState() {
   if (!activeDocument) return;
   activeDocument.project = project;
   activeDocument.converted = converted;
+  activeDocument.outputResults = outputResults;
   activeDocument.camera = camera;
   activeDocument.selectedTool = selectedTool;
   activeDocument.paintState = activeTool;
-  activeDocument.history = history;
+  activeDocument.paintColorName = paintColorName;
+  activeDocument.activeOutputId = selectedOutputId;
+  activeDocument.selectedCanvas = selectedCanvas;
 }
 
 function loadDocument(documentState) {
   activeDocument = documentState;
   project = documentState.project;
   converted = documentState.converted;
+  outputResults = new Map();
   camera = documentState.camera;
+  selectedOutputId = project.outputs.some(item => item.id === documentState.activeOutputId)
+    ? documentState.activeOutputId
+    : project.outputs[0].id;
+  selectedCanvas = null;
   selectedTool = documentState.selectedTool ?? 'black';
   activeTool = documentState.paintState ?? BLACK;
-  history = documentState.history;
+  paintColorName = documentState.paintColorName ?? (activeTool === WHITE ? 'white' : activeTool === TRANSPARENT ? 'erase' : 'black');
   editorCustom = false;
-  setActiveTool(selectedTool);
+  updateToolButtons();
 }
 
 function renderDocumentTabs() {
@@ -156,8 +168,10 @@ function showEditor() {
   $('#back-to-setup').hidden = false;
   $('#close-document').hidden = false;
   $('#export-project').hidden = false;
+  $('#settings-panel').hidden = true;
+  selectedCanvas = null;
   renderDocumentTabs();
-  updateEditorControls();
+  renderOutputPanels();
   updateLayout();
   recalculate();
 }
@@ -312,15 +326,18 @@ function createNewProject() {
   }
 }
 
-const outputConfig = () => project.outputs[0];
+function outputConfig(outputId = selectedOutputId) {
+  if (!project) return null;
+  return project.outputs.find(output => output.id === outputId) ?? project.outputs[0];
+}
 
 function hexToRgba(hex) {
   const value = hex.slice(1);
   return [parseInt(value.slice(0, 2), 16), parseInt(value.slice(2, 4), 16), parseInt(value.slice(4, 6), 16), 255];
 }
 
-function getPaletteForCanvas() {
-  return project.palette.colors;
+function getPaletteForCanvas(output) {
+  return output.palette.colors;
 }
 
 function drawGrid(canvas, context, grid, paletteColors = null) {
@@ -395,25 +412,41 @@ function drawGrid(canvas, context, grid, paletteColors = null) {
 function drawAll() {
   if (!project) return;
   drawGrid(sourceCanvas, sourceContext, project.source);
-  if (converted) drawGrid(outputCanvas, outputContext, converted, getPaletteForCanvas());
-  $('#source-dimensions').textContent = `${project.source.width} × ${project.source.height}`;
-  $('#output-dimensions').textContent = `${converted?.width ?? project.source.width} × ${converted?.height ?? project.source.height}`;
-  $('#zoom-label').textContent = `${Math.round(camera.zoom * 100)}%`;
+  $('#source-dimensions').textContent = project.source.width + ' × ' + project.source.height;
+  for (const output of project.outputs) {
+    const canvas = document.querySelector('[data-output-canvas="' + output.id + '"]');
+    const panel = document.querySelector('[data-output-panel="' + output.id + '"]');
+    if (!canvas || !panel) continue;
+    const result = outputResults.get(output.id);
+    if (result) drawGrid(canvas, canvas.getContext('2d'), result, getPaletteForCanvas(output));
+    const dimensions = panel.querySelector('[data-output-dimensions]');
+    if (dimensions) dimensions.textContent = (result?.width ?? output.width) + ' × ' + (result?.height ?? output.height);
+    panel.dataset.outputDimensions = (result?.width ?? output.width) + ' × ' + (result?.height ?? output.height);
+    panel.dataset.paletteId = output.palette.id;
+  }
+  $('#zoom-label').textContent = Math.round(camera.zoom * 100) + '%';
 }
 
 function recalculate() {
   if (!project) return;
   try {
-    project.resolverMode = $('#resolver-mode').value;
-    outputConfig().resolverMode = project.resolverMode;
-    converted = convertProject(project);
+    outputResults = new Map();
+    for (const output of project.outputs) {
+      outputResults.set(output.id, convertProject(project, output.id));
+    }
+    converted = outputResults.get(selectedOutputId) ?? outputResults.get(project.outputs[0].id);
     drawAll();
-    if (activeDocument) activeDocument.converted = converted;
-    $('#engine-status').textContent = `${outputConfig().techniques.filter(item => item.enabled).length} técnicas · ${project.source.width * project.source.height} pixels`;
-    $('#footer-status').textContent = `${project.source.width} × ${project.source.height} · ${project.palette.colors.length} cores`;
+    if (activeDocument) {
+      activeDocument.converted = converted;
+      activeDocument.outputResults = outputResults;
+    }
+    const active = outputConfig();
+    const enabled = active?.techniques.filter(item => item.enabled).length ?? 0;
+    $('#engine-status').textContent = enabled + ' técnicas ativas · ' + project.outputs.length + ' interpretações';
+    $('#footer-status').textContent = project.source.width + ' × ' + project.source.height + ' original · ' + project.outputs.length + ' resultado(s)';
   } catch (error) {
     $('#engine-status').textContent = 'Erro na conversão';
-    toast(`Erro no motor: ${error.message}`, 'error');
+    toast('Erro no motor: ' + error.message, 'error');
   }
 }
 
@@ -433,20 +466,42 @@ function updateLayout() {
   workspace.dataset.flow = horizontal ? 'horizontal' : 'vertical';
 }
 
-function setActiveTool(name) {
-  const paintStates = { black: BLACK, white: WHITE, erase: TRANSPARENT };
-  if (Object.hasOwn(paintStates, name)) activeTool = paintStates[name];
-  selectedTool = name;
+function updateToolButtons() {
   document.querySelectorAll('[data-tool]').forEach(button => {
-    const active = button.dataset.tool === name;
-    button.classList.toggle('is-active', active);
-    button.setAttribute('aria-pressed', String(active));
+    const toolActive = button.dataset.tool === selectedTool;
+    const colorActive = button.dataset.tool === paintColorName;
+    button.classList.toggle('is-active', toolActive);
+    button.classList.toggle('is-color-active', colorActive);
+    button.setAttribute('aria-pressed', String(toolActive || colorActive));
   });
-  sourceCanvas.style.cursor = name === 'eyedropper' ? 'copy' : name === 'fill' ? 'cell' : 'crosshair';
+  sourceCanvas.style.cursor = selectedTool === 'eyedropper' ? 'copy' : selectedTool === 'fill' ? 'cell' : 'crosshair';
+  sourceCanvas.dataset.selectedColor = paintColorName;
+}
+
+function setPaintColor(name) {
+  const paintStates = { black: BLACK, white: WHITE, erase: TRANSPARENT };
+  if (!Object.hasOwn(paintStates, name)) return;
+  activeTool = paintStates[name];
+  paintColorName = name;
+  if (!isShapeTool(selectedTool) && !['fill', 'eyedropper'].includes(selectedTool)) selectedTool = name;
+  updateToolButtons();
   if (activeDocument) {
     activeDocument.selectedTool = selectedTool;
     activeDocument.paintState = activeTool;
+    activeDocument.paintColorName = paintColorName;
   }
+}
+
+function setActiveTool(name) {
+  const paintStates = { black: BLACK, white: WHITE, erase: TRANSPARENT };
+  if (Object.hasOwn(paintStates, name)) {
+    setPaintColor(name);
+    return;
+  }
+  if (name === 'eyedropper') eyedropperReturnTool = selectedTool;
+  selectedTool = name;
+  updateToolButtons();
+  if (activeDocument) activeDocument.selectedTool = selectedTool;
 }
 
 function isShapeTool(name = selectedTool) {
@@ -461,11 +516,24 @@ function applyShape(grid, start, end, tool = selectedTool, state = activeTool) {
   else if (tool === 'filled-ellipse') drawEllipse(grid, start.x, start.y, end.x, end.y, state, { filled: true });
 }
 
+function refreshSelectedDimensionInputs() {
+  if (!project) return;
+  if (selectedCanvas === 'source') {
+    $('#source-width').value = String(project.source.width);
+    $('#source-height').value = String(project.source.height);
+  } else if (selectedCanvas === 'output') {
+    const output = outputConfig();
+    $('#output-width').value = String(output.followsSourceSize ? project.source.width : output.width);
+    $('#output-height').value = String(output.followsSourceSize ? project.source.height : output.height);
+  }
+}
+
 function undoAction() {
   if (!project) return;
   const restored = undoGrid(history, project.source);
   if (!restored) return;
   project.source = restored;
+  refreshSelectedDimensionInputs();
   markDocumentDirty();
   recalculate();
   updateHistoryButtons();
@@ -493,7 +561,10 @@ function startDrawing(event) {
 
   if (selectedTool === 'eyedropper') {
     const picked = project.source.data[cell.y * project.source.width + cell.x];
-    setActiveTool(picked === BLACK ? 'black' : picked === WHITE ? 'white' : 'erase');
+    setPaintColor(picked === BLACK ? 'black' : picked === WHITE ? 'white' : 'erase');
+    selectedTool = eyedropperReturnTool;
+    updateToolButtons();
+    if (activeDocument) activeDocument.selectedTool = selectedTool;
     return;
   }
   if (selectedTool === 'fill') {
@@ -587,10 +658,12 @@ function renderRange(parent, caption, min, max, step, value, onChange) {
 }
 
 function renderTechniqueList() {
-  if (!project) return;
+  if (!project || !$('#technique-list')) return;
   const list = $('#technique-list');
   list.replaceChildren();
-  const techniques = outputConfig().techniques;
+  const output = outputConfig();
+  if (!output) return;
+  const techniques = output.techniques;
   $('#technique-count').textContent = String(techniques.length);
   techniques.forEach((instance, index) => {
     const card = document.createElement('article');
@@ -598,15 +671,15 @@ function renderTechniqueList() {
     const header = document.createElement('div');
     header.className = 'technique-card-header';
     const title = document.createElement('strong');
-    title.textContent = `${String(index + 1).padStart(2, '0')} · ${instance.name}`;
+    title.textContent = String(index + 1).padStart(2, '0') + ' · ' + instance.name;
     const remove = document.createElement('button');
     remove.className = 'remove-technique';
     remove.type = 'button';
     remove.textContent = '×';
     remove.title = 'Remover instância';
-    remove.setAttribute('aria-label', `Remover ${instance.name}`);
+    remove.setAttribute('aria-label', 'Remover ' + instance.name);
     remove.addEventListener('click', () => {
-      outputConfig().techniques = outputConfig().techniques.filter(item => item.id !== instance.id);
+      output.techniques = output.techniques.filter(item => item.id !== instance.id);
       markDocumentDirty();
       renderTechniqueList();
       recalculate();
@@ -625,26 +698,33 @@ function renderTechniqueList() {
     });
     enabledLabel.append(enabled, document.createTextNode(' Ativa'));
     card.append(enabledLabel);
-    renderRange(card, `Peso ${instance.weight.toFixed(2)}`, 0, 2, 0.05, instance.weight, value => {
+
+    const updateParam = (key, value) => {
+      instance.params[key] = value;
+      markDocumentDirty();
+      recalculate();
+    };
+    renderRange(card, 'Peso ' + instance.weight.toFixed(2), 0, 2, 0.05, instance.weight, value => {
       instance.weight = value;
       markDocumentDirty();
       renderTechniqueList();
       recalculate();
     });
-    if (instance.params.radius !== undefined) {
-      renderRange(card, `Raio ${instance.params.radius}`, 0, 8, 1, instance.params.radius, value => {
-        instance.params.radius = value;
-        markDocumentDirty();
+    const parameterRanges = [
+      ['radius', 'Raio', 0, 8, 1],
+      ['maxLength', 'Comprimento máximo', 1, 12, 1],
+      ['contrastBoost', 'Intensidade de contraste', 0, 2, 0.1],
+      ['threshold', 'Limiar de maioria', 0.1, 0.9, 0.05],
+      ['softness', 'Suavidade do limiar', 0.05, 0.5, 0.05],
+      ['strength', 'Força do efeito', 0, instance.techniqueId === 'edge-aware' ? 2 : 1, 0.05],
+      ['patternStrength', 'Intensidade do dithering', 0, 1, 0.05]
+    ];
+    for (const [key, label, min, max, step] of parameterRanges) {
+      if (instance.params[key] === undefined) continue;
+      const value = instance.params[key];
+      renderRange(card, label + ' (' + (Number.isInteger(value) ? value : value.toFixed(2)) + ')', min, max, step, value, next => {
+        updateParam(key, next);
         renderTechniqueList();
-        recalculate();
-      });
-    }
-    if (instance.params.contrastBoost !== undefined) {
-      renderRange(card, `Intensidade ${instance.params.contrastBoost.toFixed(1)}`, 0, 2, 0.1, instance.params.contrastBoost, value => {
-        instance.params.contrastBoost = value;
-        markDocumentDirty();
-        renderTechniqueList();
-        recalculate();
       });
     }
     if (instance.params.kernel !== undefined) {
@@ -661,24 +741,155 @@ function renderTechniqueList() {
       }
       select.value = instance.params.kernel;
       select.addEventListener('change', () => {
-        instance.params.kernel = select.value;
-        markDocumentDirty();
-        recalculate();
+        updateParam('kernel', select.value);
       });
       label.append(titleText, select);
+      card.append(label);
+    }
+    if (instance.params.includeCenter !== undefined) {
+      const label = document.createElement('label');
+      label.className = 'checkbox-field';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = instance.params.includeCenter;
+      input.addEventListener('change', () => updateParam('includeCenter', input.checked));
+      label.append(input, document.createTextNode(' Incluir píxel central'));
       card.append(label);
     }
     list.append(card);
   });
 }
 
+function renderOutputPanels() {
+  if (!project) return;
+  const container = $('#output-panels');
+  container.replaceChildren();
+  container.dataset.count = String(project.outputs.length);
+  project.outputs.forEach((output, index) => {
+    const panel = document.createElement('section');
+    panel.className = 'canvas-panel output-canvas-panel';
+    panel.tabIndex = 0;
+    panel.dataset.outputPanel = output.id;
+    panel.dataset.paletteId = output.palette.id;
+    const outputWidth = output.followsSourceSize ? project.source.width : output.width;
+    const outputHeight = output.followsSourceSize ? project.source.height : output.height;
+    panel.dataset.outputDimensions = outputWidth + ' × ' + outputHeight;
+    const heading = document.createElement('div');
+    heading.className = 'panel-heading';
+    const titleGroup = document.createElement('div');
+    titleGroup.innerHTML = '<span class="panel-dot output-dot"></span>';
+    const title = document.createElement('h2');
+    title.textContent = output.name || ('Interpretação ' + (index + 1));
+    const tag = document.createElement('span');
+    tag.className = 'panel-tag panel-tag-output';
+    tag.textContent = 'GERADA ' + (index + 1);
+    titleGroup.append(title, tag);
+    const actions = document.createElement('div');
+    const dimensions = document.createElement('span');
+    dimensions.className = 'panel-dimensions';
+    dimensions.dataset.outputDimensions = '';
+    dimensions.textContent = outputWidth + ' × ' + outputHeight;
+    actions.append(dimensions);
+    if (project.outputs.length > 1) {
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'remove-output-button';
+      remove.textContent = '×';
+      remove.title = 'Remover interpretação';
+      remove.setAttribute('aria-label', 'Remover ' + output.name);
+      remove.addEventListener('click', event => {
+        event.stopPropagation();
+        deleteInterpretation(output.id);
+      });
+      actions.append(remove);
+    }
+    heading.append(titleGroup, actions);
+    const wrap = document.createElement('div');
+    wrap.className = 'canvas-wrap';
+    const canvas = document.createElement('canvas');
+    canvas.id = index === 0 ? 'output-canvas' : 'output-canvas-' + (index + 1);
+    canvas.dataset.outputCanvas = output.id;
+    canvas.setAttribute('aria-label', 'Pré-visualização da ' + output.name);
+    canvas.tabIndex = 0;
+    const hint = document.createElement('span');
+    hint.className = 'canvas-hint';
+    hint.textContent = 'Resultado automático · seleciona para configurar';
+    wrap.append(canvas, hint);
+    panel.append(heading, wrap);
+    panel.addEventListener('click', () => setActiveCanvas('output', output.id));
+    panel.addEventListener('keydown', event => {
+      if (event.target === panel && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        setActiveCanvas('output', output.id);
+      }
+    });
+    container.append(panel);
+    attachCanvasEvents(canvas, false);
+  });
+  $('#add-output').disabled = project.outputs.length >= 3;
+  $('#add-output').title = project.outputs.length >= 3 ? 'Limite de três interpretações atingido' : 'Adicionar interpretação';
+  refreshCanvasSelection();
+}
+
+function refreshCanvasSelection() {
+  const sourcePanel = document.querySelector('[data-canvas-kind="source"]');
+  sourcePanel?.classList.toggle('is-selected', selectedCanvas === 'source');
+  document.querySelectorAll('[data-output-panel]').forEach(panel => {
+    panel.classList.toggle('is-selected', selectedCanvas === 'output' && panel.dataset.outputPanel === selectedOutputId);
+  });
+}
+
+function setActiveCanvas(kind, outputId = null) {
+  if (!project) return;
+  if (kind === 'source') {
+    selectedCanvas = 'source';
+  } else {
+    if (!project.outputs.some(output => output.id === outputId)) return;
+    selectedCanvas = 'output';
+    selectedOutputId = outputId;
+  }
+  $('#settings-panel').hidden = false;
+  $('#source-settings').hidden = kind !== 'source';
+  $('#output-settings').hidden = kind !== 'output';
+  if (kind === 'source') {
+    $('#inspector-title').textContent = 'Imagem original';
+    $('#source-width').value = String(project.source.width);
+    $('#source-height').value = String(project.source.height);
+  } else {
+    const output = outputConfig();
+    editorCustom = false;
+    $('#editor-custom-colors').hidden = true;
+    $('#editor-custom-toggle').textContent = 'Editar cores desta paleta';
+    $('#inspector-title').textContent = output.name;
+    updateEditorControls();
+  }
+  refreshCanvasSelection();
+  if (activeDocument) {
+    activeDocument.selectedCanvas = selectedCanvas;
+    activeDocument.activeOutputId = selectedOutputId;
+  }
+  updateLayout();
+  drawAll();
+}
+
+function closeSettingsPanel() {
+  selectedCanvas = null;
+  $('#settings-panel').hidden = true;
+  refreshCanvasSelection();
+  updateLayout();
+  drawAll();
+}
+
 function updateEditorControls() {
-  const palette = project.palette;
+  const output = outputConfig();
+  const palette = output.palette;
   fillPaletteSelect($('#editor-palette'), palette.colors.length, palette.id);
   $('#editor-color-count-select').value = String(palette.colors.length);
-  $('#editor-color-count').textContent = `${palette.colors.length} cores`;
+  $('#editor-color-count').textContent = palette.colors.length + ' cores';
   renderSwatches($('#editor-palette-swatches'), palette.colors);
-  $('#resolver-mode').value = outputConfig().resolverMode ?? project.resolverMode ?? 'weighted-average';
+  $('#resolver-mode').value = output.resolverMode ?? 'weighted-average';
+  $('#output-width').value = String(output.followsSourceSize ? project.source.width : output.width);
+  $('#output-height').value = String(output.followsSourceSize ? project.source.height : output.height);
   $('#new-technique').replaceChildren();
   for (const definition of TECHNIQUE_CATALOG) {
     const option = document.createElement('option');
@@ -690,12 +901,12 @@ function updateEditorControls() {
 }
 
 function setProjectPalette(palette) {
-  project.palette = palette;
-  outputConfig().palette = palette;
+  const output = outputConfig();
+  output.palette = palette;
   fillPaletteSelect($('#editor-palette'), palette.colors.length, palette.id);
   $('#editor-color-count-select').value = String(palette.colors.length);
   renderSwatches($('#editor-palette-swatches'), palette.colors);
-  $('#editor-color-count').textContent = `${palette.colors.length} cores`;
+  $('#editor-color-count').textContent = palette.colors.length + ' cores';
   markDocumentDirty();
   recalculate();
 }
@@ -716,6 +927,104 @@ function addTechnique() {
   renderTechniqueList();
   recalculate();
 }
+
+function addInterpretation() {
+  if (!project || project.outputs.length >= 3) return;
+  try {
+    const nextNumber = project.outputs.length + 1;
+    const paletteId = nextNumber === 2 ? 'aurora-12' : 'spectrum-32';
+    const output = addOutput(project, {
+      name: 'Interpretação ' + nextNumber,
+      followsSourceSize: true,
+      palette: getPalette(paletteId),
+      techniques: makeInitialTechniques()
+    });
+    selectedOutputId = output.id;
+    selectedCanvas = null;
+    if (activeDocument) {
+      activeDocument.activeOutputId = selectedOutputId;
+      activeDocument.selectedCanvas = null;
+    }
+    markDocumentDirty();
+    renderOutputPanels();
+    $('#settings-panel').hidden = true;
+    recalculate();
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+function deleteInterpretation(outputId) {
+  if (!project || project.outputs.length <= 1) return;
+  try {
+    const wasSelected = selectedOutputId === outputId;
+    const removed = removeOutput(project, outputId);
+    outputResults.delete(removed.id);
+    if (wasSelected) {
+      selectedOutputId = project.outputs[0].id;
+      if (selectedCanvas === 'output') selectedCanvas = null;
+    }
+    if (activeDocument) {
+      activeDocument.activeOutputId = selectedOutputId;
+      activeDocument.selectedCanvas = selectedCanvas;
+    }
+    if (selectedCanvas === null) $('#settings-panel').hidden = true;
+    markDocumentDirty();
+    renderOutputPanels();
+    recalculate();
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+function applyOutputSize() {
+  const output = outputConfig();
+  try {
+    const width = Number($('#output-width').value);
+    const height = Number($('#output-height').value);
+    resizeGridNearestNeighbor(project.source, width, height);
+    output.width = width;
+    output.height = height;
+    output.followsSourceSize = false;
+    markDocumentDirty();
+    renderOutputPanels();
+    updateEditorControls();
+    recalculate();
+  } catch (error) {
+    $('#output-width').value = String(output.width);
+    $('#output-height').value = String(output.height);
+    toast(error.message, 'error');
+  }
+}
+
+function applySourceSize() {
+  if (!project) return;
+  try {
+    const oldWidth = project.source.width;
+    const oldHeight = project.source.height;
+    const width = Number($('#source-width').value);
+    const height = Number($('#source-height').value);
+    const resized = resizeGridNearestNeighbor(project.source, width, height);
+    recordHistory(history, project.source);
+    project.source = resized;
+    for (const output of project.outputs) {
+      if (output.width === oldWidth && output.height === oldHeight) {
+        output.width = width;
+        output.height = height;
+      }
+    }
+    markDocumentDirty();
+    updateHistoryButtons();
+    renderOutputPanels();
+    recalculate();
+  } catch (error) {
+    $('#source-width').value = String(project.source.width);
+    $('#source-height').value = String(project.source.height);
+    toast(error.message, 'error');
+  }
+}
+
+
 
 function exportProject() {
   if (!project) return;
@@ -752,6 +1061,7 @@ function transformSource(transform) {
   if (!project) return;
   recordHistory(history, project.source);
   project.source = transform(project.source);
+  refreshSelectedDimensionInputs();
   markDocumentDirty();
   updateHistoryButtons();
   recalculate();
@@ -760,6 +1070,7 @@ function transformSource(transform) {
 
 function attachCanvasEvents(canvas, editable) {
   canvas.addEventListener('pointerdown', event => {
+    if (!editable && canvas.dataset.outputCanvas) setActiveCanvas('output', canvas.dataset.outputCanvas);
     if (spaceHeld || event.button === 1 || event.button === 2) startPanning(event);
     else if (editable) startDrawing(event);
   });
@@ -796,6 +1107,8 @@ function initialize() {
   $('#create-project').addEventListener('click', createNewProject);
   $('#resume-project').addEventListener('click', resumeEditor);
   $('#new-document').addEventListener('click', createAdditionalDocument);
+  $('#add-output').addEventListener('click', addInterpretation);
+  $('#close-settings').addEventListener('click', closeSettingsPanel);
   $('#close-document').addEventListener('click', () => activeDocument && closeDocumentTab(activeDocument.id));
   $('#menu-new-document').addEventListener('click', createAdditionalDocument);
   $('#menu-import-project').addEventListener('click', () => $('#import-project-file').click());
@@ -827,9 +1140,8 @@ function initialize() {
   $('#redo-action').addEventListener('click', redoAction);
   $('#editor-color-count-select').addEventListener('change', changeEditorPaletteSize);
   $('#resolver-mode').addEventListener('change', () => {
-    project.resolverMode = $('#resolver-mode').value;
+    outputConfig().resolverMode = $('#resolver-mode').value;
     markDocumentDirty();
-    outputConfig().resolverMode = project.resolverMode;
     recalculate();
   });
   $('#clear-canvas').addEventListener('click', () => {
@@ -840,6 +1152,8 @@ function initialize() {
     updateHistoryButtons();
     recalculate();
   });
+  $('#apply-source-size').addEventListener('click', applySourceSize);
+  $('#apply-output-size').addEventListener('click', applyOutputSize);
   $('#editor-palette').addEventListener('change', () => {
     editorCustom = false;
     setProjectPalette(getPalette($('#editor-palette').value));
@@ -851,10 +1165,11 @@ function initialize() {
     $('#editor-custom-colors').hidden = !editorCustom;
     $('#editor-custom-toggle').textContent = editorCustom ? 'Terminar edição da paleta' : 'Editar cores desta paleta';
     if (editorCustom) {
-      editorCustomColors = [...project.palette.colors];
+      editorCustomColors = [...outputConfig().palette.colors];
       renderColorInputs($('#editor-custom-colors'), editorCustomColors, (index, color) => {
         editorCustomColors[index] = color;
-        setProjectPalette(createCustomPalette(`custom-${Date.now()}`, editorCustomColors, project.palette.mirror, 'Paleta personalizada'));
+        const mirror = outputConfig().palette.mirror;
+        setProjectPalette(createCustomPalette('custom-' + Date.now(), editorCustomColors, mirror, 'Paleta personalizada'));
       });
     }
   });
@@ -862,9 +1177,11 @@ function initialize() {
   $('#export-project').addEventListener('click', exportProject);
   $('#import-project-button').addEventListener('click', () => $('#import-project-file').click());
   $('#import-project-file').addEventListener('change', event => importProject(event.target.files?.[0]));
+  document.querySelector('[data-canvas-kind="source"]').addEventListener('click', event => {
+    if (!event.target.closest('button')) setActiveCanvas('source');
+  });
 
   attachCanvasEvents(sourceCanvas, true);
-  attachCanvasEvents(outputCanvas, false);
   window.addEventListener('pointerup', () => { stopDrawing(); stopPanning(); });
   window.addEventListener('keydown', event => {
     const typing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName);

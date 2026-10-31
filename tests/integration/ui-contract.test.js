@@ -5,7 +5,8 @@ import { readFile } from 'node:fs/promises';
 test('editor exposes the original and generated canvases with distinct roles', async () => {
   const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
   assert.match(html, /id="source-canvas"[^>]*aria-label="Tela original, desenha aqui"/);
-  assert.match(html, /id="output-canvas"[^>]*aria-label="Pré-visualização da conversão"/);
+  assert.match(html, /id="output-panels"[^>]*class="output-panels"/);
+  assert.match(html, /class="canvas-wrap"><canvas id="source-canvas"/);
   assert.match(html, /data-tool="black"/);
   assert.match(html, /data-tool="white"/);
   assert.match(html, /data-tool="erase"/);
@@ -39,9 +40,9 @@ test('canvas uses an actual matrix-aligned transparency grid, not viewport-wide 
   assert.doesNotMatch(main, /const tile = 10/);
 });
 
-test('editor exposes document tabs, safe close/return actions, history and shape tools', async () => {
+test('editor exposes document tabs, three interpretation controls, inspector and shape tools', async () => {
   const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
-  for (const id of ['document-tabs', 'new-document', 'close-document', 'back-to-setup', 'undo-action', 'redo-action', 'editor-color-count-select']) {
+  for (const id of ['document-tabs', 'new-document', 'add-output', 'close-document', 'back-to-setup', 'undo-action', 'redo-action', 'settings-panel', 'source-settings', 'output-settings', 'editor-color-count-select']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
   for (const tool of ['line', 'rectangle', 'filled-rectangle', 'ellipse', 'filled-ellipse', 'fill', 'eyedropper']) {

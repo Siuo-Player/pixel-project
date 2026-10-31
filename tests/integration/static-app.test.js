@@ -22,7 +22,7 @@ test('static server serves the editor and its modules with correct content types
   assert.match(page.headers.get('content-type'), /text\/html/);
   const html = await page.text();
   assert.match(html, /source-canvas/);
-  assert.match(html, /output-canvas/);
+  assert.match(html, /output-panels/);
 
   const script = await fetch(`http://127.0.0.1:${port}/src/main.js`);
   assert.equal(script.status, 200);

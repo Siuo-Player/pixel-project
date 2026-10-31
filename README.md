@@ -32,9 +32,10 @@ Editor web de pixel art com conversão contextual de uma imagem de entrada trans
 
 - Escolher o tamanho da paleta no ecrã inicial ou dentro do editor.
 - Personalizar individualmente as cores de um preset.
-- Motor com média contextual, linhas direcionais e entropia local.
+- Sete técnicas: vizinhança ponderada, linhas direcionais, entropia local, maioria local, contraste sensível a arestas, gradiente direcional e dithering ordenado.
 - Instâncias repetidas de técnicas com parâmetros e pesos independentes.
-- Resolvedores por média ponderada ou maior confiança individual.
+- Três resolvedores: média ponderada, maior confiança individual e votação ponderada.
+- Redimensionamento independente por interpretação, com reamostragem nearest-neighbour da fonte original.
 - A saída contém apenas índices válidos da paleta; a transparência nunca é colorida.
 - A inversão de preto/branco reflete o papel cromático através da ordem inversa da paleta.
 
@@ -45,10 +46,25 @@ Editor web de pixel art com conversão contextual de uma imagem de entrada trans
 - `Ctrl/Cmd+N`: nova tela; `Ctrl/Cmd+S`: exportar; `Ctrl/Cmd+W`: fechar tela.
 - Ferramentas: `B` preto, `W` branco, `E` borracha, `L` linha, `R` retângulo, `O` elipse, `G` balde, `I` conta-gotas.
 
+## Projetos de exemplo
+
+A pasta [examples/](examples/) contém quatro projetos importáveis em formato `.pixelproj`. Cada um inclui uma única imagem original e três interpretações, com paletas, resoluções, técnicas e resolvedores diferentes:
+
+| Projeto | Arte | Variações incluídas |
+|---|---|---|
+| [Farol ao anoitecer](examples/lighthouse-at-dusk.pixelproj) | Farol, ilha e mar | 8, 12 e 32 cores; 24×24 a 64×64 |
+| [Gato sob a lua](examples/moonlit-cat.pixelproj) | Gato, lua e estrelas | 8, 16 e 32 cores; dithering e maioria local |
+| [Bosque dos cogumelos](examples/mushroom-grove.pixelproj) | Cogumelos e árvores | 4, 12 e 32 cores; minimalista e texturado |
+| [Templo no deserto](examples/desert-temple.pixelproj) | Templo, dunas e cactos | 12 e 16 cores; diferentes resoluções e métodos |
+
+Para abrir um exemplo, inicia o editor, clica em **Importar** e escolhe o ficheiro `.pixelproj`. As três interpretações aparecem ligadas à mesma origem.
+
 ## Limitações conhecidas
 
 - As telas abertas são mantidas em memória durante a sessão. Ainda não existe gravação automática após fechar ou atualizar o browser; exporta os documentos para os conservar.
-- Um projeto apresenta uma imagem original e uma interpretação gerada. Várias interpretações simultâneas dentro do mesmo projeto ainda não estão expostas na interface.
+- Cada projeto tem uma imagem original e até três interpretações coloridas em simultâneo. Cada interpretação dispõe de paleta, número de cores, resolução, técnicas e resolvedor próprios.
+- A configuração é contextual: clica na imagem original para ajustar a grelha de origem ou numa interpretação para alterar apenas essa saída.
+- As ferramentas de forma e a cor de desenho são independentes; podes mudar de preto para branco sem voltar a selecionar a elipse ou o retângulo.
 - Não existem ainda camadas, animação por frames, importação direta de PNG/JPG, seleção/recorte, nem importação direta de ficheiros PAL/ASE/GPL.
 - A personalização atual altera as cores de um preset; não adiciona nem remove entradas da paleta.
 
