@@ -163,3 +163,17 @@ Cada requisito indicado pelo utilizador que possa ser verificado automaticamente
 - fuzzing de ficheiros de projeto importados.
 
 A suite automatizada melhora a cobertura, mas não substitui a avaliação artística e a verificação manual de diferentes dispositivos.
+
+
+## 7. Testes da versão 0.6
+
+A expansão do editor acrescenta regressões específicas para:
+- seleção de ferramenta geométrica independente do estado de pintura;
+- seleção contextual da fonte e de cada interpretação;
+- máximo de três saídas e impossibilidade de remover a última;
+- paletas, dimensões, técnicas e resolvedores independentes por saída;
+- reamostragem nearest-neighbour e compatibilidade com projetos versão 1;
+- distribuições válidas para as sete técnicas e votação ponderada;
+- importação e conversão das quatro artes de exemplo incluídas no repositório.
+
+Os testes das artes de exemplo importam o ficheiro com o mesmo parser usado pela aplicação e executam as três conversões. Assim, os exemplos não são apenas ficheiros de demonstração: são também fixtures de integração do motor.
