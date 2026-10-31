@@ -73,3 +73,26 @@ test('one original supports three independently configurable interpretations', a
   await expect(page.locator('#source-settings')).toBeVisible();
   await expect(page.locator('#output-settings')).toBeHidden();
 });
+
+test('source-following output dimensions stay synchronized through rotate, undo and redo', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('24');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+
+  const firstOutput = page.locator('#output-panels .canvas-panel').first();
+  await expect(page.locator('#source-dimensions')).toHaveText('24 × 16');
+  await expect(firstOutput).toHaveAttribute('data-output-dimensions', '24 × 16');
+
+  await page.getByRole('button', { name: 'Rodar 90 graus à direita' }).click();
+  await expect(page.locator('#source-dimensions')).toHaveText('16 × 24');
+  await expect(firstOutput).toHaveAttribute('data-output-dimensions', '16 × 24');
+
+  await page.locator('#undo-action').click();
+  await expect(page.locator('#source-dimensions')).toHaveText('24 × 16');
+  await expect(firstOutput).toHaveAttribute('data-output-dimensions', '24 × 16');
+
+  await page.locator('#redo-action').click();
+  await expect(page.locator('#source-dimensions')).toHaveText('16 × 24');
+  await expect(firstOutput).toHaveAttribute('data-output-dimensions', '16 × 24');
+});
