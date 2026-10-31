@@ -31,3 +31,9 @@
 ## Próximos passos pendentes
 - O wiki do GitHub precisa da primeira página criada pela UI (limitação do GitHub) antes de poder ser populado a partir de `docs/memory/`; `--enable-wiki` já foi corrido.
 - Instalar `ai-memory` (instalador nativo Windows, sem Rust) se se quiser memória automática entre sessões.
+
+## Fim de sessão — CI no SHA `fa4a202`
+- "Quality checks" verde; deploy e desktop-release falharam.
+- **PX-028** (CI): `desktop-release.yml` tinha `description: Release tag (ex.: desktop-v0.6.0)` não citado — o `": "` embutido rebenta o parser do Actions, que cria um run fantasma falhado em cada push. Corrigido citando o valor e protegido por `tests/unit/workflows-lint.test.js` (grep de `": "` em escalares não citados).
+- **Gotcha 0002** (env): o `GITHUB_TOKEN` não pode criar o site Pages no primeiro enablement ("Resource not accessible by integration"); criado uma vez via `gh api -X POST .../pages -f build_type=workflow` com a sessão do utilizador. Configuração de repo, não é bug de código — portanto sem PX.
+- Suite local: 77 unitários + 16 E2E verdes.

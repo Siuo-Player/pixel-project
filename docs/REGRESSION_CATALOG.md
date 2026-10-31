@@ -44,6 +44,7 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 | PX-025 | Bug confirmado pela revisão automática GLM | O handler de `#editor-palette` tolera ids que não são preset (paleta personalizada) sem exceção e sem alterar a paleta atual. | `tests/e2e/editor.spec.js` — `selecting the custom palette option keeps the current palette without page errors` | E2E |
 | PX-026 | Bug confirmado pela revisão automática GLM | Refazer uma redimensionação da fonte volta a sincronizar os inputs de largura/altura com as dimensões ativas. | `tests/e2e/editor.spec.js` — `redo keeps the dimension inputs in sync after undoing a source resize` | E2E |
 | PX-027 | Bug confirmado pela revisão automática GLM, violação de PX-010 | Redimensionar a fonte só atualiza as saídas que seguem a fonte (`followsSourceSize`); saídas com dimensão própria mantêm-se, mesmo que coincidam com o tamanho antigo. | `tests/e2e/multi-output.spec.js` — `resizing the source keeps custom-sized outputs independent` | E2E |
+| PX-028 | Falha de CI descoberta no primeiro push do workflow desktop | Nenhum YAML de `.github/workflows/*.yml` pode ter um valor não citado com `": "` embutido (ex.: `ex.: desktop-v0.6.0`); o Actions rejeita o ficheiro e cria um run fantasma falhado em cada push. | `tests/unit/workflows-lint.test.js` — `every workflow YAML value is quoted or free of bare ": " sequences` | Unitário |
 
 ## Como adicionar uma entrada
 
