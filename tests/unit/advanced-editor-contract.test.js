@@ -15,15 +15,15 @@ test('editor provides one original and a dynamic area for up to three output can
 test('editor calculation controls include new resolvers and the expanded technique catalogue', async () => {
   const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8');
   assert.match(html, /value="weighted-vote"/);
-  const main = await readFile(new URL('../../src/main.js', import.meta.url), 'utf8');
+  const techniques = await readFile(new URL('../../src/engine/techniques.js', import.meta.url), 'utf8');
   for (const id of ['local-majority', 'edge-aware', 'gradient-direction', 'ordered-dither']) {
-    assert.match(main, new RegExp(id));
+    assert.match(techniques, new RegExp(id));
   }
 });
 
 test('paint colour is an independent selection from the active drawing tool', async () => {
   const main = await readFile(new URL('../../src/main.js', import.meta.url), 'utf8');
   assert.match(main, /paintColorName/);
-  assert.match(main, /data-selected-color/);
+  assert.match(main, /dataset\.selectedColor/);
   assert.match(main, /function setPaintColor/);
 });
