@@ -62,6 +62,15 @@ Para abrir um exemplo:
 - **No editor:** acede a **Ficheiro → Projetos de exemplo…** para abrir um novo separador com a arte escolhida.
 - **Por ficheiro:** clica em **Importar** e seleciona qualquer ficheiro `.pixelproj` local. As três interpretações aparecem ligadas à mesma matriz de origem.
 
+Todas as quatro obras de demonstração foram concebidas e ilustradas por **Antigravity (Google DeepMind)**. O catálogo artístico com fichas técnicas completas, estudos conceituais e citações/inspirações históricas (Paul Signac, Takahashi Shōtei, Mark Ferrari, Jordan Mechner, Studio Ghibli) está documentado em [docs/ART_CATALOG.md](docs/ART_CATALOG.md).
+
+## Comunidade, Perfis e Biblioteca de Conta
+
+O Pixel Project dispõe de um sistema de perfis e biblioteca local-first (sem custos de servidor):
+- **A Minha Conta (`#user-account-button`):** permite definir nome, handle (`@nome`) e bio, além de aceder à biblioteca pessoal de artes guardadas com botão **"Guardar na conta"** no editor.
+- **Privacidade & Visibilidade:** cada obra guardada pode ser alternada entre **Pública** (visível na galeria comunitária) e **Privada**.
+- **Exploração e Amizades (`#community-button`):** pesquisa criadores e artistas por nome ou handle (como o perfil oficial `@antigravity`), adiciona criadores aos amigos/seguidos e abre as obras públicas de outros artistas diretamente como telas no editor.
+
 ## Limitações conhecidas
 
 - As telas abertas são mantidas em memória durante a sessão. Ainda não existe gravação automática após fechar ou atualizar o browser; exporta os documentos para os conservar.

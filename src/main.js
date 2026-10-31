@@ -10,6 +10,7 @@ import { convertProject } from './engine/convert.js';
 import { getCanvasGeometry, pointerToGrid } from './ui/canvas-coordinates.js';
 import { resizeGridNearestNeighbor } from './core/resample.js';
 import { getExampleMetadata, loadExampleProject } from './core/examples.js';
+import { createAccountManager } from './core/community.js';
 
 const $ = selector => document.querySelector(selector);
 const DEFAULT_PALETTE_BY_SIZE = {
@@ -48,6 +49,7 @@ let isPanning = false;
 let panStart = null;
 let spaceHeld = false;
 let camera = { zoom: 1, panX: 0, panY: 0 };
+const accountManager = createAccountManager();
 let setupCustom = false;
 let editorCustom = false;
 let setupCustomColors = [];
@@ -155,6 +157,7 @@ function showSetup() {
   $('#close-document').hidden = true;
   $('#editor-menu-bar').hidden = true;
   $('#export-project').hidden = true;
+  if ($('#save-to-account')) $('#save-to-account').hidden = true;
   $('#resume-project').hidden = workspaceState.documents.length === 0;
   $('#footer-status').textContent = workspaceState.documents.length
     ? `${workspaceState.documents.length} tela(s) aberta(s)`
@@ -171,6 +174,7 @@ function showEditor() {
   $('#back-to-setup').hidden = false;
   $('#close-document').hidden = false;
   $('#export-project').hidden = false;
+  if ($('#save-to-account')) $('#save-to-account').hidden = false;
   $('#settings-panel').hidden = true;
   selectedCanvas = null;
   renderDocumentTabs();
@@ -1108,6 +1112,307 @@ function attachCanvasEvents(canvas, editable) {
   }, { passive: false });
 }
 
+
+function saveCurrentProjectToAccount() {
+  if (!project) return;
+  try {
+    saveActiveDocumentState();
+    const entry = accountManager.saveArtToAccount(project, { isPublic: true });
+    toast(`Arte "${entry.name}" guardada na tua conta com sucesso!`, 'success');
+    updateAccountUI();
+  } catch (error) {
+    toast(`Erro ao guardar arte: ${error.message}`, 'error');
+  }
+}
+
+function updateAccountUI() {
+  const user = accountManager.getCurrentUser();
+  const avatarBadge = $('#user-avatar-badge');
+  const nameBadge = $('#user-name-badge');
+  if (avatarBadge) avatarBadge.textContent = user.avatar || '🎨';
+  if (nameBadge) nameBadge.textContent = user.name || 'Criador';
+
+  const nameInput = $('#profile-name-input');
+  const handleInput = $('#profile-handle-input');
+  const bioInput = $('#profile-bio-input');
+  if (nameInput) nameInput.value = user.name;
+  if (handleInput) handleInput.value = user.handle;
+  if (bioInput) bioInput.value = user.bio || '';
+
+  const artworks = accountManager.getUserArtworks();
+  const artCount = $('#account-art-count');
+  const artList = $('#account-artworks-list');
+  if (artCount) artCount.textContent = String(artworks.length);
+  if (artList) {
+    artList.replaceChildren();
+    if (artworks.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state-note';
+      empty.textContent = 'Ainda não tens nenhuma arte guardada na conta.';
+      artList.append(empty);
+    } else {
+      for (const item of artworks) {
+        const row = document.createElement('div');
+        row.className = 'account-art-item';
+
+        const info = document.createElement('div');
+        info.className = 'account-art-info';
+        const title = document.createElement('strong');
+        title.textContent = item.name;
+        const meta = document.createElement('span');
+        meta.className = 'account-art-meta';
+        meta.textContent = `${item.dimensions} · ${new Date(item.savedAt).toLocaleDateString()}`;
+        info.append(title, meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'account-art-actions';
+
+        const visBtn = document.createElement('button');
+        visBtn.type = 'button';
+        visBtn.className = 'button button-quiet';
+        visBtn.dataset.action = 'toggle-visibility';
+        visBtn.textContent = item.isPublic ? 'Pública' : 'Privada';
+        visBtn.title = item.isPublic ? 'Arte visível na galeria pública' : 'Arte visível apenas para ti';
+        visBtn.addEventListener('click', () => {
+          accountManager.setArtworkVisibility(item.id, !item.isPublic);
+          updateAccountUI();
+        });
+
+        const openBtn = document.createElement('button');
+        openBtn.type = 'button';
+        openBtn.className = 'button button-secondary';
+        openBtn.dataset.action = 'open-art';
+        openBtn.textContent = 'Abrir';
+        openBtn.addEventListener('click', () => {
+          if (item.project) {
+            saveActiveDocumentState();
+            const doc = addDocument(workspaceState, item.project);
+            doc.dirty = false;
+            loadDocument(doc);
+            showEditor();
+            $('#account-dialog')?.close();
+            toast(`Arte "${item.name}" carregada no editor.`, 'success');
+          }
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'button button-quiet';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Eliminar da conta';
+        delBtn.addEventListener('click', () => {
+          if (confirm(`Eliminar "${item.name}" da tua conta?`)) {
+            accountManager.deleteArtwork(item.id);
+            updateAccountUI();
+          }
+        });
+
+        actions.append(visBtn, openBtn, delBtn);
+        row.append(info, actions);
+        artList.append(row);
+      }
+    }
+  }
+
+  const friends = accountManager.getFriends();
+  const friendsCount = $('#account-friends-count');
+  const friendsList = $('#account-friends-list');
+  if (friendsCount) friendsCount.textContent = String(friends.length);
+  if (friendsList) {
+    friendsList.replaceChildren();
+    if (friends.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-state-note';
+      empty.textContent = 'Ainda não estás a seguir nenhum criador.';
+      friendsList.append(empty);
+    } else {
+      for (const friendId of friends) {
+        const profile = accountManager.getProfileWithArtworks(friendId);
+        if (profile) {
+          const row = document.createElement('div');
+          row.className = 'account-art-item';
+          const info = document.createElement('div');
+          info.className = 'account-art-info';
+          info.innerHTML = `<strong>${profile.name}</strong> <span>@${profile.handle}</span>`;
+          const unfollowBtn = document.createElement('button');
+          unfollowBtn.type = 'button';
+          unfollowBtn.className = 'button button-quiet';
+          unfollowBtn.textContent = 'Deixar de seguir';
+          unfollowBtn.addEventListener('click', () => {
+            accountManager.toggleFriend(friendId);
+            updateAccountUI();
+          });
+          row.append(info, unfollowBtn);
+          friendsList.append(row);
+        }
+      }
+    }
+  }
+}
+
+function renderCommunityProfiles(query = '') {
+  const container = $('#community-profiles-list');
+  if (!container) return;
+  const profiles = accountManager.searchProfiles(query);
+  container.replaceChildren();
+
+  if (profiles.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-state-note';
+    empty.textContent = `Nenhum criador encontrado para "${query}".`;
+    container.append(empty);
+    return;
+  }
+
+  for (const profile of profiles) {
+    const card = document.createElement('article');
+    card.className = 'profile-card';
+    card.dataset.profileHandle = profile.handle;
+
+    const header = document.createElement('div');
+    header.className = 'profile-card-header';
+    const avatar = document.createElement('div');
+    avatar.className = 'profile-avatar';
+    avatar.textContent = profile.avatar || '🎨';
+
+    const info = document.createElement('div');
+    info.className = 'profile-info';
+    const name = document.createElement('span');
+    name.className = 'profile-name';
+    name.textContent = profile.name;
+    if (profile.verified) {
+      const badge = document.createElement('span');
+      badge.className = 'verified-badge';
+      badge.textContent = '✓ Verificado';
+      badge.title = 'Criador oficial de referência';
+      name.append(badge);
+    }
+
+    const handle = document.createElement('span');
+    handle.className = 'profile-handle';
+    handle.textContent = `@${profile.handle}`;
+    info.append(name, handle);
+    header.append(avatar, info);
+
+    const bio = document.createElement('p');
+    bio.className = 'profile-bio';
+    bio.textContent = profile.bio || '';
+
+    const actions = document.createElement('div');
+    actions.className = 'profile-actions';
+
+    const isFollowing = accountManager.isFriend(profile.id);
+    const friendBtn = document.createElement('button');
+    friendBtn.type = 'button';
+    friendBtn.className = isFollowing ? 'button button-primary' : 'button button-secondary';
+    friendBtn.dataset.action = 'toggle-friend';
+    friendBtn.textContent = isFollowing ? 'A seguir' : '+ Seguir';
+    friendBtn.addEventListener('click', () => {
+      const nowFollowing = accountManager.toggleFriend(profile.id);
+      friendBtn.className = nowFollowing ? 'button button-primary' : 'button button-secondary';
+      friendBtn.textContent = nowFollowing ? 'A seguir' : '+ Seguir';
+      updateAccountUI();
+    });
+
+    const viewArtBtn = document.createElement('button');
+    viewArtBtn.type = 'button';
+    viewArtBtn.className = 'button button-quiet';
+    viewArtBtn.dataset.action = 'view-artworks';
+    viewArtBtn.textContent = `Ver artes (${profile.artworks?.length || 0})`;
+    viewArtBtn.addEventListener('click', () => {
+      $('#tab-community-gallery')?.click();
+      renderCommunityGallery(profile.artworks);
+    });
+
+    actions.append(friendBtn, viewArtBtn);
+    card.append(header, bio, actions);
+    container.append(card);
+  }
+}
+
+function renderCommunityGallery(artworks = null) {
+  const container = $('#community-artworks-list');
+  if (!container) return;
+  const list = artworks || accountManager.getPublicArtworks();
+  container.replaceChildren();
+
+  if (list.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-state-note';
+    empty.textContent = 'Nenhuma obra pública encontrada.';
+    container.append(empty);
+    return;
+  }
+
+  for (const art of list) {
+    const card = document.createElement('article');
+    card.className = 'community-art-card';
+    card.dataset.communityArt = art.id;
+
+    const title = document.createElement('h4');
+    title.className = 'community-art-title';
+    title.textContent = art.name;
+
+    const meta = document.createElement('span');
+    meta.className = 'community-art-meta';
+    meta.textContent = `${art.dimensions} · por ${art.author || art.authorName || 'Artista'} (@${art.authorHandle})`;
+
+    card.append(title, meta);
+
+    if (art.inspirations) {
+      const insp = document.createElement('div');
+      insp.className = 'community-art-inspirations';
+      insp.textContent = `💡 ${art.inspirations}`;
+      card.append(insp);
+    }
+
+    if (art.citations?.length) {
+      const citList = document.createElement('small');
+      citList.className = 'community-art-meta';
+      citList.textContent = `Citações: ${art.citations.join('; ')}`;
+      card.append(citList);
+    }
+
+    const actions = document.createElement('div');
+    actions.className = 'profile-actions';
+
+    const openBtn = document.createElement('button');
+    openBtn.type = 'button';
+    openBtn.className = 'button button-primary';
+    openBtn.dataset.action = 'open-art';
+    openBtn.textContent = 'Abrir no editor';
+    openBtn.addEventListener('click', () => {
+      if (art.exampleId) {
+        openExample(art.exampleId);
+        $('#community-dialog')?.close();
+      } else if (art.project) {
+        saveActiveDocumentState();
+        const doc = addDocument(workspaceState, art.project);
+        doc.dirty = false;
+        loadDocument(doc);
+        showEditor();
+        $('#community-dialog')?.close();
+        toast(`Arte "${art.name}" carregada no editor.`, 'success');
+      }
+    });
+
+    const isLiked = accountManager.isLiked(art.id);
+    const likeBtn = document.createElement('button');
+    likeBtn.type = 'button';
+    likeBtn.className = 'button button-quiet';
+    likeBtn.dataset.action = 'toggle-like';
+    likeBtn.textContent = isLiked ? '❤️ Gostei' : '🤍 Gostar';
+    likeBtn.addEventListener('click', () => {
+      const nowLiked = accountManager.toggleLike(art.id);
+      likeBtn.textContent = nowLiked ? '❤️ Gostei' : '🤍 Gostar';
+    });
+
+    actions.append(openBtn, likeBtn);
+    card.append(actions);
+    container.append(card);
+  }
+}
+
 function initialize() {
   fillPaletteSelect($('#setup-palette'), 4, 'blue-red-4');
   refreshSetupPalette();
@@ -1211,7 +1516,7 @@ function initialize() {
         const title = document.createElement('strong');
         title.textContent = item.name;
         const info = document.createElement('span');
-        info.textContent = `${item.dimensions} · ${item.description}`;
+        info.textContent = `${item.dimensions} · por ${item.author} · ${item.description}`;
         btn.append(title, info);
         btn.addEventListener('click', () => openExample(item.id));
         container.append(btn);
@@ -1222,6 +1527,60 @@ function initialize() {
   }
 
   renderExamples();
+  
+  updateAccountUI();
+  $('#community-button')?.addEventListener('click', () => {
+    renderCommunityProfiles();
+    $('#community-dialog')?.showModal();
+  });
+  $('#close-community-dialog')?.addEventListener('click', () => {
+    $('#community-dialog')?.close();
+  });
+  $('#community-search-input')?.addEventListener('input', event => {
+    renderCommunityProfiles(event.target.value);
+  });
+  $('#tab-community-profiles')?.addEventListener('click', () => {
+    $('#tab-community-profiles').classList.add('is-active');
+    $('#tab-community-gallery').classList.remove('is-active');
+    $('#community-profiles-view').hidden = false;
+    $('#community-gallery-view').hidden = true;
+  });
+  $('#tab-community-gallery')?.addEventListener('click', () => {
+    $('#tab-community-gallery').classList.add('is-active');
+    $('#tab-community-profiles').classList.remove('is-active');
+    $('#community-profiles-view').hidden = true;
+    $('#community-gallery-view').hidden = false;
+    renderCommunityGallery();
+  });
+
+  $('#user-account-button')?.addEventListener('click', () => {
+    updateAccountUI();
+    $('#account-dialog')?.showModal();
+  });
+  $('#close-account-dialog')?.addEventListener('click', () => {
+    $('#account-dialog')?.close();
+  });
+  $('#save-profile-btn')?.addEventListener('click', () => {
+    accountManager.updateProfile({
+      name: $('#profile-name-input').value,
+      handle: $('#profile-handle-input').value,
+      bio: $('#profile-bio-input').value
+    });
+    updateAccountUI();
+    toast('Perfil atualizado com sucesso.', 'success');
+  });
+
+  $('#save-to-account')?.addEventListener('click', saveCurrentProjectToAccount);
+  $('#menu-save-to-account')?.addEventListener('click', saveCurrentProjectToAccount);
+  $('#menu-community')?.addEventListener('click', () => {
+    renderCommunityProfiles();
+    $('#community-dialog')?.showModal();
+  });
+  $('#menu-my-account')?.addEventListener('click', () => {
+    updateAccountUI();
+    $('#account-dialog')?.showModal();
+  });
+
   $('#menu-open-example')?.addEventListener('click', () => {
     $('#examples-dialog')?.showModal();
   });

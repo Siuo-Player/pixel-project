@@ -1,0 +1,24 @@
+# Sessão — Sistema de contas, comunidade social e catálogo de arte autoral Antigravity
+
+- **Data:** 31-10-2026
+- **Contexto:** Pedido do utilizador para expandir o ecossistema com contas locais/comunitárias, guardar projetos na conta do utilizador, seguir criadores/fazer amizades, pesquisar perfis e explorar as suas artes públicas, bem como criar um catálogo de demonstração autoral com as obras criadas por Antigravity (Google DeepMind) com devidas citações e inspirações.
+- **Implementação do Motor de Comunidade e Contas (`src/core/community.js`):**
+  - Implementado `createAccountManager(storage)` baseado em `createSafeStorage` (prefixo `px_community_`) com serialização segura JSON.
+  - Perfil de utilizador com nome, handle `@handle`, bio e avatar editáveis.
+  - Biblioteca pessoal de artes com suporte a gravação de projetos, remoção e alternância de visibilidade (Pública / Privada).
+  - Sistema social de amizades (`toggleFriend`) e gostos/favoritos (`toggleLike`).
+  - Motor de pesquisa de perfis case-insensitive (`searchProfiles`).
+  - Perfis iniciais incluindo perfil oficial verificado do `@antigravity` com as 4 obras autorais.
+- **Catálogo de Demonstração e Citações (`docs/ART_CATALOG.md` & `src/core/examples.js`):**
+  - Atualizado `src/core/examples.js` com `author: 'Antigravity (Google DeepMind)'`, `inspirations` e `citations` para as 4 obras: *Farol ao anoitecer* (Paul Signac, Brandon James Greer), *Gato sob a lua* (Takahashi Shōtei / Shin-hanga, Studio Ghibli), *Bosque dos cogumelos* (Mark Ferrari, Nausicaä) e *Templo no deserto* (Jordan Mechner / Prince of Persia, David Lean).
+  - Criado documento detalhado [docs/ART_CATALOG.md](docs/ART_CATALOG.md).
+- **Interface e Navegação:**
+  - Adicionado botão de perfil `#user-account-button` e botão `#community-button` no cabeçalho.
+  - Diálogo `#community-dialog` com pesquisa em tempo real, visualização de perfis, seguir criadores e galeria de obras públicas com botão para abrir diretamente no editor.
+  - Diálogo `#account-dialog` com gestão de perfil, biblioteca de artes guardadas e lista de amigos.
+  - Botão `#save-to-account` no editor e menus integrados no ficheiro.
+- **Verificação:**
+  - 94/94 testes unitários passaram (`npm test`).
+  - 20/20 testes E2E passaram (`npm run test:e2e`).
+  - Suite completa validada com sucesso via `npm run test:all`.
+  - Registados `PX-033` e `PX-034` em `docs/REGRESSION_CATALOG.md`.

@@ -431,3 +431,205 @@ h1 span { color: var(--accent); }
   font-weight: 600;
   color: #fff;
 }
+
+/* User & Community styles */
+.user-badge-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+}
+.user-badge-button:hover {
+  border-color: var(--border-bright);
+}
+.modal-dialog {
+  background: var(--surface-panel);
+  color: var(--text-light);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 680px;
+  width: 92vw;
+  max-height: 85vh;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .6);
+  overflow-y: auto;
+}
+.modal-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+}
+.modal-dialog.large-dialog {
+  max-width: 820px;
+}
+.dialog-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.community-toolbar {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.community-toolbar input[type="search"] {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  font-size: 13px;
+}
+.filter-pills {
+  display: flex;
+  gap: 6px;
+}
+.filter-pill {
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.filter-pill.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.profile-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border: 1px solid var(--border-soft);
+}
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+.profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.verified-badge {
+  color: #4da3d7;
+  font-size: 11px;
+}
+.profile-handle {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.profile-bio {
+  font-size: 12px;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin: 0;
+}
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.community-art-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.community-art-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.community-art-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.community-art-meta {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.community-art-inspirations {
+  font-size: 11px;
+  color: var(--text-light);
+  background: var(--surface-dark);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border-left: 2px solid var(--primary);
+  margin: 4px 0;
+}
+.account-artworks-list, .account-friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+.account-art-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-card);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-soft);
+}
+.account-art-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.account-art-actions {
+  display: flex;
+  gap: 6px;
+}
+.art-visibility-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-dark);
+  color: var(--text-dim);
+}
+.art-visibility-badge.is-public {
+  color: #79d99f;
+  background: rgba(121, 217, 159, 0.1);
+}
+

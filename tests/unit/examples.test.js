@@ -17,6 +17,8 @@ test('getExampleMetadata provides display information for the UI', () => {
     assert.ok(item.name, 'Example has name');
     assert.ok(item.dimensions, 'Example has dimensions string');
     assert.ok(item.description, 'Example has description');
+    assert.equal(item.author, 'Antigravity (Google DeepMind)', 'Example identifies Antigravity as author');
+    assert.ok(item.inspirations, 'Example specifies artistic inspirations and citations');
   }
 });
 

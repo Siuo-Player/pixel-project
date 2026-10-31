@@ -36,6 +36,9 @@
               <div class="menu-popover">
                 <button id="menu-new-document" type="button">+ Nova tela</button>
                 <button id="menu-import-project" type="button">Importar projeto…</button>
+                <button id="menu-save-to-account" type="button">Guardar na conta</button>
+                <button id="menu-my-account" type="button">A minha conta / Artes…</button>
+                <button id="menu-community" type="button">Comunidade e Perfis…</button>
                 <button id="menu-open-example" type="button">Projetos de exemplo…</button>
                 <button id="menu-export-project" type="button">Exportar tela ativa</button>
                 <button id="menu-close-document" type="button">Fechar tela</button>
@@ -55,10 +58,14 @@
               <div class="menu-popover"><button id="menu-reset-zoom" type="button">Repor zoom</button></div>
             </details>
           </nav>
+          <button id="save-to-account" class="button button-quiet" hidden title="Guardar tela atual na minha conta">Guardar na conta</button>
           <button id="back-to-setup" class="button button-quiet" hidden>Início</button>
           <button id="close-document" class="button button-quiet" hidden>Fechar tela</button>
           <button id="export-project" class="button button-primary" hidden>Exportar projeto</button>
           <button id="import-project-button" class="button button-quiet">Importar</button>
+          <button id="community-button" class="button button-quiet">Comunidade</button>
+          <button id="user-account-button" class="button button-quiet user-badge-button"><span id="user-avatar-badge">🎨</span> <span id="user-name-badge">Criador</span></button>
+          
           <input id="import-project-file" type="file" accept="application/json,.pixelproj" hidden />
         </div>
       </header>
@@ -236,6 +243,62 @@
         </div>
         <p class="examples-description">Escolhe uma arte finalizada para abrir como nova tela no editor:</p>
         <div id="dialog-examples-list" class="examples-grid"></div>
+      </div>
+    </dialog>
+        <dialog id="community-dialog" class="community-dialog modal-dialog">
+      <div class="dialog-content large-dialog">
+        <div class="dialog-header">
+          <div>
+            <h3>Comunidade & Perfis</h3>
+            <p class="dialog-subtitle">Descobre outros artistas, segue perfis e explora artes públicas:</p>
+          </div>
+          <button id="close-community-dialog" type="button" class="icon-button" aria-label="Fechar">✕</button>
+        </div>
+        <div class="community-toolbar">
+          <input id="community-search-input" type="search" placeholder="Pesquisar perfis (@handle ou nome)…" />
+          <div class="filter-pills">
+            <button id="tab-community-profiles" class="filter-pill is-active" type="button">Criadores</button>
+            <button id="tab-community-gallery" class="filter-pill" type="button">Galeria Pública</button>
+          </div>
+        </div>
+        <div id="community-profiles-view" class="community-view-pane">
+          <div id="community-profiles-list" class="profiles-grid"></div>
+        </div>
+        <div id="community-gallery-view" class="community-view-pane" hidden>
+          <div id="community-artworks-list" class="community-art-grid"></div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="account-dialog" class="account-dialog modal-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <div>
+            <h3>A Minha Conta</h3>
+            <p class="dialog-subtitle">Perfil local-first e biblioteca de obras:</p>
+          </div>
+          <button id="close-account-dialog" type="button" class="icon-button" aria-label="Fechar">✕</button>
+        </div>
+        <div class="account-profile-form">
+          <div class="form-grid">
+            <label class="field compact-field"><span>Nome de criador</span><input id="profile-name-input" type="text" maxlength="50" /></label>
+            <label class="field compact-field"><span>Identificador (@handle)</span><input id="profile-handle-input" type="text" maxlength="30" /></label>
+          </div>
+          <label class="field compact-field"><span>Biografia</span><input id="profile-bio-input" type="text" maxlength="150" /></label>
+          <button id="save-profile-btn" class="button button-secondary button-block" type="button">Atualizar perfil</button>
+        </div>
+        <div class="account-sections">
+          <div class="section-title-row">
+            <h4>As Minhas Artes Guardadas</h4>
+            <span id="account-art-count" class="count-pill">0</span>
+          </div>
+          <div id="account-artworks-list" class="account-artworks-list"></div>
+          <div class="section-title-row">
+            <h4>Amigos e Perfis Seguidos</h4>
+            <span id="account-friends-count" class="count-pill">0</span>
+          </div>
+          <div id="account-friends-list" class="account-friends-list"></div>
+        </div>
       </div>
     </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>

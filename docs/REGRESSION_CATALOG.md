@@ -49,6 +49,8 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 | PX-030 | Documentação do projeto sem espelho navegável | As páginas de Wiki devem existir versionadas no repositório e ter um procedimento explícito de sincronização para o repositório Wiki do GitHub. | `tests/unit/wiki-publishing.test.js` — `project wiki pages are versioned with the source and can be synced to GitHub Wiki` | Unitário |
 | PX-031 | Defesa de segurança e poluição de protótipos | Ficheiros importados e estruturas JSON não podem poluir Object.prototype nem injetar chaves perigosas como __proto__ ou constructor. | `tests/unit/security.test.js` — `parseProject rejects payloads with prototype pollution attempts` | Unitário |
 | PX-032 | Galeria integrada de exemplos | O utilizador pode abrir projetos de exemplo integrados tanto diretamente a partir da grelha inicial de cartões como através do diálogo do menu. | `tests/e2e/examples.spec.js` — `o utilizador pode abrir um projeto de exemplo diretamente do ecrã inicial` | E2E |
+| PX-033 | Gestão de conta e biblioteca de arte | A biblioteca de obras da conta e lista de amigos devem manter integridade, permitindo alternar visibilidade pública/privada sem perda de dados. | `tests/unit/community.test.js` — `toggling artwork visibility updates public state and public gallery` | Unitário |
+| PX-034 | Exploração comunitária e amizades | Utilizadores podem pesquisar perfis de criadores, adicionar amigos e abrir artes públicas de outros artistas diretamente no editor. | `tests/e2e/community.spec.js` — `o utilizador pode explorar a comunidade, pesquisar perfis e adicionar aos amigos` | E2E |
 
 ## Como adicionar uma entrada
 
