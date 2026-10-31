@@ -75,6 +75,7 @@ function loadDocument(documentState) {
   activeTool = documentState.paintState ?? BLACK;
   history = documentState.history;
   editorCustom = false;
+  setActiveTool(selectedTool);
 }
 
 function renderDocumentTabs() {
@@ -129,6 +130,7 @@ function markDocumentDirty() {
 }
 
 function showSetup() {
+  saveActiveDocumentState();
   $('#setup-view').hidden = false;
   $('#editor-view').hidden = true;
   $('#project-name').hidden = true;
@@ -602,6 +604,7 @@ function renderTechniqueList() {
     remove.setAttribute('aria-label', `Remover ${instance.name}`);
     remove.addEventListener('click', () => {
       outputConfig().techniques = outputConfig().techniques.filter(item => item.id !== instance.id);
+      markDocumentDirty();
       renderTechniqueList();
       recalculate();
     });
@@ -612,17 +615,23 @@ function renderTechniqueList() {
     const enabled = document.createElement('input');
     enabled.type = 'checkbox';
     enabled.checked = instance.enabled;
-    enabled.addEventListener('change', () => { instance.enabled = enabled.checked; recalculate(); });
+    enabled.addEventListener('change', () => {
+      instance.enabled = enabled.checked;
+      markDocumentDirty();
+      recalculate();
+    });
     enabledLabel.append(enabled, document.createTextNode(' Ativa'));
     card.append(enabledLabel);
     renderRange(card, `Peso ${instance.weight.toFixed(2)}`, 0, 2, 0.05, instance.weight, value => {
       instance.weight = value;
+      markDocumentDirty();
       renderTechniqueList();
       recalculate();
     });
     if (instance.params.radius !== undefined) {
       renderRange(card, `Raio ${instance.params.radius}`, 0, 8, 1, instance.params.radius, value => {
         instance.params.radius = value;
+        markDocumentDirty();
         renderTechniqueList();
         recalculate();
       });
@@ -630,6 +639,7 @@ function renderTechniqueList() {
     if (instance.params.contrastBoost !== undefined) {
       renderRange(card, `Intensidade ${instance.params.contrastBoost.toFixed(1)}`, 0, 2, 0.1, instance.params.contrastBoost, value => {
         instance.params.contrastBoost = value;
+        markDocumentDirty();
         renderTechniqueList();
         recalculate();
       });
@@ -647,7 +657,11 @@ function renderTechniqueList() {
         select.append(option);
       }
       select.value = instance.params.kernel;
-      select.addEventListener('change', () => { instance.params.kernel = select.value; recalculate(); });
+      select.addEventListener('change', () => {
+        instance.params.kernel = select.value;
+        markDocumentDirty();
+        recalculate();
+      });
       label.append(titleText, select);
       card.append(label);
     }
@@ -695,6 +709,7 @@ function changeEditorPaletteSize() {
 
 function addTechnique() {
   outputConfig().techniques.push(createTechniqueInstance($('#new-technique').value));
+  markDocumentDirty();
   renderTechniqueList();
   recalculate();
 }
@@ -708,6 +723,10 @@ function exportProject() {
   anchor.download = `${project.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}.pixelproj`;
   anchor.click();
   URL.revokeObjectURL(url);
+  if (activeDocument) {
+    activeDocument.dirty = false;
+    renderDocumentTabs();
+  }
   toast('Projeto exportado.', 'success');
 }
 
