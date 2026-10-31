@@ -11,8 +11,8 @@ export function convertSource(source, palette, techniqueInstances, options = {})
 export function convertProject(project, outputId = project.outputs?.[0]?.id) {
   const output = project.outputs?.find(item => item.id === outputId);
   if (!output) throw new RangeError('Unknown output: ' + outputId);
-  const width = output.width ?? project.source.width;
-  const height = output.height ?? project.source.height;
+  const width = output.followsSourceSize ? project.source.width : (output.width ?? project.source.width);
+  const height = output.followsSourceSize ? project.source.height : (output.height ?? project.source.height);
   const source = resizeGridNearestNeighbor(project.source, width, height);
   return convertSource(source, output.palette ?? project.palette, output.techniques, {
     mode: output.resolverMode ?? project.resolverMode ?? 'weighted-average'
