@@ -45,19 +45,17 @@ Os tamanhos 4/8/12/16/32 são opções de interface; a lógica do motor é param
 
 Uma definição de técnica é reutilizável. Uma instância contém identificador, parâmetros, peso e estado ativo. O utilizador pode adicionar várias instâncias da mesma técnica.
 
-Técnicas atualmente implementadas:
-- **Weighted neighbourhood:** calcula a proporção ponderada de branco numa janela e mapeia o resultado para uma rampa discreta de paleta.
-- **Directional lines:** mede sequências contínuas da mesma cor em quatro eixos e usa esse sinal para modificar a distribuição contextual.
-- **Local entropy:** calcula entropia binária local e ajusta o contraste contextual.
+Técnicas atualmente implementadas: weighted neighbourhood, directional lines, local entropy, local majority, edge-aware contrast, directional gradient e ordered dithering. Os cálculos e os seus parâmetros são descritos na secção 11.
 
 Cada técnica devolve uma proposta com uma distribuição completa pelas N cores, uma máscara de pixels válidos, dimensões, `colorCount` e peso da instância.
 
 ## 5. Fusão de propostas
 
-O resolvedor tem dois modos:
+O resolvedor tem três modos:
 
 - **Média ponderada:** calcula a média das distribuições de todas as instâncias que avaliam o pixel.
 - **Maior confiança individual:** escolhe a distribuição individual com a maior probabilidade máxima, ajustada pelo peso da instância.
+- **Votação ponderada:** cada instância vota na cor com maior probabilidade; o peso ajusta a influência desse voto.
 
 A saída escolhe sempre o índice de maior probabilidade. Não mistura canais RGB nem cria cores fora da paleta. Em caso de empate, o desempate depende da polaridade da fonte para preservar a inversão complementar.
 
@@ -74,7 +72,7 @@ Isto não equivale a mapear preto sempre para uma cor e branco sempre para outra
 
 ## 7. Projeto, documentos e persistência
 
-Um ficheiro `.pixelproj` contém a matriz original, paleta, modo de resolução e uma lista de saídas. Cada saída tem a sua própria paleta, modo de resolução e lista de instâncias de técnicas. Atualmente, a interface apresenta uma saída por projeto.
+Um ficheiro `.pixelproj` contém a matriz original e entre uma e três saídas. Cada saída tem a sua própria paleta, modo de resolução, dimensões e lista de instâncias de técnicas. O formato versão 2 guarda a dimensão própria e se a saída acompanha a origem; a versão 1 continua a ser importada.
 
 A aplicação mantém um workspace em memória com vários documentos independentes. Cada documento guarda:
 - objeto de projeto e matriz original;
@@ -99,9 +97,9 @@ A interface escolhe a ferramenta ativa, recolhe coordenadas através de `pointer
 
 ## 9. UI e Canvas
 
-A imagem original e a interpretação são desenhadas em Canvas, com pixels nítidos. `src/ui/canvas-coordinates.js` calcula a geometria de escala/offset e transforma o ponteiro em coordenadas da grelha; a função é pura e testada com zoom e deslocação.
+A imagem original e até três interpretações são desenhadas em Canvas, com pixels nítidos. `src/ui/canvas-coordinates.js` calcula a geometria de escala/offset e transforma o ponteiro em coordenadas da grelha; a função é pura e testada com zoom e deslocação.
 
-Zoom e pan usam uma câmara partilhada pelas duas vistas do documento. O layout automático adapta-se ao espaço disponível; os modos lado a lado e grelha também estão disponíveis. Os controlos de paleta no editor atualizam imediatamente o projeto e recalculam a interpretação.
+Zoom e pan usam uma câmara partilhada pelas vistas do documento. O layout automático adapta-se ao espaço disponível; os modos lado a lado e grelha também estão disponíveis. Os controlos aparecem num inspector contextual ao selecionar uma tela; os controlos de paleta, técnica, resolvedor e dimensão atualizam apenas a interpretação selecionada.
 
 ## 10. Executar e testar
 
