@@ -57,3 +57,11 @@ Se um comportamento não puder ser automatizado de forma fiável (por exemplo, u
 - Se a falha revelar uma regra geral de trabalho, atualiza também este ficheiro ou `docs/TESTING_STRATEGY.md`.
 - Se não for possível reproduzir ou corrigir um relato, regista-o como não confirmado ou pendente; nunca inventes uma causa, um teste ou uma correção.
 - Antes de terminar, comunica o que foi reproduzido, que teste falhava, o que foi alterado, que verificações passaram e o SHA efetivamente validado.
+
+## 6. Memória do projeto (wiki versionada)
+
+- A fonte de verdade do conhecimento do projeto é `docs/memory/` (Markdown versionado em Git), inspirado no ai-memory: ficheiros simples, reconstruíveis, sem base de dados opaca.
+- Antes de uma sessão longa, ler `docs/memory/decisions/` e `docs/memory/gotchas/`.
+- No fim da sessão, acrescentar uma nota em `docs/memory/sessions/`.
+- Decisões novas entram como ADR novo que substitui o anterior; nunca editar histórico.
+- Credenciais e dados sensíveis nunca entram na memória.
