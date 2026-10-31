@@ -10,8 +10,8 @@ function makeId() {
 }
 
 function validateOutputDimensions(width, height) {
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 4 || height < 4 || width > 256 || height > 256 || width * height > 65_536) {
-    throw new RangeError('Output dimensions must be between 4 and 256 pixels, with at most 65,536 pixels total.');
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 256 || height > 256 || width * height > 65_536) {
+    throw new RangeError('Output dimensions must be between 1 and 256 pixels, with at most 65,536 pixels total.');
   }
 }
 
