@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import test from 'node:test';
+
+const root = process.cwd();
+const checker = path.join(root, 'scripts', 'check-opencode-review-config.mjs');
+
+function runChecker(apiKey) {
+  const directory = mkdtempSync(path.join(os.tmpdir(), 'pixel-opencode-config-'));
+  const output = path.join(directory, 'github-output');
+  writeFileSync(output, '');
+  try {
+    const env = { ...process.env, GITHUB_OUTPUT: output };
+    if (apiKey === undefined) delete env.ANTHROPIC_API_KEY;
+    else env.ANTHROPIC_API_KEY = apiKey;
+    const result = spawnSync(process.execPath, [checker], { cwd: root, env, encoding: 'utf8' });
+    return { ...result, output: readFileSync(output, 'utf8') };
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
+test('OpenCode review skips cleanly when the Anthropic API key is absent', () => {
+  const result = runChecker('');
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.output, /^configured=false$/m);
+  assert.match(result.stdout + result.stderr, /skip|ignora/i);
+});
+
+test('OpenCode review enables the provider when an API key is configured', () => {
+  const result = runChecker('test-key-not-used-for-network');
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.output, /^configured=true$/m);
+});
+
+test('GitHub review workflow gates installation and model calls on provider configuration', () => {
+  const workflow = readFileSync(path.join(root, '.github', 'workflows', 'opencode-review.yml'), 'utf8');
+  assert.match(workflow, /id:\s*provider/);
+  assert.match(workflow, /name:\s*Check OpenCode provider configuration/);
+  assert.match(workflow, /if:\s*steps\.provider\.outputs\.configured == 'true'/);
+  assert.match(workflow, /ANTHROPIC_API_KEY:\s*\$\{\{\s*secrets\.ANTHROPIC_API_KEY\s*\}\}/);
+});
