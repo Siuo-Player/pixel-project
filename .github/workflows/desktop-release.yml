@@ -1,33 +1,37 @@
-# Publica executáveis desktop opcionais no GitHub Releases.
-# A app em si já é instalável como PWA (GitHub Pages); este job existe para
-# quem prefere um executável autónomo. Corre manualmente: Actions > Desktop release > Run.
-# Atomizado por SO: win => portable .exe; linux => AppImage; mac => dmg.
+# Builds free, portable desktop binaries and publishes them as GitHub Release assets.
+# Dispatch manually from Actions > Desktop release > Run workflow.
 name: Desktop release
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (ex.: desktop-v0.6.0)"
+        description: "Release tag, for example desktop-v0.6.0"
         required: false
         default: desktop-latest
 
-permissions:
-  contents: write
-
 concurrency:
-  group: desktop-release-${{ github.event.inputs.tag }}
+  group: desktop-release-${{ inputs.tag }}
   cancel-in-progress: false
 
 jobs:
   build:
+    permissions:
+      contents: read
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            args: --win
+            platform: windows
+            args: --win portable --x64
+            file_glob: "*.exe"
+            output_name: Pixel-Project-Windows-x64.exe
           - os: ubuntu-latest
-            args: --linux
+            platform: linux
+            args: --linux AppImage --x64
+            file_glob: "*.AppImage"
+            output_name: Pixel-Project-Linux-x64.AppImage
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -35,15 +39,59 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies and packaging tools
+      - name: Install app dependencies and desktop packager
         run: npm install --no-save --no-audit --no-fund electron electron-builder
-      - name: Build executables
+      - name: Build desktop application
         run: npx electron-builder ${{ matrix.args }} --publish never
-      - name: Upload to GitHub Releases
+      - name: Prepare predictable release filename
+        shell: bash
+        run: |
+          shopt -s nullglob
+          candidates=(dist/${{ matrix.file_glob }})
+          if [ "${#candidates[@]}" -eq 0 ] || [ ! -f "${candidates[0]}" ]; then
+            echo "No desktop binary matching ${{ matrix.file_glob }} was produced." >&2
+            exit 1
+          fi
+          cp "${candidates[0]}" "dist/${{ matrix.output_name }}"
+      - name: Upload platform build
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: dist/${{ matrix.output_name }}
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all platform binaries
+        uses: actions/download-artifact@v7
+        with:
+          pattern: desktop-*
+          path: dist
+          merge-multiple: true
+      - name: Verify release assets
+        shell: bash
+        run: |
+          test -s dist/Pixel-Project-Windows-x64.exe
+          test -s dist/Pixel-Project-Linux-x64.AppImage
+      - name: Publish GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.inputs.tag }}
+          TAG: ${{ inputs.tag }}
         run: |
-          gh release create "$TAG" --title "Pixel Project $TAG" --notes "Executáveis desktop gerados automaticamente. Também podes instalar a app como PWA: https://siuo-player.github.io/pixel-project/" || true
-          gh release upload "$TAG" dist/*.* --clobber
+          if [[ ! "$TAG" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "Invalid release tag: $TAG" >&2
+            exit 1
+          fi
+          assets=(dist/Pixel-Project-Windows-x64.exe dist/Pixel-Project-Linux-x64.AppImage)
+          notes="Executáveis portáteis do Pixel Project. A versão PWA também está disponível em https://siuo-player.github.io/pixel-project/"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${assets[@]}" --clobber
+          else
+            gh release create "$TAG" "${assets[@]}" --title "Pixel Project $TAG" --notes "$notes" --latest=false
+          fi
