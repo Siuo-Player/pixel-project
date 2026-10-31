@@ -25,7 +25,7 @@ Este catálogo é a memória verificável dos problemas encontrados no Pixel Pro
 | PX-013 | Segurança do servidor local | O servidor estático não pode expor ficheiros fora da raiz da aplicação através de caminhos manipulados. | `tests/integration/static-app.test.js` — `static server does not expose paths outside the application root` | Integração |
 | PX-014 | Invariante do motor | Píxeis transparentes não entram nas médias contextuais nem recebem propostas de cor. | `tests/unit/engine.test.js` — `transparent pixels are excluded from contextual averages and never receive a proposal` | Unitário |
 | PX-015 | Invariante numérico do motor | Distribuições de proposta têm de somar 1, sem valores negativos, infinitos ou NaN. | `tests/unit/engine.test.js` — `every proposal distribution sums to one and contains no negative or non-finite values` | Unitário |
-| PX-016 | Integridade dos ficheiros de exemplo | Todos os projetos de exemplo têm de importar e converter as três interpretações independentes. | `tests/unit/examples.test.js` — `every bundled pixel-art example imports with three independent and convertible interpretations` | Integração |
+| PX-016 | Integridade dos ficheiros de exemplo | Todos os projetos de exemplo têm de importar e converter as três interpretações independentes. | `tests/unit/examples.test.js` — `every bundled pixel-art example imports with three independent and convertible interpretations` | Unitário |
 | PX-017 | Ferramentas de desenho | Linha, retângulo e elipse devem alterar a matriz real, incluindo os modos preenchidos. | `tests/e2e/editor.spec.js` — `shape tools draw lines and filled rectangles and ellipses on the actual source matrix` | E2E |
 | PX-018 | Validação de importação | Versões não suportadas e estados inválidos da fonte devem ser rejeitados explicitamente. | `tests/integration/project-pipeline.test.js` — `project import rejects unsupported versions and invalid source states` | Integração |
 | PX-019 | Integridade do catálogo de técnicas | O catálogo deve carregar sem erros de sintaxe e expor as técnicas adicionais esperadas. | `tests/unit/advanced-techniques.test.js` — `catalog exposes four additional, conceptually distinct calculation techniques` | Unitário |
@@ -39,6 +39,7 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 |---|---|---|---|---|
 | PX-021 | Contrato de teste corrigido durante CI | O contrato da interface deve distinguir o Canvas original dos Canvas gerados sem assumir que existe sempre um único Canvas de saída estático. | `tests/integration/ui-contract.test.js` — `editor exposes the original and generated canvases with distinct roles` | Contrato |
 | PX-022 | Teste E2E estabilizado durante CI | Os testes de desenho devem calcular os pontos a partir da grelha real, não de coordenadas fixas do viewport. | `tests/e2e/editor.spec.js` — `shape tools draw lines and filled rectangles and ellipses on the actual source matrix` | E2E |
+| PX-023 | Lacuna de validação encontrada na auditoria pós-PR #7 | Projetos importados com payload não-objeto ou `resolverMode` desconhecido têm de ser rejeitados no parse, antes de o documento entrar no workspace. | `tests/unit/multi-output-project.test.js` — `project import rejects malformed payloads and unknown resolver modes` | Unitário |
 
 ## Como adicionar uma entrada
 

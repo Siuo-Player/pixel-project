@@ -1,9 +1,15 @@
 import { createSourceGrid } from './grid.js';
 import { createTechniqueInstance } from '../engine/techniques.js';
 import { validatePalette } from '../engine/palettes.js';
+import { RESOLVER_MODES } from '../engine/resolver.js';
 
 const PROJECT_VERSION = 2;
 const MAX_OUTPUTS = 3;
+
+function validateResolverMode(mode) {
+  if (!RESOLVER_MODES.includes(mode)) throw new RangeError('Unknown resolver mode: ' + mode);
+  return mode;
+}
 
 function makeId() {
   return globalThis.crypto?.randomUUID?.() ?? 'project-' + Date.now() + '-' + Math.random().toString(36).slice(2);
@@ -69,7 +75,7 @@ export function addOutput(project, options = {}) {
     techniques,
     options.followsSourceSize ?? (options.width === undefined && options.height === undefined)
   );
-  if (options.resolverMode) output.resolverMode = options.resolverMode;
+  if (options.resolverMode) output.resolverMode = validateResolverMode(options.resolverMode);
   project.outputs.push(output);
   return output;
 }
@@ -108,7 +114,9 @@ export function parseProject(serialized) {
   let parsed;
   try { parsed = typeof serialized === 'string' ? JSON.parse(serialized) : serialized; }
   catch { throw new TypeError('Project file is not valid JSON.'); }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new TypeError('Project data must be an object.');
   if (![1, PROJECT_VERSION].includes(parsed.version)) throw new RangeError('Unsupported project version: ' + parsed.version);
+  if (parsed.resolverMode !== undefined) validateResolverMode(parsed.resolverMode);
   if (!parsed.source || !Array.isArray(parsed.source.data)) throw new TypeError('Project source is missing or invalid.');
   const source = createSourceGrid(parsed.source.width, parsed.source.height, parsed.source.data);
   const palette = validatePalette(parsed.palette);
@@ -126,7 +134,7 @@ export function parseProject(serialized) {
       height,
       followsSourceSize: output.followsSourceSize ?? (output.width === undefined && output.height === undefined),
       palette: validatePalette(output.palette ?? palette),
-      resolverMode: output.resolverMode ?? 'weighted-average',
+      resolverMode: output.resolverMode === undefined ? 'weighted-average' : validateResolverMode(output.resolverMode),
       techniques: (output.techniques ?? []).map(instance => createTechniqueInstance(instance.techniqueId, instance.params, {
         id: instance.id, name: instance.name, enabled: instance.enabled, weight: instance.weight
       }))

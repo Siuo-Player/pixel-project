@@ -1,7 +1,9 @@
 import { BLACK, WHITE, TRANSPARENT } from '../core/grid.js';
 
+export const RESOLVER_MODES = ['weighted-average', 'highest-confidence', 'weighted-vote'];
+
 export function resolveProposals(source, proposals, palette, { mode = 'weighted-average' } = {}) {
-  if (!['weighted-average', 'highest-confidence', 'weighted-vote'].includes(mode)) {
+  if (!RESOLVER_MODES.includes(mode)) {
     throw new RangeError('Unknown resolver mode: ' + mode);
   }
   const pixelCount = source.width * source.height;

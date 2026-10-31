@@ -85,3 +85,27 @@ test('legacy version 1 projects preserve source and output dimensions below the 
   assert.deepEqual([imported.source.width, imported.source.height], [2, 3]);
   assert.deepEqual([imported.outputs[0].width, imported.outputs[0].height], [2, 3]);
 });
+
+test('project import rejects malformed payloads and unknown resolver modes', () => {
+  const project = createProject(8, 8, getPalette('blue-red-4'));
+
+  assert.throws(() => parseProject('null'), /must be an object/i);
+  assert.throws(() => parseProject('[1, 2, 3]'), /must be an object/i);
+
+  const projectMode = JSON.parse(serializeProject(project));
+  projectMode.resolverMode = 'bogus-mode';
+  assert.throws(() => parseProject(projectMode), /Unknown resolver mode/);
+
+  const outputMode = JSON.parse(serializeProject(project));
+  outputMode.outputs[0].resolverMode = 'bogus-mode';
+  assert.throws(() => parseProject(outputMode), /Unknown resolver mode/);
+
+  for (const mode of ['weighted-average', 'highest-confidence', 'weighted-vote']) {
+    const candidate = JSON.parse(serializeProject(project));
+    candidate.resolverMode = mode;
+    candidate.outputs[0].resolverMode = mode;
+    const parsed = parseProject(candidate);
+    assert.equal(parsed.resolverMode, mode);
+    assert.equal(parsed.outputs[0].resolverMode, mode);
+  }
+});
