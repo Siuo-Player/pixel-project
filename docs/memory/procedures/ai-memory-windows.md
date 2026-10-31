@@ -12,7 +12,7 @@ Set-Location C:\Users\ASUS\Documents\pixel-project
 powershell -ExecutionPolicy Bypass -File .\scripts\setup-ai-memory.ps1
 ```
 
-O script instala o binário oficial se necessário, verifica que o comando OpenCode existe, executa `setup`, muda os hooks para allowlist, cria o marcador deste repositório e verifica o servidor. A criação do marcador pede apenas os nomes de workspace e projeto. No fim, reabre o OpenCode.
+O script instala o binário oficial se necessário, verifica que o comando OpenCode existe, executa `setup`, muda os hooks para allowlist, cria o marcador deste repositório se ainda não existir e verifica o servidor. A criação do marcador pede apenas os nomes de workspace e projeto; um marcador existente nunca é sobrescrito. No fim, reabre o OpenCode.
 
 O script não lê nem guarda chaves de API e não configura um modelo pago. A allowlist é uma opção global para esta instalação do ai-memory: os outros checkouts só passam a ser capturados quando também forem inicializados com `ai-memory project init`.
 
