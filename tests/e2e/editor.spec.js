@@ -38,6 +38,14 @@ async function sampleCell(page, selector, gridWidth, gridHeight, x, y) {
   }, { width: gridWidth, height: gridHeight, x, y });
 }
 
+async function sampleCanvasRatio(page, selector, xRatio, yRatio) {
+  return page.locator(selector).evaluate((canvas, point) => {
+    const x = Math.max(0, Math.min(canvas.width - 1, Math.floor(canvas.width * point.x)));
+    const y = Math.max(0, Math.min(canvas.height - 1, Math.floor(canvas.height * point.y)));
+    return Array.from(canvas.getContext('2d').getImageData(x, y, 1, 1).data);
+  }, { x: xRatio, y: yRatio });
+}
+
 async function clickCell(page, selector, gridWidth, gridHeight, x, y) {
   const point = await cellPoint(page, selector, gridWidth, gridHeight, x, y);
   await page.mouse.click(point.x, point.y);
@@ -195,4 +203,51 @@ test('layout móvel: o editor passa para duas telas empilhadas sem overflow hori
   await capture(page, '14-mobile-editor.png');
 
   expect(pageErrors).toEqual([]);
+});
+
+
+test('12-colour palette selection is available and renders one of its discrete colours', async ({ page }) => {
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+
+  await page.goto('/');
+  await page.locator('#color-count').selectOption('12');
+  await expect(page.locator('#setup-palette')).toHaveValue('aurora-12');
+  await expect(page.locator('#setup-palette option')).toHaveCount(3);
+  await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(12);
+  await page.locator('#setup-palette').selectOption('ember-12');
+  await expect(page.locator('#setup-palette-swatches .palette-swatch')).toHaveCount(12);
+
+  await page.locator('#grid-width').fill('32');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+  await expect(page.locator('#editor-color-count')).toHaveText('12 cores');
+
+  await page.getByRole('button', { name: /Preto/ }).click();
+  await clickCell(page, '#source-canvas', 32, 16, 15, 8);
+  const output = hexFromRgba(await sampleCell(page, '#output-canvas', 32, 16, 15, 8));
+  expect([
+    '#24162E', '#3D1F3D', '#5B274B', '#7B3150',
+    '#A6404D', '#C95645', '#E36F3D', '#F18F3B',
+    '#F5B84C', '#F3D56A', '#F5E4A5', '#FFF2D6'
+  ]).toContain(output);
+  await capture(page, '15-paleta-12-cores.png');
+  expect(pageErrors).toEqual([]);
+});
+
+test('transparent cells align to real matrix pixels and the area outside the grid is uniform', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#grid-width').fill('32');
+  await page.locator('#grid-height').fill('16');
+  await page.locator('#create-project').click();
+  await expect(page.locator('#editor-view')).toBeVisible();
+
+  const firstTransparent = await sampleCell(page, '#source-canvas', 32, 16, 10, 7);
+  const nextTransparent = await sampleCell(page, '#source-canvas', 32, 16, 11, 7);
+  expect(firstTransparent).not.toEqual(nextTransparent);
+
+  const outsideTop = await sampleCanvasRatio(page, '#source-canvas', 0.04, 0.04);
+  const outsideBottom = await sampleCanvasRatio(page, '#source-canvas', 0.04, 0.96);
+  expect(outsideTop).toEqual(outsideBottom);
+  await capture(page, '16-grelha-pixeis-reais.png');
 });
