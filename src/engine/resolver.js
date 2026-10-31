@@ -1,10 +1,13 @@
 import { BLACK, WHITE, TRANSPARENT } from '../core/grid.js';
 
 export function resolveProposals(source, proposals, palette, { mode = 'weighted-average' } = {}) {
-  if (!['weighted-average', 'highest-confidence'].includes(mode)) throw new RangeError(`Unknown resolver mode: ${mode}`);
+  if (!['weighted-average', 'highest-confidence', 'weighted-vote'].includes(mode)) {
+    throw new RangeError('Unknown resolver mode: ' + mode);
+  }
   const pixelCount = source.width * source.height;
   const colorCount = palette.colors.length;
   const sums = new Float64Array(pixelCount * colorCount);
+  const votes = new Float64Array(pixelCount * colorCount);
   const weights = new Float64Array(pixelCount);
   const bestScores = new Float64Array(pixelCount).fill(-Infinity);
   const bestDistributions = new Float32Array(pixelCount * colorCount);
@@ -22,16 +25,23 @@ export function resolveProposals(source, proposals, palette, { mode = 'weighted-
       if (!proposal.mask[p] || source.data[p] === TRANSPARENT) continue;
       let total = 0;
       let maximum = -Infinity;
+      let winningColor = 0;
       const offset = p * colorCount;
       for (let c = 0; c < colorCount; c += 1) {
         const value = proposal.distributions[offset + c];
         if (!Number.isFinite(value) || value < 0) throw new RangeError('Proposal probabilities must be finite and non-negative.');
         total += value;
-        maximum = Math.max(maximum, value);
+        if (value > maximum) {
+          maximum = value;
+          winningColor = c;
+        }
       }
-      if (Math.abs(total - 1) > 1e-5) throw new RangeError(`Proposal distribution for pixel ${p} must sum to 1 (got ${total}).`);
+      if (Math.abs(total - 1) > 1e-5) throw new RangeError('Proposal distribution for pixel ' + p + ' must sum to 1 (got ' + total + ').');
       if (mode === 'weighted-average') {
         for (let c = 0; c < colorCount; c += 1) sums[offset + c] += proposal.distributions[offset + c] * proposal.weight;
+        weights[p] += proposal.weight;
+      } else if (mode === 'weighted-vote') {
+        votes[offset + winningColor] += proposal.weight;
         weights[p] += proposal.weight;
       } else if (maximum * proposal.weight > bestScores[p]) {
         bestScores[p] = maximum * proposal.weight;
@@ -50,6 +60,8 @@ export function resolveProposals(source, proposals, palette, { mode = 'weighted-
       probabilities.set(bestDistributions.subarray(offset, offset + colorCount), offset);
     } else if (mode === 'weighted-average' && weights[p] > 0) {
       for (let c = 0; c < colorCount; c += 1) probabilities[offset + c] = sums[offset + c] / weights[p];
+    } else if (mode === 'weighted-vote' && weights[p] > 0) {
+      for (let c = 0; c < colorCount; c += 1) probabilities[offset + c] = votes[offset + c] / weights[p];
     } else {
       for (let c = 0; c < colorCount; c += 1) probabilities[offset + c] = 1 / colorCount;
     }
@@ -57,7 +69,6 @@ export function resolveProposals(source, proposals, palette, { mode = 'weighted-
     for (let c = 0; c < colorCount; c += 1) maximum = Math.max(maximum, probabilities[offset + c]);
     const tied = [];
     for (let c = 0; c < colorCount; c += 1) if (Math.abs(probabilities[offset + c] - maximum) <= 1e-7) tied.push(c);
-    // Tie-breaking follows source polarity, so inversion maps the selected index through the palette mirror.
     data[p] = source.data[p] === BLACK ? tied[0] : source.data[p] === WHITE ? tied[tied.length - 1] : -1;
   }
   return { width: source.width, height: source.height, data, probabilities, colorCount };
