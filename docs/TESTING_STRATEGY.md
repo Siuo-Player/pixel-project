@@ -165,7 +165,7 @@ Cada requisito indicado pelo utilizador que possa ser verificado automaticamente
 A suite automatizada melhora a cobertura, mas não substitui a avaliação artística e a verificação manual de diferentes dispositivos.
 
 
-## 7. Testes da versão 0.6
+## 8. Testes da versão 0.6
 
 A expansão do editor acrescenta regressões específicas para:
 - seleção de ferramenta geométrica independente do estado de pintura;
@@ -178,7 +178,7 @@ A expansão do editor acrescenta regressões específicas para:
 
 Os testes das artes de exemplo importam o ficheiro com o mesmo parser usado pela aplicação e executam as três conversões. Assim, os exemplos não são apenas ficheiros de demonstração: são também fixtures de integração do motor.
 
-## 8. Qualidade dos próprios testes e auditoria
+## 9. Qualidade dos próprios testes e auditoria
 
 Um teste também pode estar errado. Não basta ver um resultado verde:
 - O resultado esperado tem de vir do requisito, de um valor de referência ou de uma propriedade independente, não da mesma função que está a ser testada.

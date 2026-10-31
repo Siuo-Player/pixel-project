@@ -40,6 +40,9 @@ test('the regression catalogue maps known failures to real named automated tests
 
   assert.ok(rows.length >= 10, 'The catalogue must include the known regression cases, not just a placeholder.');
   assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'Regression IDs must be unique.');
+  rows.forEach((row, index) => {
+    assert.equal(row.id, `PX-${String(index + 1).padStart(3, '0')}`, 'Regression IDs must stay sequential with no gaps.');
+  });
 
   for (const { id, origin, behaviour, relativePath, testName } of rows) {
     const testPath = path.join(root, relativePath);
