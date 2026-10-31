@@ -69,3 +69,19 @@ test('source-following outputs resize with source transforms while custom output
   assert.deepEqual([following.width, following.height], [6, 8]);
   assert.deepEqual([independent.width, independent.height], [12, 10]);
 });
+
+test('legacy version 1 projects preserve source and output dimensions below the new-project minimum', () => {
+  const palette = getPalette('blue-red-4');
+  const legacy = {
+    version: 1,
+    id: 'legacy-small-grid',
+    name: 'Legacy small grid',
+    source: { width: 2, height: 3, data: [0, 1, 2, 0, 2, 1] },
+    palette,
+    outputs: [{ id: 'legacy-small-output', name: 'Legacy output', palette, resolverMode: 'weighted-average', techniques: [] }]
+  };
+
+  const imported = parseProject(legacy);
+  assert.deepEqual([imported.source.width, imported.source.height], [2, 3]);
+  assert.deepEqual([imported.outputs[0].width, imported.outputs[0].height], [2, 3]);
+});

@@ -177,3 +177,15 @@ A expansão do editor acrescenta regressões específicas para:
 - importação e conversão das quatro artes de exemplo incluídas no repositório.
 
 Os testes das artes de exemplo importam o ficheiro com o mesmo parser usado pela aplicação e executam as três conversões. Assim, os exemplos não são apenas ficheiros de demonstração: são também fixtures de integração do motor.
+
+## 8. Qualidade dos próprios testes e auditoria
+
+Um teste também pode estar errado. Não basta ver um resultado verde:
+- O resultado esperado tem de vir do requisito, de um valor de referência ou de uma propriedade independente, não da mesma função que está a ser testada.
+- Não uses apenas fixtures artificiais quando o problema pode depender de um projeto real, de uma matriz pequena, de uma paleta específica ou da sequência de ações no browser.
+- Mantém unitários para lógica isolada e testes de integração/E2E para as fronteiras. Um teste unitário não substitui a importação de um ficheiro real nem uma sequência de ações no editor.
+- Para integrações externas que sejam não determinísticas ou tenham custo, usa respostas fixas/cached fixtures na suite normal e deixa as chamadas reais para uma verificação explicitamente controlada.
+- Uma falha deve indicar o que falhou e porquê. Se a suite falhar por causa de um seletor ou fixture obsoleto, corrige o teste sem alterar o comportamento correto da aplicação só para satisfazer a expectativa antiga.
+- Faz uma revisão separada do diff e confirma que nenhum teste foi removido, ignorado, enfraquecido ou tornado dependente da ordem de execução.
+
+As instruções que todos os agentes devem seguir estão em [`AGENTS.md`](../AGENTS.md). O histórico de problemas conhecidos e os testes que os protegem está em [`REGRESSION_CATALOG.md`](REGRESSION_CATALOG.md).
