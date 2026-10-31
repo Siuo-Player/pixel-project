@@ -1,44 +1,65 @@
 # Requisitos do MVP — estado de implementação
 
-## Implementado no primeiro protótipo
+Este documento distingue as funcionalidades existentes das que continuam planeadas. O estado corresponde ao código da aplicação, não apenas à visão futura.
 
-- Criar grelhas com largura/altura escolhidas (limites atuais: 4–256 por eixo e 65 536 pixels no total).
-- Escolher paleta predefinida de 4 ou 8 cores.
-- Personalizar as cores de uma paleta.
-- Duas telas com a mesma grelha lógica: original editável e interpretação gerada.
-- Ferramentas preto, branco e apagar.
-- Pintura por clique e arrastamento, com interpolação Bresenham.
-- Transparência preservada na conversão.
-- Zoom e pan sincronizados.
+## Implementado
+
+### Projeto e documentos
+- Criar grelhas com largura/altura escolhidas entre 4 e 256, com máximo de 65 536 células.
+- Manter vários documentos independentes em separadores durante a sessão.
+- Criar, alternar, retomar e fechar documentos; pedir confirmação quando há alterações por exportar.
+- Importar ficheiros `.pixelproj` como um novo documento e exportar o documento ativo.
+- Cada documento guarda em memória o projeto, a pré-visualização, a câmara e o histórico.
+
+### Desenho e navegação
+- Tela-fonte editável com os estados transparente, preto e branco.
+- Pincel, borracha, linha, retângulo, retângulo preenchido, elipse, elipse preenchida, balde de preenchimento e conta-gotas.
+- Desenho por clique e arrastamento, com interpolação Bresenham.
+- Desfazer/refazer por documento, com limite de 50 snapshots.
 - Espelhamento horizontal/vertical e rotação real da matriz.
-- Três técnicas configuráveis: média contextual, linhas direcionais e entropia local.
-- Instâncias repetidas da mesma técnica com parâmetros independentes.
-- Propostas por pixel com distribuições completas pelas cores.
-- Resolvedores média ponderada e maior confiança individual.
-- Paleta discreta: a saída contém apenas cores da paleta.
-- Importação/exportação do ficheiro .pixelproj.
-- Testes unitários e de integração executados por GitHub Actions.
+- Zoom/pan sincronizados; layout automático, lado a lado, grelha e adaptação móvel.
+- Fundo exterior uniforme e padrão de transparência alinhado com as células reais.
 
-## Preparado na arquitetura, mas ainda não visível/implementado
+### Paletas e conversão
+- 34 paletas predefinidas: 10 de 4 cores, 8 de 8, 6 de 12, 6 de 16 e 4 de 32 cores.
+- Escolher o tamanho da paleta no ecrã inicial ou dentro do editor.
+- Personalizar as entradas de cor de um preset.
+- Três técnicas: média contextual, linhas direcionais e entropia local.
+- Instâncias repetidas da mesma técnica com parâmetros e pesos independentes.
+- Propostas com distribuições completas e resolvedores por média ponderada ou maior confiança individual.
+- Saída limitada às entradas discretas da paleta.
+- Inversão preto/branco complementar, com transparência preservada.
 
-- Várias telas convertidas no editor (modelo suporta várias saídas independentes).
+### Interface e qualidade
+- Menus Ficheiro, Editar e Ver.
+- Atalhos de teclado para documentos, histórico, exportação e ferramentas.
+- Importação/exportação de projeto.
+- Testes unitários, de integração, de contrato e end-to-end em Chromium.
+- GitHub Actions executa as suites e publica evidências visuais.
+
+## Preparado na arquitetura, mas ainda não implementado
+
+- Gravação automática e recuperação dos documentos após reiniciar o browser.
+- Várias interpretações geradas em simultâneo dentro do mesmo projeto.
+- Camadas editáveis, com ordem, visibilidade e bloqueio.
+- Animação por frames, pré-visualização e exportação GIF/spritesheet.
+- Importação de PNG/JPG e conversão automática para a matriz do projeto.
+- Importação/exportação direta de formatos externos de paleta (PAL, ASE, GPL, HEX).
+- Ferramentas de seleção, recorte, copiar/colar, balde com tolerância e pincéis configuráveis.
 - Técnicas Hough/Radon, esqueletização, topologia, GLCM/LBP, autocorrelação e Fourier.
-- Modo de regras em camadas.
-- Otimização global de coerência.
-- Criador visual de regras avançadas.
+- Regras em camadas, otimização global de coerência e editor visual de regras.
 
-## Critérios de aceitação verificados
+## Critérios de aceitação
 
-1. As telas começam transparentes.
-2. Preto, branco e apagar são estados distintos.
-3. A pintura por arrastamento preenche as células entre eventos do ponteiro.
-4. Transparência não é convertida em cor.
-5. A conversão é contextual e pode usar mais do que um vizinho direto.
-6. Diferentes técnicas podem concorrer pela cor do mesmo pixel.
-7. Cada proposta válida distribui 100% da sua probabilidade pela paleta.
-8. A fusão ponderada normaliza novamente as probabilidades.
-9. A cor final é uma entrada discreta da paleta.
-10. Inverter preto/branco reflete a interpretação pela ordem inversa da paleta.
-11. Transformações da matriz preservam pixels e atualizam dimensões.
-12. Exportação/importação preserva a fonte e as configurações.
-13. Os testes locais e o CI devem passar.
+1. Transparente, preto e branco são estados distintos.
+2. A transparência nunca é convertida em cor.
+3. As cinco dimensões suportadas no UI são 4, 8, 12, 16 e 32.
+4. Cada família oferece várias paletas e todas as entradas são HEX de seis dígitos.
+5. A inversão da fonte reflete o índice de cor pela correspondência inversa da paleta.
+6. Cada técnica produz probabilidades finitas, não negativas e normalizadas para todas as cores.
+7. A saída contém apenas índices válidos na paleta ativa.
+8. Documentos diferentes mantêm grelhas, paletas, câmara e histórico independentes.
+9. Undo/redo restaura snapshots sem partilhar buffers mutáveis.
+10. Desenho por ferramentas geométricas e preenchimento respeita os limites da grelha.
+11. Importação/exportação preserva a fonte e as configurações do projeto.
+12. Suites Node e Playwright passam localmente e no CI.
