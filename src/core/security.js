@@ -138,3 +138,40 @@ export function createSafeStorage({ prefix = 'px_', storage = null } = {}) {
     }
   };
 }
+
+/**
+ * Constant-time string comparison to prevent timing side-channel attacks.
+ * @param {unknown} a
+ * @param {unknown} b
+ * @returns {boolean}
+ */
+export function constantTimeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+/**
+ * Enforces a strict payload ceiling (default 64 KB) to protect against memory exhaustion.
+ * @param {string|object} payload
+ * @param {number} [limitBytes=65536]
+ * @returns {boolean}
+ * @throws {RangeError} If the payload exceeds the limit
+ */
+export function enforcePayloadSizeLimit(payload, limitBytes = 64 * 1024) {
+  let size = 0;
+  if (typeof payload === 'string') {
+    size = new TextEncoder().encode(payload).length;
+  } else if (payload && typeof payload === 'object') {
+    size = new TextEncoder().encode(JSON.stringify(payload)).length;
+  }
+  if (size > limitBytes) {
+    throw new RangeError(`Payload excede o teto defensivo de 64 KB (${size} > ${limitBytes} bytes).`);
+  }
+  return true;
+}
+

@@ -279,6 +279,21 @@
           </div>
           <button id="close-account-dialog" type="button" class="icon-button" aria-label="Fechar">✕</button>
         </div>
+        <div class="account-auth-banner">
+          <div class="auth-status-row">
+            <span class="auth-tier-icon" id="auth-tier-icon">🎨</span>
+            <div class="auth-tier-info">
+              <span class="auth-tier-title" id="auth-tier-title">Sessão Convidado</span>
+              <span class="auth-tier-desc" id="auth-tier-desc">Modo anónimo local (Zero Blast Radius)</span>
+            </div>
+            <span class="auth-badge" id="auth-badge">Convidado</span>
+          </div>
+          <div class="auth-actions-row">
+            <button id="auth-google-btn" class="button button-secondary button-sm" type="button">Conectar Google OIDC</button>
+            <button id="auth-dedicated-btn" class="button button-secondary button-sm" type="button">Conta Studio</button>
+            <button id="auth-logout-btn" class="button button-secondary button-sm" type="button" hidden>Terminar sessão</button>
+          </div>
+        </div>
         <div class="account-profile-form">
           <div class="form-grid">
             <label class="field compact-field"><span>Nome de criador</span><input id="profile-name-input" type="text" maxlength="50" /></label>

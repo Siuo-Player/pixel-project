@@ -51,6 +51,8 @@ Nem todas as falhas de CI significam que o utilizador encontrou um bug na aplica
 | PX-032 | Galeria integrada de exemplos | O utilizador pode abrir projetos de exemplo integrados tanto diretamente a partir da grelha inicial de cartões como através do diálogo do menu. | `tests/e2e/examples.spec.js` — `o utilizador pode abrir um projeto de exemplo diretamente do ecrã inicial` | E2E |
 | PX-033 | Gestão de conta e biblioteca de arte | A biblioteca de obras da conta e lista de amigos devem manter integridade, permitindo alternar visibilidade pública/privada sem perda de dados. | `tests/unit/community.test.js` — `toggling artwork visibility updates public state and public gallery` | Unitário |
 | PX-034 | Exploração comunitária e amizades | Utilizadores podem pesquisar perfis de criadores, adicionar amigos e abrir artes públicas de outros artistas diretamente no editor. | `tests/e2e/community.spec.js` — `o utilizador pode explorar a comunidade, pesquisar perfis e adicionar aos amigos` | E2E |
+| PX-035 | Isolamento de identidade Zero Blast Radius | A autenticação gera identificadores únicos estanques por projeto (PPID) sem expor credenciais mestre. | `tests/unit/auth_client.test.js` — `StudioAuthClient defaults to guest session with project prefix and zero blast radius` | Unitário |
+| PX-036 | Teto de payload e proteção contra exaustão de memória | Requisições e projetos com payload superior a 64 KB são rejeitados defensivamente para proteger memória e rede. | `tests/unit/auth_client.test.js` — `enforcePayloadSizeLimit enforces 64 KB ceiling and protects against memory exhaustion` | Unitário |
 
 ## Como adicionar uma entrada
 

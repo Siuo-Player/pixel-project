@@ -1132,6 +1132,32 @@ function updateAccountUI() {
   if (avatarBadge) avatarBadge.textContent = user.avatar || '🎨';
   if (nameBadge) nameBadge.textContent = user.name || 'Criador';
 
+  const authBadge = $('#auth-badge');
+  const authIcon = $('#auth-tier-icon');
+  const authTitle = $('#auth-tier-title');
+  const authDesc = $('#auth-tier-desc');
+  const logoutBtn = $('#auth-logout-btn');
+
+  if (user.authMode === 'google_oidc') {
+    if (authBadge) authBadge.textContent = 'Google OIDC';
+    if (authIcon) authIcon.textContent = '🌐';
+    if (authTitle) authTitle.textContent = 'Conta Conectada com Google';
+    if (authDesc) authDesc.textContent = `Pairwise ID: ${user.id} (Zero Blast Radius)`;
+    if (logoutBtn) logoutBtn.hidden = false;
+  } else if (user.authMode === 'studio_dedicated') {
+    if (authBadge) authBadge.textContent = 'Conta Studio';
+    if (authIcon) authIcon.textContent = '⭐';
+    if (authTitle) authTitle.textContent = 'Conta Dedicada Studio';
+    if (authDesc) authDesc.textContent = `ID de Estúdio: ${user.id} (Hash PBKDF2)`;
+    if (logoutBtn) logoutBtn.hidden = false;
+  } else {
+    if (authBadge) authBadge.textContent = 'Convidado';
+    if (authIcon) authIcon.textContent = '🎨';
+    if (authTitle) authTitle.textContent = 'Sessão Convidado';
+    if (authDesc) authDesc.textContent = 'Modo anónimo local (Zero Blast Radius)';
+    if (logoutBtn) logoutBtn.hidden = true;
+  }
+
   const nameInput = $('#profile-name-input');
   const handleInput = $('#profile-handle-input');
   const bioInput = $('#profile-bio-input');
@@ -1568,6 +1594,33 @@ function initialize() {
     });
     updateAccountUI();
     toast('Perfil atualizado com sucesso.', 'success');
+  });
+
+  $('#auth-google-btn')?.addEventListener('click', () => {
+    const user = accountManager.getCurrentUser();
+    const googleName = prompt('Nome ou pseudónimo para a Conta Google:', user.name) || user.name;
+    accountManager.upgradeAuthWithGoogle({ name: googleName });
+    updateAccountUI();
+    toast(`Conectado como ${googleName} via Google OIDC.`, 'success');
+  });
+
+  $('#auth-dedicated-btn')?.addEventListener('click', () => {
+    const username = prompt('Nome de utilizador Studio:');
+    if (!username) return;
+    const password = prompt('Palavra-passe Studio (mínimo 6 caracteres):');
+    if (!password || password.length < 6) {
+      toast('Palavra-passe inválida (mínimo 6 caracteres).', 'error');
+      return;
+    }
+    accountManager.upgradeAuthWithDedicated(username, password);
+    updateAccountUI();
+    toast(`Autenticado como ${username} na Conta Studio.`, 'success');
+  });
+
+  $('#auth-logout-btn')?.addEventListener('click', () => {
+    accountManager.logoutAuth();
+    updateAccountUI();
+    toast('Sessão terminada. Retomado modo Convidado.', 'info');
   });
 
   $('#save-to-account')?.addEventListener('click', saveCurrentProjectToAccount);

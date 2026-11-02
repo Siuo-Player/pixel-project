@@ -83,4 +83,38 @@ test.describe('Comunidade, Contas e Perfis', () => {
     await accountDialog.locator('#close-account-dialog').click();
     await expect(accountDialog).toBeHidden();
   });
+
+  test('o utilizador pode autenticar-se com Google OIDC ou Conta Studio preservando as suas obras', async ({ page }) => {
+    await page.goto('/');
+
+    // Start project and save art
+    await page.locator('#create-project').click();
+    await expect(page.locator('#editor-view')).toBeVisible();
+    await page.locator('#save-to-account').click();
+
+    // Open User Account modal
+    await page.locator('#user-account-button').click();
+    const accountDialog = page.locator('#account-dialog');
+    await expect(accountDialog).toBeVisible();
+
+    // Check guest tier
+    const authBadge = accountDialog.locator('#auth-badge');
+    await expect(authBadge).toBeVisible();
+    await expect(authBadge).toHaveText('Convidado');
+
+    // Upgrade to Google OIDC
+    page.once('dialog', async d => {
+      await d.accept('Artista Google Teste');
+    });
+    await accountDialog.locator('#auth-google-btn').click();
+
+    // Verify upgrade and artwork preservation
+    await expect(authBadge).toHaveText('Google OIDC');
+    const myArtEntry = accountDialog.locator('#account-artworks-list .account-art-item').first();
+    await expect(myArtEntry).toBeVisible();
+
+    // Logout back to guest
+    await accountDialog.locator('#auth-logout-btn').click();
+    await expect(authBadge).toHaveText('Convidado');
+  });
 });

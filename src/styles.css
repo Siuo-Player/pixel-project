@@ -633,3 +633,56 @@ h1 span { color: var(--accent); }
   background: rgba(121, 217, 159, 0.1);
 }
 
+.account-auth-banner {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.auth-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.auth-tier-icon {
+  font-size: 20px;
+}
+.auth-tier-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+.auth-tier-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.auth-tier-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.auth-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.auth-actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.button-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+

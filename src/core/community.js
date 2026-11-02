@@ -1,5 +1,6 @@
-import { createSafeStorage, sanitizeText, safeJsonParse } from './security.js';
+import { createSafeStorage, sanitizeText, safeJsonParse, enforcePayloadSizeLimit } from './security.js';
 import { BUILTIN_EXAMPLES, loadExampleProject } from './examples.js';
+import { StudioAuthClient } from './auth_client.js';
 
 export function createDefaultProfiles() {
   const antigravityArtworks = BUILTIN_EXAMPLES.map(ex => ({
@@ -80,9 +81,14 @@ export function createDefaultProfiles() {
   ];
 }
 
-export function createAccountManager(rawStorage = null) {
+export function createAccountManager(rawStorage = null, options = {}) {
   const safeStore = createSafeStorage({
     prefix: 'px_community_',
+    storage: rawStorage || (typeof window !== 'undefined' ? window.localStorage : null)
+  });
+
+  const authClient = options.authClient || new StudioAuthClient({
+    projectSlug: 'pixel_project',
     storage: rawStorage || (typeof window !== 'undefined' ? window.localStorage : null)
   });
 
@@ -104,15 +110,24 @@ export function createAccountManager(rawStorage = null) {
 
   function initCurrentUser() {
     const existing = readJson('current_user', null);
-    if (existing && existing.id) return existing;
+    const session = authClient.getSession();
+    if (existing && existing.id) {
+      return {
+        ...existing,
+        authMode: existing.authMode || session.authMode || 'guest',
+        isAnonymous: existing.isAnonymous ?? session.isAnonymous ?? true
+      };
+    }
 
     const initial = {
-      id: 'user-local-' + Math.random().toString(36).slice(2, 9),
-      handle: 'meu_perfil',
-      name: 'Criador Local',
+      id: session.playerId || ('user-local-' + Math.random().toString(36).slice(2, 9)),
+      handle: sanitizeText((session.username || 'meu_perfil').toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30) || 'meu_perfil',
+      name: session.username || 'Criador Local',
       bio: 'A desenhar e a criar paletas no Pixel Project.',
-      avatar: '🎨',
-      createdAt: new Date().toISOString()
+      avatar: session.authMode === 'google_oidc' ? '🌐' : (session.authMode === 'studio_dedicated' ? '⭐' : '🎨'),
+      authMode: session.authMode || 'guest',
+      isAnonymous: session.isAnonymous ?? true,
+      createdAt: new Date(session.createdAt || Date.now()).toISOString()
     };
     writeJson('current_user', initial);
     return initial;
@@ -148,6 +163,7 @@ export function createAccountManager(rawStorage = null) {
 
   function saveArtToAccount(project, options = {}) {
     if (!project || !project.source) throw new TypeError('Projeto inválido');
+    enforcePayloadSizeLimit(project, 64 * 1024);
 
     const artworks = getUserArtworks(currentUser.id);
     const existingIndex = project.id ? artworks.findIndex(a => a.id === project.id || a.projectId === project.id) : -1;
@@ -308,6 +324,94 @@ export function createAccountManager(rawStorage = null) {
     return list;
   }
 
+  function upgradeAuthWithGoogle(googleUser = {}) {
+    const newSession = authClient.loginWithGoogle(googleUser);
+    const oldId = currentUser.id;
+    const newId = newSession.playerId;
+
+    const oldArtworks = getUserArtworks(oldId);
+    if (oldArtworks.length > 0) {
+      const migratedArtworks = oldArtworks.map(a => ({
+        ...a,
+        authorId: newId,
+        authorName: newSession.username,
+        authorHandle: sanitizeText(newSession.username.toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30)
+      }));
+      writeJson(`artworks_${newId}`, migratedArtworks);
+      safeStore.removeItem(`artworks_${oldId}`);
+    }
+
+    const oldFriends = getFriends(oldId);
+    if (oldFriends.length > 0) {
+      writeJson(`friends_${newId}`, oldFriends);
+      safeStore.removeItem(`friends_${oldId}`);
+    }
+
+    currentUser = {
+      ...currentUser,
+      id: newId,
+      name: newSession.username,
+      handle: sanitizeText(newSession.username.toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30),
+      authMode: 'google_oidc',
+      isAnonymous: false,
+      avatar: '🌐'
+    };
+    writeJson('current_user', currentUser);
+    return getCurrentUser();
+  }
+
+  function upgradeAuthWithDedicated(username, password) {
+    const newSession = authClient.loginWithDedicated(username, password);
+    const oldId = currentUser.id;
+    const newId = newSession.playerId;
+
+    const oldArtworks = getUserArtworks(oldId);
+    if (oldArtworks.length > 0) {
+      const migratedArtworks = oldArtworks.map(a => ({
+        ...a,
+        authorId: newId,
+        authorName: newSession.username,
+        authorHandle: sanitizeText(newSession.username.toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30)
+      }));
+      writeJson(`artworks_${newId}`, migratedArtworks);
+      safeStore.removeItem(`artworks_${oldId}`);
+    }
+
+    const oldFriends = getFriends(oldId);
+    if (oldFriends.length > 0) {
+      writeJson(`friends_${newId}`, oldFriends);
+      safeStore.removeItem(`friends_${oldId}`);
+    }
+
+    currentUser = {
+      ...currentUser,
+      id: newId,
+      name: newSession.username,
+      handle: sanitizeText(newSession.username.toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30),
+      authMode: 'studio_dedicated',
+      isAnonymous: false,
+      avatar: '⭐'
+    };
+    writeJson('current_user', currentUser);
+    return getCurrentUser();
+  }
+
+  function logoutAuth() {
+    const guestSession = authClient.logout();
+    currentUser = {
+      id: guestSession.playerId,
+      name: guestSession.username,
+      handle: sanitizeText(guestSession.username.toLowerCase().replace(/[^a-z0-9_]/g, '_'), 30),
+      bio: 'A desenhar e a criar paletas no Pixel Project.',
+      avatar: '🎨',
+      authMode: 'guest',
+      isAnonymous: true,
+      createdAt: new Date().toISOString()
+    };
+    writeJson('current_user', currentUser);
+    return getCurrentUser();
+  }
+
   return {
     getCurrentUser,
     setCurrentUser,
@@ -325,6 +429,10 @@ export function createAccountManager(rawStorage = null) {
     getAllProfiles,
     searchProfiles,
     getProfileWithArtworks,
-    getPublicArtworks
+    getPublicArtworks,
+    upgradeAuthWithGoogle,
+    upgradeAuthWithDedicated,
+    logoutAuth,
+    getAuthClient: () => authClient
   };
 }

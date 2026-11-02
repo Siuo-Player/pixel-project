@@ -68,8 +68,18 @@ Todas as quatro obras de demonstração foram concebidas e ilustradas por **Anti
 
 O Pixel Project dispõe de um sistema de perfis e biblioteca local-first (sem custos de servidor):
 - **A Minha Conta (`#user-account-button`):** permite definir nome, handle (`@nome`) e bio, além de aceder à biblioteca pessoal de artes guardadas com botão **"Guardar na conta"** no editor.
+- **Identidade Híbrida & Zero Blast Radius:** suporta três níveis (Convidado anónimo, Google OIDC e Conta Studio). Os identificadores de conta (`px_...`) são estanques e isolados criptograficamente de outros jogos/apps do estúdio, garantindo que o vazamento de dados noutro projeto nunca compromete o Pixel Project.
+- **Migração Transparente:** ao ligar uma conta Google ou criar conta Studio, todas as obras e amigos criados durante a sessão de convidado são preservados e transferidos automaticamente para o perfil autenticado.
 - **Privacidade & Visibilidade:** cada obra guardada pode ser alternada entre **Pública** (visível na galeria comunitária) e **Privada**.
 - **Exploração e Amizades (`#community-button`):** pesquisa criadores e artistas por nome ou handle (como o perfil oficial `@antigravity`), adiciona criadores aos amigos/seguidos e abre as obras públicas de outros artistas diretamente como telas no editor.
+
+## Segurança e Defesa em Profundidade
+
+- **Defesa Contra Poluição de Protótipos:** parsers seguros e validação recursiva de payloads para impedir injeções de `__proto__` ou `constructor`.
+- **Teto Defensivo de Payload (64 KB):** proteção contra ataques de exaustão de memória em JSON/obras importadas.
+- **Comparação em Tempo Constante (`constantTimeCompare`):** proteção contra timing attacks em verificação de senhas e tokens de sessão.
+- **Isolamento de Armazenamento:** suporte com fallback gracioso em memória para ambientes de navegação anónima/restritiva.
+
 
 ## Limitações conhecidas
 
